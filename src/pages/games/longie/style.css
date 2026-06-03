@@ -1,0 +1,81 @@
+section {
+    text-align: center;
+}
+
+.block {
+    padding-bottom: 1em;
+}
+
+button {
+    background-color: rgb(42, 138, 234);
+    color: white;
+    cursor: pointer;
+    border: 1px solid black;
+    border-radius: 3px;
+}
+
+button:hover:not(:disabled) {
+    background-color: rgb(24, 104, 184);
+}
+
+button:disabled {
+    border-color: transparent;
+    cursor: not-allowed;
+}
+
+canvas {
+    border: 1px solid orangered;
+}
+
+.flex-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+}
+
+.guess-list {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    min-height: 200px;
+    list-style-type: none;
+    padding: 0;
+    margin: 1em 0em;
+}
+
+.guess {
+    list-style-type: none;
+    min-width: 120px;
+    padding: 6px 12px;
+    border-radius: 3px;
+}
+
+.post-guess-list {
+    display: flex;
+    flex-direction: row;
+    gap: 2px;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.post-guess {
+    opacity: 0%;
+    animation: wiggle 0.6s forwards;
+}
+
+@keyframes wiggle {
+    0% { transform: rotate(0deg); opacity: 0%; }
+    20% { transform: rotate(-15deg); opacity: 100%; }
+    40% { transform: rotate(15deg); opacity: 100%; }
+    60% { transform: rotate(-15deg); opacity: 100%; }
+    80% { transform: rotate(15deg); opacity: 100%; }
+    100% { transform: rotate(0deg); opacity: 100%; }
+}
