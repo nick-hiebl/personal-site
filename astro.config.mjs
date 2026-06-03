@@ -8,7 +8,7 @@ import react from '@astrojs/react'
 
 // https://astro.build/config
 export default defineConfig({
-    site: 'https://nick-hiebl.github.io',
+    site: 'http://site.jumpoy.com',
     integrations: [mdx(), sitemap(), react()],
     fonts: [
         {
