@@ -2,13 +2,17 @@
 title: 'Randomiser test'
 description: 'Making a page with a randomiser'
 pubDate: '2026-06-03T04:00:00'
-heroImage: '../../../assets/sample-image.png'
+heroImage: '../../../assets/randomisers-splash.png'
 ---
 
 Still getting used to working with Astro 3. Just building up a randomiser element here!
 
-import RandomCard, { createNums } from '../../../components/RandomCard.astro'
+import { RandomCard, createNums } from '../../../components/RandomCard.tsx'
 
-<RandomCard options={createNums(1, 20)} id="123" />
+<RandomCard client:idle options={createNums(1, 20)} />
 
-This card gives a random 1-6 result like a d6.
+This card gives a random 1-20 result like a d20.
+
+<RandomCard client:idle options={['Strong success', 'Mixed success', 'Miss']} />
+
+This gives a random result out of strong success, mixed success, or miss.
