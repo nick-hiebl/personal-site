@@ -1,0 +1,30 @@
+.random-card {
+    width: 12rem;
+    height: 8rem;
+    cursor: pointer;
+    border-radius: 1em;
+    border: 2px solid black;
+    background-color: #ffd;
+    font-family: inherit;
+    margin: 0 auto;
+}
+
+.shake {
+    animation: shake-animation 0.25s linear;
+}
+
+@keyframes shake-animation {
+
+    0%,
+    100% {
+        transform: rotate(0deg);
+    }
+
+    25% {
+        transform: rotate(5deg);
+    }
+
+    75% {
+        transform: rotate(-5deg);
+    }
+}
