@@ -1,0 +1,14 @@
+---
+title: 'Randomiser test'
+description: 'Making a page with a randomiser'
+pubDate: '2026-06-03T04:00:00'
+heroImage: '../../../assets/sample-image.png'
+---
+
+Still getting used to working with Astro 3. Just building up a randomiser element here!
+
+import RandomCard, { createNums } from '../../../components/RandomCard.astro'
+
+<RandomCard options={createNums(1, 20)} id="123" />
+
+This card gives a random 1-6 result like a d6.
