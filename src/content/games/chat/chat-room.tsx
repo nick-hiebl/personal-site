@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { io, type Socket } from 'socket.io-client'
+
+import './style.css'
 
 const useSocket = () => {
     const [socket, setSocket] = useState<Socket>()
@@ -19,9 +21,21 @@ type Message = {
 
 export const ChatRoom = () => {
     const socket = useSocket()
+    const chatWindow = useRef<HTMLElement | null>(null)
+    const inputRef = useRef<HTMLInputElement | null>(null)
 
     const [messages, setMessages] = useState<Message[]>([])
     const [input, setInput] = useState('')
+
+    useEffect(() => {
+        if (chatWindow.current) {
+            chatWindow.current.scrollTo({
+                left: 0,
+                top: chatWindow.current.scrollHeight,
+                behavior: 'smooth',
+            })
+        }
+    }, [messages])
 
     useEffect(() => {
         if (!socket) {
@@ -29,7 +43,6 @@ export const ChatRoom = () => {
         }
 
         const onSendMessages = (args: { messages: Message[] }) => {
-            console.log('Received content:', args)
             setMessages(current => current.concat(args.messages))
         }
 
@@ -40,10 +53,24 @@ export const ChatRoom = () => {
         }
     }, [socket])
 
+    const send = () => {
+        if (!socket || !input.trim()) {
+            return
+        }
+
+        socket.emit('message', { message: input })
+        setMessages(current => current.concat({
+            message: input.trim(),
+            author: socket.id ?? 'Me',
+            timestamp: new Date().toISOString(),
+        }))
+        setInput('')
+    }
+
     return (
         <section>
             <h1>Chat!</h1>
-            <div>
+            <div className="message-box" ref={e => { chatWindow.current = e }}>
                 <ul>
                     {messages.map((message, index) => (
                         <li key={index}>
@@ -54,19 +81,38 @@ export const ChatRoom = () => {
                     ))}
                 </ul>
             </div>
-            <input type="text" value={input} onChange={e => setInput(e.currentTarget.value)} />
-            <button
-                onClick={() => {
-                    if (!socket) {
-                        return
-                    }
-
-                    socket.emit('message', { message: input })
-                    setMessages(current => current.concat({ message: input, author: socket.id ?? 'Me', timestamp: new Date().toISOString() }))
-                }}
-            >
-                Send
-            </button>
+            <div className="input-row">
+                <div
+                    className="input-bar"
+                    onClick={() => {
+                        inputRef.current?.focus()
+                    }}
+                >
+                    <input
+                        autoComplete="off"
+                        type="text"
+                        id="chat-input"
+                        name="chat-input"
+                        value={input}
+                        onChange={e => setInput(e.currentTarget.value)}
+                        ref={e => { inputRef.current = e }}
+                        onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                                send()
+                            }
+                        }}
+                    />
+                    <button
+                        aria-label="Send"
+                        onClick={e => {
+                            send()
+                            e.stopPropagation()
+                        }}
+                    >
+                        ↑
+                    </button>
+                </div>
+            </div>
         </section>
     )
 }

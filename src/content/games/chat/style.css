@@ -1,0 +1,59 @@
+.message-box {
+    max-height: 80vh;
+    height: 400px;
+    overflow-y: scroll;
+    border: 1px solid black;
+}
+
+.message-box ul {
+    list-style-type: none;
+    padding: 4px;
+    margin: 0;
+}
+
+.message-box li {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+}
+
+.input-row, .input-bar {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: end;
+}
+
+.input-row {
+    padding: 4px;
+}
+
+.input-bar {
+    border: 1px solid black;
+    height: 32px;
+    padding-inline-start: 2px;
+    padding-inline-end: 4px;
+    border-radius: 16px;
+    gap: 4px;
+}
+
+.input-bar input {
+    flex-grow: 1;
+    height: 24px;
+    border-radius: 16px;
+    padding-inline: 6px;
+    border: none;
+    outline: none;
+}
+
+.input-bar button {
+    background-color: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    aspect-ratio: 1;
+    height: 24px;
+    line-height: 24px;
+}
