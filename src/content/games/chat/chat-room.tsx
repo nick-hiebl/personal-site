@@ -7,7 +7,7 @@ const useSocket = () => {
     const [socket, setSocket] = useState<Socket>()
 
     useEffect(() => {
-        setSocket(io('http://localhost:3000'))
+        setSocket(io('https://api.nick-h.net'))
     }, [])
 
     return socket
