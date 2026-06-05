@@ -19,6 +19,18 @@ type Message = {
     author: string
 }
 
+const MessageComponent = ({ author, message, timestamp }: Message) => {
+    return (
+        <li>
+            <span>[{new Date(timestamp).toLocaleTimeString('en-UK', { timeStyle: 'short' })}]</span>
+            {' '}
+            <span>&lt;@{author.slice(0, 40)}&gt;</span>
+            {' '}
+            <span>{message}</span>
+        </li>
+    )
+}
+
 export const ChatRoom = () => {
     const socket = useSocket()
     const chatWindow = useRef<HTMLElement | null>(null)
@@ -42,8 +54,12 @@ export const ChatRoom = () => {
             return
         }
 
-        const onSendMessages = (args: { messages: Message[] }) => {
-            setMessages(current => current.concat(args.messages))
+        const onSendMessages = (args: { messages: Message[]; initial?: boolean }) => {
+            if (args.initial) {
+                setMessages(args.messages)
+            } else {
+                setMessages(current => current.concat(args.messages))
+            }
         }
 
         socket.on('send-messages', onSendMessages)
@@ -73,11 +89,7 @@ export const ChatRoom = () => {
             <div className="message-box" ref={e => { chatWindow.current = e }}>
                 <ul>
                     {messages.map((message, index) => (
-                        <li key={index}>
-                            <span>[{new Date(message.timestamp).toLocaleTimeString()}]</span>
-                            <span>&lt;@{message.author}&gt;</span>
-                            <span>{message.message}</span>
-                        </li>
+                        <MessageComponent key={index} {...message} />
                     ))}
                 </ul>
             </div>

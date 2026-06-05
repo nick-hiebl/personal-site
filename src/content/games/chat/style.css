@@ -3,19 +3,13 @@
     height: 400px;
     overflow-y: scroll;
     border: 1px solid black;
+    border-radius: 8px;
 }
 
 .message-box ul {
     list-style-type: none;
     padding: 4px;
     margin: 0;
-}
-
-.message-box li {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 4px;
 }
 
 .input-row, .input-bar {
@@ -27,7 +21,7 @@
 }
 
 .input-row {
-    padding: 4px;
+    padding: 4px 0;
 }
 
 .input-bar {
