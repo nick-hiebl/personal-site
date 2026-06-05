@@ -1,13 +1,29 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { io, type Socket } from 'socket.io-client'
 
 import './style.css'
+
+const defaultName = () => `User ${Math.floor(Math.random() * 1000)}`
+
+const loadName = () => {
+    const loadedName = localStorage.getItem('user-name')
+
+    if (loadedName) {
+        return loadedName
+    }
+
+    const newName = defaultName()
+    localStorage.setItem('user-name', newName)
+    return newName
+}
 
 const useSocket = () => {
     const [socket, setSocket] = useState<Socket>()
 
     useEffect(() => {
-        setSocket(io('https://api.nick-h.net', { query: { name: 'Nick2' }}))
+        const name = loadName()
+
+        setSocket(io('https://api.nick-h.net', { query: { name } }))
     }, [])
 
     return socket
@@ -19,24 +35,27 @@ type Message = {
     author: string
 }
 
-type LocalMessage = Message & { isError?: boolean }
+type LocalMessage = Message & { isError?: boolean; isMe?: boolean }
 
-const MessageComponent = ({ author, message, timestamp, isError = false }: LocalMessage) => {
+const MessageComponent = ({ author, message, timestamp, isError = false, isMe = false }: LocalMessage) => {
     return (
-        <li className="message" data-error={isError}>
+        <li className="message" data-error={isError} data-me={isMe}>
             <span>[{new Date(timestamp).toLocaleTimeString('en-UK', { timeStyle: 'short' })}]</span>
             {' '}
-            <span>&lt;@{author.slice(0, 40)}&gt;</span>
+            <span className="author">&lt;@{author.slice(0, 40)}&gt;</span>
             {' '}
             <span>{message}</span>
         </li>
     )
 }
 
+type LocalPartialMessage = Omit<LocalMessage, 'timestamp'> & Partial<Pick<LocalMessage, 'timestamp'>>
+
 export const ChatRoom = () => {
     const socket = useSocket()
     const chatWindow = useRef<HTMLElement | null>(null)
     const inputRef = useRef<HTMLInputElement | null>(null)
+    const [totalFailure, setTotalFailure] = useState(false)
 
     const [messages, setMessages] = useState<LocalMessage[]>([])
     const [input, setInput] = useState('')
@@ -51,13 +70,17 @@ export const ChatRoom = () => {
         }
     }, [messages])
 
+    const addMessages = useCallback((messages: LocalPartialMessage[]) => {
+        setMessages(current => current.concat(
+            messages.map(message =>
+                ({ ...message, timestamp: message.timestamp ?? new Date().toISOString() })
+            )
+        ))
+    }, [])
+
     useEffect(() => {
         if (!socket) {
             return
-        }
-
-        const addMessages = (messages: LocalMessage[]) => {
-            setMessages(current => current.concat(messages))
         }
 
         const onSendMessages = (args: { messages: Message[]; initial?: boolean }) => {
@@ -74,6 +97,8 @@ export const ChatRoom = () => {
             }
         }
 
+        socket.on('connect_error', () => setTotalFailure(true))
+
         socket.on('send-messages', onSendMessages)
 
         socket.on('disconnect', () => {
@@ -86,6 +111,7 @@ export const ChatRoom = () => {
         })
 
         socket.on('connect', () => {
+            setTotalFailure(false)
             addMessages([{
                 timestamp: new Date().toISOString(),
                 author: 'Server',
@@ -97,25 +123,54 @@ export const ChatRoom = () => {
         return () => {
             socket.off('send-messages', onSendMessages)
         }
-    }, [socket])
+    }, [addMessages, socket])
 
     const send = () => {
         if (!socket || !input.trim()) {
             return
         }
 
-        socket.emit('message', { message: input })
-        setMessages(current => current.concat({
-            message: input.trim(),
-            author: socket.id ?? 'Me',
-            timestamp: new Date().toISOString(),
-        }))
+        if (input.startsWith('/name ')) {
+            const newName = input.slice('/name '.length).trim() || 'cheater'
+
+            socket.emit('set-name', { name: newName })
+
+            localStorage.setItem('user-name', newName)
+
+            addMessages([{
+                message: `Your name is now: ${newName}`,
+                author: 'Server',
+            }])
+        } else if (input.startsWith('/help')) {
+            addMessages([{
+                message: '/name <name> to change your name',
+                author: 'Server',
+                isError: true,
+            }])
+        } else if (input.startsWith('/')) {
+            addMessages([{
+                message: 'Unrecognised command',
+                author: 'Server',
+                isError: true,
+            }])
+        } else {
+            socket.emit('message', { message: input })
+            addMessages([{
+                message: input.trim(),
+                author: loadName(),
+                isMe: true,
+            }])
+        }
+
         setInput('')
     }
 
     return (
         <section>
             <h1>Chat!</h1>
+            {totalFailure && (
+                <div>Could not connect. Server may be down currently.</div>
+            )}
             <div className="message-box" ref={e => { chatWindow.current = e }}>
                 <ul>
                     {messages.map((message, index) => (
@@ -131,6 +186,7 @@ export const ChatRoom = () => {
                     }}
                 >
                     <input
+                        disabled={totalFailure}
                         autoComplete="off"
                         type="text"
                         id="chat-input"
@@ -145,6 +201,7 @@ export const ChatRoom = () => {
                         }}
                     />
                     <button
+                        disabled={totalFailure}
                         aria-label="Send"
                         onClick={e => {
                             send()

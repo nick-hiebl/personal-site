@@ -16,6 +16,10 @@
     color: red;
 }
 
+.message[data-me=true] .author {
+    color: var(--accent);
+}
+
 .input-row, .input-bar {
     width: 100%;
     display: flex;
@@ -54,4 +58,12 @@
     aspect-ratio: 1;
     height: 24px;
     line-height: 24px;
+}
+
+.input-bar input:disabled {
+    cursor: not-allowed;
+}
+
+.input-bar button:disabled {
+    cursor: not-allowed;
 }
