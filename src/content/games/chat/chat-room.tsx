@@ -17,14 +17,16 @@ const loadName = () => {
     return newName
 }
 
-const useSocket = () => {
+const BACKEND_BASE = 'https://api.nick-h.net'
+
+const useSocket = (lobbyCode: string) => {
     const [socket, setSocket] = useState<Socket>()
 
     useEffect(() => {
         const name = loadName()
 
-        setSocket(io('https://api.nick-h.net', { query: { name } }))
-    }, [])
+        setSocket(io(BACKEND_BASE, { query: { name, activity: 'chat', code: lobbyCode } }))
+    }, [lobbyCode])
 
     return socket
 }
@@ -52,7 +54,84 @@ const MessageComponent = ({ author, message, timestamp, isError = false, isMe = 
 type LocalPartialMessage = Omit<LocalMessage, 'timestamp'> & Partial<Pick<LocalMessage, 'timestamp'>>
 
 export const ChatRoom = () => {
-    const socket = useSocket()
+    const [lobby, setLobby] = useState<string | undefined>(document.location.hash.slice(1) || undefined)
+    const [lobbyInvalid, setLobbyInvalid] = useState(false)
+
+    useEffect(() => {
+        const onHashChange = () => {
+            setLobby(document.location.hash.slice(1) || undefined)
+            console.log('Hash changed')
+        }
+
+        addEventListener('hashchange', onHashChange)
+
+        return () => {
+            removeEventListener('hashchange', onHashChange)
+        }
+    }, [])
+
+    const onLobbyNotFound = useCallback(() => {
+        setLobbyInvalid(true)
+    }, [])
+
+    if (lobbyInvalid) {
+        return (
+            <section>
+                <h1>Chat!</h1>
+                <p>Lobby is invalid: {lobby}</p>
+                <button
+                    onClick={() => {
+                        setLobby(undefined)
+                        setLobbyInvalid(false)
+                        window.location.hash = ''
+                    }}
+                >
+                    Back to home
+                </button>
+            </section>
+        )
+    }
+
+    if (!lobby) {
+        return (
+            <section>
+                <h1>Chat!</h1>
+                <button
+                    onClick={async () => {
+                        try {
+                            const lobbyDetails = await fetch(`${BACKEND_BASE}/create`, {
+                                method: 'POST',
+                                body: JSON.stringify({ activity: 'chat' }),
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                            }).then(res => res.json())
+
+                            setLobby(lobbyDetails.code)
+                            document.location.hash = lobbyDetails.code
+                        } catch {
+                            console.error('Failed to create lobby')
+                        }
+                    }}
+                >
+                    Create lobby
+                </button>
+            </section>
+        )
+    }
+
+    return (
+        <ChatRoomInner code={lobby} onLobbyNotFound={onLobbyNotFound} />
+    )
+}
+
+type ChatRoomInnerProps = {
+    code: string
+    onLobbyNotFound: () => void
+}
+
+export const ChatRoomInner = ({ code, onLobbyNotFound }: ChatRoomInnerProps) => {
+    const socket = useSocket(code)
     const chatWindow = useRef<HTMLElement | null>(null)
     const inputRef = useRef<HTMLInputElement | null>(null)
     const [totalFailure, setTotalFailure] = useState(false)
@@ -99,6 +178,10 @@ export const ChatRoom = () => {
 
         socket.on('connect_error', () => setTotalFailure(true))
 
+        socket.on('not-found', () => {
+            onLobbyNotFound()
+        })
+
         socket.on('send-messages', onSendMessages)
 
         socket.on('disconnect', () => {
@@ -123,7 +206,7 @@ export const ChatRoom = () => {
         return () => {
             socket.off('send-messages', onSendMessages)
         }
-    }, [addMessages, socket])
+    }, [addMessages, onLobbyNotFound, socket])
 
     const send = () => {
         if (!socket || !input.trim()) {
