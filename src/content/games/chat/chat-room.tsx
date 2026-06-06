@@ -1,34 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { io, type Socket } from 'socket.io-client'
+
+import { BACKEND_BASE } from '../../../components/common/constants'
+import { LobbyBrowser } from '../../../components/games/common/LobbyBrowser'
+import { loadName } from '../../../components/games/common/name'
+import { useSocket } from '../../../components/games/common/socket'
 
 import './style.css'
 
-const defaultName = () => `User ${Math.floor(Math.random() * 1000)}`
-
-const loadName = () => {
-    const loadedName = localStorage.getItem('user-name')
-
-    if (loadedName) {
-        return loadedName
-    }
-
-    const newName = defaultName()
-    localStorage.setItem('user-name', newName)
-    return newName
-}
-
-const BACKEND_BASE = 'https://api.nick-h.net'
-
-const useSocket = (lobbyCode: string) => {
-    const [socket, setSocket] = useState<Socket>()
-
-    useEffect(() => {
-        const name = loadName()
-
-        setSocket(io(BACKEND_BASE, { query: { name, activity: 'chat', code: lobbyCode } }))
-    }, [lobbyCode])
-
-    return socket
+const CHAT_ACTIVITY = {
+    activity: 'chat' as const
 }
 
 type Message = {
@@ -53,6 +33,10 @@ const MessageComponent = ({ author, message, timestamp, isError = false, isMe = 
 
 type LocalPartialMessage = Omit<LocalMessage, 'timestamp'> & Partial<Pick<LocalMessage, 'timestamp'>>
 
+type ChatRoomProps = {
+    numUsers: number
+}
+
 export const ChatRoom = () => {
     const [lobby, setLobby] = useState<string | undefined>(document.location.hash.slice(1) || undefined)
     const [lobbyInvalid, setLobbyInvalid] = useState(false)
@@ -60,7 +44,6 @@ export const ChatRoom = () => {
     useEffect(() => {
         const onHashChange = () => {
             setLobby(document.location.hash.slice(1) || undefined)
-            console.log('Hash changed')
         }
 
         addEventListener('hashchange', onHashChange)
@@ -78,16 +61,8 @@ export const ChatRoom = () => {
         return (
             <section>
                 <h1>Chat!</h1>
-                <p>Lobby is invalid: {lobby}</p>
-                <button
-                    onClick={() => {
-                        setLobby(undefined)
-                        setLobbyInvalid(false)
-                        window.location.hash = ''
-                    }}
-                >
-                    Back to home
-                </button>
+                <p>Lobby is invalid or no longer exists: {lobby}</p>
+                <a href=".">Back to home</a>
             </section>
         )
     }
@@ -116,6 +91,15 @@ export const ChatRoom = () => {
                 >
                     Create lobby
                 </button>
+                <LobbyBrowser<ChatRoomProps, { activity: 'chat' }> activityData={CHAT_ACTIVITY}>
+                    {(id, details) => (
+                        <div>
+                            {id}. Num users: {details.numUsers}
+                            {' '}
+                            <a href={`#${id}`}>Join</a>
+                        </div>
+                    )}
+                </LobbyBrowser>
             </section>
         )
     }
@@ -125,16 +109,23 @@ export const ChatRoom = () => {
     )
 }
 
+
+
 type ChatRoomInnerProps = {
     code: string
     onLobbyNotFound: () => void
 }
 
+type ChatRoomError =
+    | null
+    | 'no-connect'
+    | 'disconnected'
+
 export const ChatRoomInner = ({ code, onLobbyNotFound }: ChatRoomInnerProps) => {
-    const socket = useSocket(code)
+    const socket = useSocket(CHAT_ACTIVITY, code)
     const chatWindow = useRef<HTMLElement | null>(null)
     const inputRef = useRef<HTMLInputElement | null>(null)
-    const [totalFailure, setTotalFailure] = useState(false)
+    const [errorState, setErrorState] = useState<ChatRoomError>(null)
 
     const [messages, setMessages] = useState<LocalMessage[]>([])
     const [input, setInput] = useState('')
@@ -180,7 +171,7 @@ export const ChatRoomInner = ({ code, onLobbyNotFound }: ChatRoomInnerProps) => 
             }
         }
 
-        socket.on('connect_error', () => setTotalFailure(true))
+        socket.on('connect_error', () => setErrorState('no-connect'))
 
         socket.on('not-found', () => {
             onLobbyNotFound()
@@ -198,13 +189,17 @@ export const ChatRoomInner = ({ code, onLobbyNotFound }: ChatRoomInnerProps) => 
         })
 
         socket.on('connect', () => {
-            setTotalFailure(false)
+            setErrorState(null)
             addMessages([{
                 timestamp: new Date().toISOString(),
                 author: 'Server',
                 message: 'You have connected',
                 isError: true,
             }])
+        })
+
+        socket.on('disconnect', () => {
+            setErrorState('disconnected')
         })
 
         return () => {
@@ -255,9 +250,17 @@ export const ChatRoomInner = ({ code, onLobbyNotFound }: ChatRoomInnerProps) => 
     return (
         <section>
             <h1>Chat!</h1>
-            {totalFailure && (
+            {errorState === 'no-connect' ? (
                 <div>Could not connect. Server may be down currently.</div>
-            )}
+            ) : errorState === 'disconnected' ? (
+                <div>
+                    <div>
+                        Disconnected from server.
+                    </div>
+                    <div>Your lobby may have been terminated.</div>
+                    <div><a href=".">Back to home</a></div>
+                </div>
+            ) : null}
             <div className="message-box" ref={e => { chatWindow.current = e }}>
                 <ul>
                     {messages.map((message, index) => (
@@ -273,7 +276,7 @@ export const ChatRoomInner = ({ code, onLobbyNotFound }: ChatRoomInnerProps) => 
                     }}
                 >
                     <input
-                        disabled={totalFailure}
+                        disabled={!!errorState}
                         autoComplete="off"
                         type="text"
                         id="chat-input"
@@ -288,7 +291,7 @@ export const ChatRoomInner = ({ code, onLobbyNotFound }: ChatRoomInnerProps) => 
                         }}
                     />
                     <button
-                        disabled={totalFailure}
+                        disabled={!!errorState}
                         aria-label="Send"
                         onClick={e => {
                             send()
