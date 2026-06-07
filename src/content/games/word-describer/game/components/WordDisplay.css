@@ -1,0 +1,23 @@
+.secret-word-hidden {
+    border: 2px solid purple;
+    min-width: 200px;
+    background-color: #8a2be240;
+}
+
+.secret-word-hidden[data-revealed=false]>span {
+    font-size: initial;
+}
+
+@media (max-width: 480px) {
+    #word-selection-region {
+        user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+    }
+}
+
+#word-selection-region {
+    display: flex;
+    flex-direction: column;
+    row-gap: 4px;
+}

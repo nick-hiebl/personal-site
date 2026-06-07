@@ -76,7 +76,7 @@ export const ChatRoom = () => {
                         try {
                             const lobbyDetails = await fetch(`${BACKEND_BASE}/create`, {
                                 method: 'POST',
-                                body: JSON.stringify({ activity: 'chat' }),
+                                body: JSON.stringify(CHAT_ACTIVITY),
                                 headers: {
                                     'Content-Type': 'application/json',
                                 },
@@ -108,8 +108,6 @@ export const ChatRoom = () => {
         <ChatRoomInner code={lobby} onLobbyNotFound={onLobbyNotFound} />
     )
 }
-
-
 
 type ChatRoomInnerProps = {
     code: string

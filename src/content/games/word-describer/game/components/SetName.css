@@ -1,0 +1,14 @@
+#update-name-button {
+    border: 1px solid light-dark(black, white);
+    border-radius: 2px;
+    padding: 2px 8px;
+    cursor: pointer;
+}
+
+#update-name-button[data-is-matching=true] {
+    background-color: light-dark(greenyellow, rgb(14, 110, 15));
+}
+
+#update-name-button[data-is-matching=false] {
+    background-color: light-dark(yellow, rgb(171, 145, 0));
+}

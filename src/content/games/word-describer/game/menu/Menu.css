@@ -1,0 +1,108 @@
+#menu {
+    position: fixed;
+    z-index: 1;
+    background-color: light-dark(white, black);
+    width: 100vw;
+    top: 0;
+    bottom: 0;
+    overflow-y: scroll;
+
+    left: -100vw;
+    transition: 0.25s;
+    transition-timing-function: ease-in-out;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#menu[data-isopen=true] {
+    left: 0;
+}
+
+#close-menu-button {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    color: light-dark(black, white);
+    border: none;
+    background-color: transparent;
+    font-size: 1em;
+}
+
+#menu header {
+    text-align: center;
+    padding-block: 4px;
+    width: 100%;
+}
+
+#menu header h2 {
+    font-weight: bold;
+    margin-block: 0;
+}
+
+.menu-content {
+    box-sizing: border-box;
+    padding: 16px;
+    gap: 8px;
+    width: min(100vw, 400px);
+}
+
+.column-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.padding-start {
+    padding-block-start: 8px;
+}
+
+.inc-dec-number {
+    display: flex;
+    flex-direction: row;
+
+    --border-width: 2px;
+    --border-radius: 6px;
+}
+
+.inc-dec-number>* {
+    border-top: var(--border-width) solid light-dark(black, white);
+    border-bottom: var(--border-width) solid light-dark(black, white);
+
+    display: block;
+    width: 32px;
+    text-align: center;
+}
+
+.inc-dec-number button {
+    border-left: var(--border-width) solid light-dark(black, white);
+    border-right: var(--border-width) solid light-dark(black, white);
+    background-color: var(--accent);
+    color: light-dark(black, white);
+    font-size: 1em;
+
+    cursor: pointer;
+}
+
+.inc-dec-number button:disabled {
+    background-color: light-dark(#bbddff, #54626f);
+    color: light-dark(#444, #b9b9b9);
+
+    cursor: not-allowed;
+}
+
+.inc-dec-number button {
+    border-left: var(--border-width) solid light-dark(black, white);
+    border-right: var(--border-width) solid light-dark(black, white);
+}
+
+.inc-dec-number button:first-child {
+    border-top-left-radius: var(--border-radius);
+    border-bottom-left-radius: var(--border-radius);
+}
+
+.inc-dec-number button:last-child {
+    border-top-right-radius: var(--border-radius);
+    border-bottom-right-radius: var(--border-radius);
+}

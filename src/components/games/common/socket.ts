@@ -5,7 +5,7 @@ import { BACKEND_BASE } from '../../common/constants'
 
 import { loadName } from './name'
 
-export const useSocket = <T extends { activity: string }>(
+export const useSocket = <T extends { activity: string, token?: string }>(
     /**
      * This really needs to be as stable as possible to avoid undesirable re-renders which will
      * kill and reset connections a lot.
@@ -14,17 +14,21 @@ export const useSocket = <T extends { activity: string }>(
     lobbyCode: string,
 ) => {
     const [socket, setSocket] = useState<Socket>()
+    const [query] = useState<T>(config)
 
     useEffect(() => {
         const name = loadName()
 
-        const newSocket = io(BACKEND_BASE, { query: { name, ...config, code: lobbyCode } })
+        const newSocket = io(BACKEND_BASE, {
+            query: { name, ...query, code: lobbyCode },
+            auth: query.token ? { token: query.token } : undefined,
+        })
         setSocket(newSocket)
 
         return () => {
             newSocket.disconnect()
         }
-    }, [lobbyCode])
+    }, [lobbyCode, query])
 
     return socket
 }

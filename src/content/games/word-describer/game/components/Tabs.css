@@ -1,0 +1,29 @@
+.tab-list {
+    display: flex;
+    flex-direction: row;
+    column-gap: 12px;
+    width: 100%;
+
+    border-bottom: 2px solid light-dark(lightgrey, grey);
+}
+
+.tab {
+    padding: 8px 0px;
+
+    font-weight: 600;
+    color: light-dark(#444, #aaa);
+
+    margin-bottom: -2px;
+    background: none;
+    border: none;
+    font-size: 1em;
+
+    border-bottom: 2px solid transparent;
+
+    cursor: pointer;
+}
+
+.tab[data-selected=true] {
+    border-bottom: 2px solid var(--accent);
+    color: var(--accent);
+}

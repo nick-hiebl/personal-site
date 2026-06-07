@@ -1,0 +1,21 @@
+.hint {
+    position: relative;
+    border: 2px solid #00000088;
+    border-radius: 4px;
+    background-color: #00000018;
+    padding: 8px;
+    max-width: min(240px, 100vw - 56px);
+    text-align: left;
+    font-size: 0.9em;
+
+    display: flex;
+    flex-direction: column;
+    row-gap: 4px;
+}
+
+.hint-close-button {
+    position: absolute;
+    right: -28px;
+    border: none;
+    background-color: transparent;
+}

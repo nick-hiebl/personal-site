@@ -1,0 +1,6 @@
+#status-menu {
+    text-align: center;
+    background-color: var(--info-background);
+    padding: 4px;
+    flex-grow: 1;
+}

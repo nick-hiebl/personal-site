@@ -1,0 +1,234 @@
+body {
+    background-color: light-dark(#cef8, #123);
+
+    --player-background: light-dark(#fce, #813);
+    --info-background: light-dark(rgb(164, 229, 255), rgb(0, 141, 156));
+}
+
+#top-bar {
+    display: flex;
+    flex-direction: row;
+    padding-inline: 4px;
+    padding-block-start: 4px;
+    gap: 4px;
+}
+
+#menu-trigger {
+    aspect-ratio: 1;
+    width: 38px;
+    border: none;
+    background-color: light-dark(white, black);
+    font-size: 1em;
+}
+
+#player-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+    padding: 4px;
+    margin-block-end: 8px;
+}
+
+.player-item {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 8px;
+    align-items: center;
+    padding: 4px 8px;
+    background-color: var(--player-background);
+}
+
+.player-tag-list {
+    flex-shrink: 0;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.big-text {
+    font-size: 2em;
+}
+
+.center {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+    row-gap: 16px;
+}
+
+.input-boxes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+}
+
+.input-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.input-box>input {
+    border: 1px solid light-dark(black, yellow);
+    border-radius: 4px;
+    padding: 8px;
+}
+
+.card-grid {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+}
+
+.clue-card {
+    position: relative;
+    width: 160px;
+    min-height: 40px;
+    padding-block: 12px;
+    border: 2px solid light-dark(#fc0, rgb(140, 218, 210));
+    background-color: light-dark(#fe4, rgb(84, 138, 133));
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    justify-content: center;
+    word-break: break-all;
+}
+
+.clue-card>.big-text {
+    font-size: 1.5em;
+    word-break: break-word;
+}
+
+.clue-card>.player-name {
+    font-size: 0.8em;
+}
+
+.clue-card[data-disabled=true] {
+    background-color: light-dark(#eee, #444);
+    border-color: light-dark(#aaa, #888);
+}
+
+.clue-tag {
+    position: absolute;
+    inset-block-end: 4px;
+    inset-inline-start: 6px;
+
+    font-size: 0.75em;
+}
+
+.assessing-options {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+}
+
+.assessing-option {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+    background-color: light-dark(#eee, #444);
+    border-radius: 4px;
+    border: 4px solid light-dark(#888, #888);
+    color: light-dark(#555, #bbb);
+}
+
+.assessing-option[data-option=fine][data-selected=true] {
+    border-color: green;
+}
+
+.assessing-option[data-option=duplicate][data-selected=true] {
+    border-color: blue;
+}
+
+.assessing-option[data-option=illegal][data-selected=true] {
+    border-color: red;
+}
+
+.assessing-option[data-selected=false] {
+    padding: 10px 18px;
+    border-width: 2px;
+}
+
+.assessing-option[data-selected=true] {
+    padding: 8px 16px;
+    border-width: 4px;
+
+    text-decoration: underline;
+    color: light-dark(black, white);
+}
+
+.gap-line {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.clue-button {
+    padding: 8px 16px;
+    background-color: #8fa8;
+    border: 2px solid #3a8;
+    border-radius: 4px;
+}
+
+.center-column {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.ready-button {
+    padding: 8px;
+    min-width: 160px;
+    background-color: #f888;
+    border: 2px solid #f88f;
+    border-radius: 4px;
+}
+
+.ready-button[data-enabled=true] {
+    background-color: #8fa8;
+    border-color: #8fa;
+}
+
+.stack {
+    display: flex;
+    flex-direction: column;
+}
+
+.inline {
+    display: flex;
+    flex-direction: row;
+}
+
+.gap-8px {
+    gap: 8px;
+}
+
+.gap-16px {
+    gap: 16px;
+}
+
+.stack-8px {
+    display: flex;
+    flex-direction: column;
+    row-gap: 8px;
+}
+
+.stack-center {
+    align-items: center;
+}
+
+.spread {
+    justify-content: space-between;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}

@@ -1,0 +1,36 @@
+.post-answers {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+}
+
+.post-answers>div {
+    min-width: 128px;
+}
+
+.post-game-clues {
+    min-width: 200px;
+    max-width: calc(100vw - 16px);
+}
+
+.post-game-clues>tbody>tr>td:first-child,
+.post-game-clues>thead>tr>th:first-child {
+    text-align: start;
+}
+
+.post-game-clues>tbody>tr>td:last-child,
+.post-game-clues>thead>tr>th:last-child {
+    text-align: end;
+}
+
+.post-game-clues>tbody>tr>td:first-child {
+    font-style: italic;
+    word-break: break-all;
+}
+
+.post-game-clues>tbody>tr>td:last-child {
+    font-style: italic;
+    min-width: 80px;
+}
