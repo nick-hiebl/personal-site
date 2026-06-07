@@ -16,12 +16,15 @@ export const useSocket = <T extends { activity: string, token?: string }>(
     const [socket, setSocket] = useState<Socket>()
     const [query] = useState<T>(config)
 
+
     useEffect(() => {
         const name = loadName()
 
+        const { token, ...options } = query
+
         const newSocket = io(BACKEND_BASE, {
-            query: { name, ...query, code: lobbyCode },
-            auth: query.token ? { token: query.token } : undefined,
+            query: { name, ...options, code: lobbyCode },
+            auth: token ? { token } : undefined,
         })
         setSocket(newSocket)
 
