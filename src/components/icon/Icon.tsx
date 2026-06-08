@@ -1,0 +1,182 @@
+type Props = {
+    width: string
+}
+
+export const SheepIcon = ({ width }: Props) => {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" width={width} viewBox="0 0 512 512">
+            <defs>
+                <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stop-color="#81B5F8" />
+                    <stop offset="100%" stop-color="#F9E9C3" />
+                </linearGradient>
+            </defs>
+            <rect
+                rx="128"
+                x="0"
+                y="0"
+                width="512"
+                height="512"
+                fill="url(#sky)"
+            />
+            <path
+                d="
+            M 148,88
+            L 154,190
+        "
+                stroke-linecap="round"
+                stroke-width="20"
+                stroke="black"
+                fill="none"
+            />
+            <path
+                d="
+            M 202,59
+            L 203,190
+        "
+                stroke-linecap="round"
+                stroke-width="21"
+                stroke="black"
+                fill="none"
+            />
+            <path
+                d="
+            M 337,88
+            L 335,190
+        "
+                stroke-linecap="round"
+                stroke-width="20"
+                stroke="black"
+                fill="none"
+            />
+            <path
+                d="
+            M 395,63
+            L 409,190
+        "
+                stroke-linecap="round"
+                stroke-width="21"
+                stroke="black"
+                fill="none"
+            />
+            <path
+                d="
+            M 155,162
+            C 176,142
+                205,132
+                232,158
+            C 250,138
+                283,126
+                314,162
+            C 350,138
+                380,145
+                384,181
+            C 405,164
+                432,160
+                433,203
+            C 466,180
+                470,200
+                461,225
+            C 500,223
+                498,253
+                465,275
+            C 482,296
+                480,320
+                443,326
+            C 460,360
+                410,374
+                377,352
+            C 370,390
+                330,380
+                300,356
+            C 282,399
+                250,382
+                242,360
+            C 230,365
+                222,360
+                210,348
+            C 216,356
+                220,384
+                197,385
+            C 208,397
+                213,436
+                183,432
+            C 160,450
+                120,450
+                114,427
+            C 90,432
+                72,434
+                56,411
+            C 38,411
+                38,390
+                43,380
+            L 77,294
+            C 70,280
+                76,263
+                90,252
+            C 75,242
+                80,207
+                110,207
+            C 90,177
+                130,158
+                155,162
+            Z
+        "
+                stroke="black"
+                stroke-width="10"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                fill="white"
+            />
+            <path
+                d="
+            M 140,380
+            Q 99,387
+                48,380
+            C 32,377
+                29,363
+                28,360
+            Q 24,340
+                28,322
+            T 70,296
+            T 140,319
+            C 153,330
+                154,340
+                154,372
+            C 140,370
+                140,375
+                140,380
+            Z
+        "
+                stroke="black"
+                stroke-width="10"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                fill="#FCE9C2"
+            />
+            <circle
+                cx="58"
+                cy="363"
+                r="6"
+                fill="black"
+            />
+            <circle
+                cx="88"
+                cy="365"
+                r="6.2"
+                fill="black"
+            />
+            <path
+                d="
+            M 50,335
+            Q 75,325
+                92,337
+        "
+                stroke="black"
+                stroke-width="9"
+                stroke-linecap="round"
+                fill="none"
+            />
+        </svg>
+    )
+}

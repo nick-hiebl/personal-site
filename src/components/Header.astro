@@ -1,15 +1,20 @@
 ---
-import { SITE_TITLE } from '../consts'
-import HeaderLink from './HeaderLink.astro'
+import { SITE_TITLE } from "../consts";
+import HeaderLink from "./HeaderLink.astro";
+import { SheepIcon } from "./icon/Icon";
 ---
 
 <header>
 	<nav>
-		<h2><a href="/">{SITE_TITLE}</a></h2>
+		<h2>
+			<a class="row" href="/">
+				<SheepIcon width="24" />
+				{SITE_TITLE}
+			</a>
+		</h2>
 		<div class="internal-links">
 			<HeaderLink href="/blog">Blog</HeaderLink>
 			<HeaderLink href="/games">Games</HeaderLink>
-			<HeaderLink href="/about">About</HeaderLink>
 		</div>
 		<div></div>
 	</nav>
@@ -26,6 +31,12 @@ import HeaderLink from './HeaderLink.astro'
 		margin: 0;
 		font-size: 1.5em;
 		padding-right: 0.5em;
+	}
+
+	h2 a.row {
+		display: flex;
+		align-items: center;
+		gap: 8px;
 	}
 
 	h2 a,
