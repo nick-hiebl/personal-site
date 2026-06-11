@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 
 import { useSocket } from '../../../../components/games/common/socket'
+import { Menu, MenuTrigger } from '../../../../components/games/common/Menu'
 
 // import { StatusMenu } from './components/StatusMenu'
 import { NUMBER_MATCH_PASSWORD } from './constants'
 import { GameContext } from './context'
-// import { Menu } from './menu'
 import type { GameStateOutput } from './types'
 import { Pending } from './views/Pending'
 import { ActiveGame } from './views/ActiveGame'
@@ -27,8 +27,6 @@ const myToken = () => {
 }
 
 export const NumberMatchGame = ({ code, onLobbyNotFound }: GameProps) => {
-    // const [isMenuOpen, setMenuOpen] = useState(false)
-
     const token = myToken()
 
     const socket = useSocket(token, code)
@@ -85,11 +83,13 @@ export const NumberMatchGame = ({ code, onLobbyNotFound }: GameProps) => {
     return (
         <GameContext.Provider value={{ output: state, socket }}>
             <section>
-                {/* <Menu isOpen={isMenuOpen} onClose={() => setMenuOpen(false)} code={code} /> */}
                 <div id="top-bar">
-                    Number match game ({code})
-                    {/* <StatusMenu /> */}
-                    {/* <button id="menu-trigger" onClick={() => setMenuOpen(current => !current)}>☰</button> */}
+                    <div id="core-bar">
+                        Number match game ({code})
+                    </div>
+                    <MenuTrigger>
+                        <h1>Menu!</h1>
+                    </MenuTrigger>
                 </div>
                 {state.state.state === 'pending' ? (
                     <Pending code={code} />
@@ -97,15 +97,6 @@ export const NumberMatchGame = ({ code, onLobbyNotFound }: GameProps) => {
                     <ActiveGame state={state.state} />
                 ) : state.state.state === 'complete' ? (
                     <CompleteGame state={state.state} />
-                // )
-                // ) : state.state.state === 'giving-clues' ? (
-                //     <GivingClues />
-                // ) : state.state.state === 'assessing-clues' ? (
-                //     <AssessingClues />
-                // ) : state.state.state === 'guessing' ? (
-                //     <Guessing />
-                // ) : state.state.state === 'post-game' ? (
-                //     <PostGame />
                 ) : (
                     <div>
                         <h1>{code}</h1>

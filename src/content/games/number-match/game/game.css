@@ -11,3 +11,21 @@ ul {
     flex-wrap: wrap;
     gap: 8px;
 }
+
+#top-bar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+}
+
+#core-bar {
+    display: flex;
+    flex-grow: 1;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--background-surface-emphasis);
+    height: 38px;
+}
