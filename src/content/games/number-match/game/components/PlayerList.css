@@ -1,0 +1,24 @@
+#player-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+    padding: 4px;
+    margin-block-end: 8px;
+}
+
+.player-item {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 8px;
+    align-items: center;
+    padding: 4px 8px;
+    background-color: var(--player-background);
+}
+
+.player-tag-list {
+    flex-shrink: 0;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}

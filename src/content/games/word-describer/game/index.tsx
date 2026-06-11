@@ -8,12 +8,13 @@ import { GameContext } from './context'
 import { Menu } from './menu'
 import type { GameSettings, Output } from './types'
 
-import './WordDescriber.css'
 import { Pending } from './views/Pending'
 import { GivingClues } from './views/GivingClues'
 import { AssessingClues } from './views/AssessingClues'
 import { Guessing } from './views/Guessing'
 import { PostGame } from './views/PostGame'
+
+import './WordDescriber.css'
 
 type GameProps = {
     code: string

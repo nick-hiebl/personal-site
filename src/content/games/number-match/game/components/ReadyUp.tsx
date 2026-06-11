@@ -5,7 +5,7 @@ import { Toggle } from './Toggle'
 export const ReadyUp = () => {
     const { output, socket } = useGameContext()
 
-    const isReady = 'readyPlayerIds' in output.state && output.state.readyPlayerIds.includes(output.yourId)
+    const isReady = 'readyPlayers' in output.state && output.state.readyPlayers.includes(output.yourId)
 
     const onReady = (ready: boolean) => socket.emit('ready', { isReady: ready })
 
