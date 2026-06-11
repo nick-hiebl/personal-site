@@ -7,6 +7,7 @@
 :root {
 	--background: light-dark(#ffffff, #000000);
 	--background-surface: light-dark(#ffffff, #222222);
+	--background-surface-emphasis: light-dark(#ccc, #444);
 	--color-text: light-dark(#222222, #ebebeb);
 	--color-text-heading: light-dark(#000000, #fff);
 	--color-text-subtle: light-dark(#444444, #bbbbbb);

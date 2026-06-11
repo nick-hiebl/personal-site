@@ -19,6 +19,21 @@ td.grid-cell {
     text-align: center;
 }
 
-td.grid-cell:hover {
+button.grid-cell-button {
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    border: none;
+}
+
+button.grid-cell-button:hover {
     background-color: var(--accent);
+}
+
+button.grid-cell-button[aria-selected=true] {
+    border: 2px solid red;
+}
+
+button.grid-cell-button[data-revealed=true] {
+    background-color: var(--background-surface-emphasis);
 }

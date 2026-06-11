@@ -24,6 +24,7 @@ export type GridValue = {
     value: number
     revealed: boolean
     tags: Tag[]
+    empty?: boolean
 }
 
 export type Grid = {
@@ -44,10 +45,22 @@ export type PendingGameState = {
     readyPlayers: string[]
 }
 
+export type CurrentAction =
+    | {
+        type: 'tag'
+        users: string[]
+    }
+    | {
+        type: 'guess'
+        user: string
+    }
+
 export type GameState = {
     state: 'active'
     valueDetails: ValueDetails[]
     grids: Grid[]
+    action: CurrentAction
+    errors: number
 }
 
 export type OutputGridValue = {
@@ -74,4 +87,21 @@ export type ActiveOutput = {
     state: 'active'
     valueDetails: ValueDetails[]
     grids: ((Grid & { type: 'full' }) | OutputGrid)[]
+    action: CurrentAction
+    errors: number
+}
+
+export type Coordinate = {
+    gridId: number
+    row: number
+    column: number
+}
+
+export type TagAction = {
+    coordinate: Coordinate
+}
+
+export type GuessAction = {
+    myCoord: Coordinate
+    otherCoord: Coordinate
 }
