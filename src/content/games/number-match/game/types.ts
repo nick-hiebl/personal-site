@@ -9,7 +9,7 @@ export type Player = {
 
 export type LobbyDetails = {
     numUsers: number
-    stage: 'pending' | 'active'
+    stage: 'pending' | 'active' | 'complete'
 }
 
 export type ConnectOptions = {
@@ -63,6 +63,13 @@ export type GameState = {
     errors: number
 }
 
+export type CompleteState = {
+    state: 'complete'
+    valueDetails: ValueDetails[]
+    grids: Grid[]
+    errors: number
+}
+
 export type OutputGridValue = {
     value: number | undefined
     revealed: boolean
@@ -74,20 +81,29 @@ export type OutputGrid = Omit<Grid, 'values'> & {
     values: OutputGridValue[][]
 }
 
+export type OutputGridOption = (Grid & { type: 'full' }) | OutputGrid
+
 export type GameStateOutput = {
     players: Pick<Player, 'id' | 'name'>[]
     yourId: string
     password: string
     lobby: string
     hostPlayerId: string
-    state: PendingGameState | ActiveOutput
+    state: PendingGameState | ActiveOutput | CompleteOutput
 }
 
 export type ActiveOutput = {
     state: 'active'
     valueDetails: ValueDetails[]
-    grids: ((Grid & { type: 'full' }) | OutputGrid)[]
+    grids: OutputGridOption[]
     action: CurrentAction
+    errors: number
+}
+
+export type CompleteOutput = {
+    state: 'complete'
+    valueDetails: ValueDetails[]
+    grids: OutputGridOption[]
     errors: number
 }
 
@@ -104,4 +120,8 @@ export type TagAction = {
 export type GuessAction = {
     myCoord: Coordinate
     otherCoord: Coordinate
+}
+
+export type RevealAllAction = {
+    value: number
 }

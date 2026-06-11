@@ -8,10 +8,12 @@
 	--background: light-dark(#ffffff, #000000);
 	--background-surface: light-dark(#ffffff, #222222);
 	--background-surface-emphasis: light-dark(#ccc, #444);
+	--background-inverse: light-dark(#000, #fff);
 	--color-text: light-dark(#222222, #ebebeb);
 	--color-text-heading: light-dark(#000000, #fff);
 	--color-text-subtle: light-dark(#444444, #bbbbbb);
 	--color-text-error: red;
+	--color-text-inverse: light-dark(white, black);
 	--color-border: light-dark(black, white);
 	--accent: light-dark(#176ed2, #2982ff);
 	--gray: 96, 115, 159;

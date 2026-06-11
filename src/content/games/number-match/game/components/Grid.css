@@ -15,8 +15,9 @@ tr.grid-row {
 td.grid-cell {
     width: 32px;
     height: 32px;
-    overflow: hidden;
     text-align: center;
+    position: relative;
+    padding: 0;
 }
 
 button.grid-cell-button {
@@ -24,6 +25,7 @@ button.grid-cell-button {
     height: 100%;
     cursor: pointer;
     border: none;
+    padding: 0;
 }
 
 button.grid-cell-button:hover {
@@ -36,4 +38,16 @@ button.grid-cell-button[aria-selected=true] {
 
 button.grid-cell-button[data-revealed=true] {
     background-color: var(--background-surface-emphasis);
+}
+
+.cell-tags {
+    position: absolute;
+    z-index: 100;
+    top: -4px;
+    left: 4px;
+    font-size: 0.5em;
+    background-color: var(--background-inverse);
+    color: var(--color-text-inverse);
+    width: 24px;
+    border-radius: 3px;
 }

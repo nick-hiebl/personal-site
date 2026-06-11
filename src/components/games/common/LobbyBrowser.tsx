@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 
 import { useSocket } from './socket'
 
+import './LobbyBrowser.css'
+
 type Lobby<T> = {
     id: string
     details: T
@@ -53,9 +55,9 @@ export const LobbyBrowser = function <LobbyDetails, T extends { activity: string
     }, [socket])
 
     return (
-        <ul>
+        <ul className="lobby-browser">
             {lobbies.map(lobby => (
-                <li key={lobby.id}>
+                <li key={lobby.id} className="lobby-row">
                     {children(lobby.id, lobby.details)}
                 </li>
             ))}

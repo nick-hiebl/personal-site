@@ -7,13 +7,9 @@ import { NUMBER_MATCH_PASSWORD } from './constants'
 import { GameContext } from './context'
 // import { Menu } from './menu'
 import type { GameStateOutput } from './types'
-
 import { Pending } from './views/Pending'
 import { ActiveGame } from './views/ActiveGame'
-// import { GivingClues } from './views/GivingClues'
-// import { AssessingClues } from './views/AssessingClues'
-// import { Guessing } from './views/Guessing'
-// import { PostGame } from './views/PostGame'
+import { CompleteGame } from './views/CompleteGame'
 
 import './game.css'
 
@@ -96,9 +92,11 @@ export const NumberMatchGame = ({ code, onLobbyNotFound }: GameProps) => {
                     {/* <button id="menu-trigger" onClick={() => setMenuOpen(current => !current)}>☰</button> */}
                 </div>
                 {state.state.state === 'pending' ? (
-                    <Pending />
+                    <Pending code={code} />
                 ) : state.state.state === 'active' ? (
                     <ActiveGame state={state.state} />
+                ) : state.state.state === 'complete' ? (
+                    <CompleteGame state={state.state} />
                 // )
                 // ) : state.state.state === 'giving-clues' ? (
                 //     <GivingClues />

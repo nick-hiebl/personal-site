@@ -1,0 +1,9 @@
+ul.lobby-browser {
+    display: flex;
+    flex-direction: column;
+}
+
+li.lobby-row {
+    background-color: var(--background-surface);
+    padding: 8px;
+}

@@ -1,10 +1,10 @@
 import { useGameContext } from '../context'
-import type { Coordinate, Grid as GridType, OutputGrid } from '../types'
+import type { Coordinate, OutputGridOption } from '../types'
 
 import './Grid.css'
 
 type Props = {
-    grid: OutputGrid | (GridType & { type: 'full' })
+    grid: OutputGridOption
     hideName?: boolean
     selectedCoordinate?: Coordinate
     onSelectCoordinate?: (coordinate: Coordinate | undefined) => void
@@ -55,15 +55,19 @@ export const Grid = ({ grid, hideName, onSelectCoordinate, selectedCoordinate }:
                                                 } else if (state.action.type === 'guess' && state.action.user === yourId) {
                                                     if (isSelected) {
                                                         onSelectCoordinate?.(undefined)
-                                                    } else {
+                                                    } else if (!cell.revealed) {
                                                         onSelectCoordinate?.(coordinate)
                                                     }
                                                 }
                                             }}
                                         >
                                             {cell.value ?? '?'}
-                                            {cell.tags.map(v => v.value.toString()).join(', ')}
                                         </button>
+                                        {cell.tags.length > 0 && (
+                                            <div className="cell-tags">
+                                                {cell.tags.map(v => v.value.toString()).join(', ')}
+                                            </div>
+                                        )}
                                     </td>
                                 )
                             })}

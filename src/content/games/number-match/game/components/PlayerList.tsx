@@ -12,8 +12,6 @@ export const PlayerList = ({ extraContent }: PlayerListProps) => {
     return (
         <div id="player-list">
             {output.players.map((player) => {
-                // const { id, name } = output.players.find(p => p.id === playerId) ?? { id: playerId, name: 'Unknown player' }
-
                 return (
                     <div key={player.id} className="player-item">
                         <span>{player.name}</span>

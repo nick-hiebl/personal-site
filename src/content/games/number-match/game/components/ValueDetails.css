@@ -9,4 +9,5 @@
 
 .value-title[data-complete=true] {
     text-decoration: line-through;
+    color: var(--color-text-subtle);
 }

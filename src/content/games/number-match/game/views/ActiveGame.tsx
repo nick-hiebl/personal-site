@@ -30,10 +30,8 @@ export const ActiveGame = ({ state }: Props) => {
     return (
         <div className="stack gap-8px">
             <PlayerList />
+            <h1>Active</h1>
             <ValueDetails state={state} />
-            <pre>
-                {JSON.stringify(state.action, null, 2)}
-            </pre>
             <div className="stack gap-16px">
                 <div>
                     Errors: {state.errors}, Actions

@@ -1,12 +1,12 @@
 import { useMemo } from 'react'
 
 import { useGameContext } from '../context'
-import type { ActiveOutput, Grid, OutputGrid } from '../types'
+import type { ActiveOutput, CompleteOutput, Grid, OutputGrid } from '../types'
 
 import './ValueDetails.css'
 
 type Props = {
-    state: ActiveOutput
+    state: ActiveOutput | CompleteOutput
 }
 
 const countValueAmongGrids = (value: number, grids: (Grid | OutputGrid)[], expRevealed: boolean) => {
@@ -36,7 +36,8 @@ export const ValueDetails = ({ state }: Props) => {
         })
     }, [grids, valueDetails])
 
-    const isYourTurn = state.action.type === 'guess' &&
+    const isYourTurn = state.state === 'active' &&
+        state.action.type === 'guess' &&
         state.action.user === yourId
 
     return (
