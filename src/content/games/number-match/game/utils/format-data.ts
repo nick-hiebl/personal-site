@@ -13,6 +13,8 @@ const formatState = (state: PendingGameState | ActiveOutput | CompleteOutput): P
                 state: 'active',
                 valueDetails,
                 grids,
+                totalReds: state.totalReds,
+                totalYellows: state.totalYellows,
                 action: state.action,
                 errors: state.errors,
             }
@@ -21,6 +23,8 @@ const formatState = (state: PendingGameState | ActiveOutput | CompleteOutput): P
                 state: 'complete',
                 valueDetails,
                 grids,
+                totalReds: state.totalReds,
+                totalYellows: state.totalYellows,
                 errors: state.errors,
             }
         }

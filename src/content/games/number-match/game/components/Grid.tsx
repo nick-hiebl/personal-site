@@ -1,5 +1,7 @@
+import { Fragment } from 'react'
+
 import { useGameContext } from '../context'
-import type { Coordinate, OutputGridOption } from '../types'
+import type { Coordinate, GridValue, OutputGridOption, OutputGridValue, Tag } from '../types'
 
 import './Grid.css'
 
@@ -8,12 +10,11 @@ type Props = {
     hideName?: boolean
     selectedCoordinate?: Coordinate
     onSelectCoordinate?: (coordinate: Coordinate | undefined) => void
+    isCellInteractive?: (cellValue: OutputGridValue | GridValue) => boolean
 }
 
-export const Grid = ({ grid, hideName, onSelectCoordinate, selectedCoordinate }: Props) => {
-    const { output: { players, state, yourId }, socket } = useGameContext()
-
-    const isYourGrid = grid.ownerId === yourId
+export const Grid = ({ grid, hideName, onSelectCoordinate, isCellInteractive, selectedCoordinate }: Props) => {
+    const { output: { players } } = useGameContext()
 
     return (
         <div className="grid-container">
@@ -42,6 +43,7 @@ export const Grid = ({ grid, hideName, onSelectCoordinate, selectedCoordinate }:
                                         <button
                                             className="grid-cell-button"
                                             aria-selected={isSelected}
+                                            disabled={isCellInteractive ? !isCellInteractive(cell) : true}
                                             data-revealed={cell.revealed}
                                             onClick={() => {
                                                 const coordinate: Coordinate = {
@@ -59,11 +61,7 @@ export const Grid = ({ grid, hideName, onSelectCoordinate, selectedCoordinate }:
                                         >
                                             {cell.value ?? '?'}
                                         </button>
-                                        {cell.tags.length > 0 && (
-                                            <div className="cell-tags">
-                                                {cell.tags.map(v => v.value.toString()).join(', ')}
-                                            </div>
-                                        )}
+                                        <Tags tags={cell.tags} />
                                     </td>
                                 )
                             })}
@@ -71,6 +69,24 @@ export const Grid = ({ grid, hideName, onSelectCoordinate, selectedCoordinate }:
                     ))}
                 </tbody>
             </table>
+        </div>
+    )
+}
+
+const Tags = ({ tags }: { tags: Tag[] }) => {
+    if (tags.length === 0) {
+        return null
+    }
+
+    return (
+        <div className="cell-tags">
+            {tags.map((v, index) => (
+                <Fragment key={index}>
+                    {v.type === 'value' && v.value.toString()}
+                    {v.type === 'yellow' && <span className="tag-bubble yellow" />}
+                    {index < tags.length - 1 && ', '}
+                </Fragment>
+            ))}
         </div>
     )
 }

@@ -37,8 +37,18 @@
     width: 16px;
     height: 16px;
     border-radius: 8px;
+    box-sizing: border-box;
+    border-width: 1px;
+    border-style: solid;
+    border-color: transparent;
 }
 
 .detail-bubble.red {
+    border-color: light-dark(var(--N999), transparent);
     background-color: light-dark(var(--R500), var(--R500));
+}
+
+.detail-bubble.yellow {
+    border-color: light-dark(var(--N999), transparent);
+    background-color: light-dark(var(--Y300), var(--Y400));
 }

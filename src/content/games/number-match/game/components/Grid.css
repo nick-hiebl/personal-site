@@ -25,14 +25,17 @@ td.grid-cell {
 button.grid-cell-button {
     width: 100%;
     height: 100%;
-    cursor: pointer;
     border: none;
     padding: 0;
     border-radius: 2px;
     background-color: light-dark(var(--Y300), var(--Y600));
 }
 
-button.grid-cell-button:hover {
+button.grid-cell-button:not(:disabled) {
+    cursor: pointer;
+}
+
+button.grid-cell-button:hover:not(:disabled) {
     background-color: light-dark(var(--B200), var(--B600));
 }
 
@@ -46,6 +49,11 @@ button.grid-cell-button[data-revealed=true] {
 }
 
 .cell-tags {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: center;
+    height: 14px;
     position: absolute;
     z-index: 0.5;
     top: -4px;
@@ -55,4 +63,20 @@ button.grid-cell-button[data-revealed=true] {
     color: var(--color-text-inverse);
     width: 24px;
     border-radius: 3px;
+}
+
+.tag-bubble {
+    height: 8px;
+    width: 8px;
+    display: inline-block;
+    border-radius: 4px;
+    box-sizing: border-box;
+    border-width: 1px;
+    border-style: solid;
+    border-color: transparent;
+}
+
+.tag-bubble.yellow {
+    border-color: light-dark(transparent, var(--N999));
+    background-color: light-dark(var(--Y200), var(--Y300));
 }

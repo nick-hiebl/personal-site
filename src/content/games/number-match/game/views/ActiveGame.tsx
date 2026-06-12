@@ -82,6 +82,7 @@ export const ActiveGame = ({ state }: Props) => {
                                     grid={grid}
                                     onSelectCoordinate={coord => setMyCoord(coord)}
                                     selectedCoordinate={myCoord}
+                                    isCellInteractive={cell => (actionType === 'guess' && !cell.revealed) || actionType === 'tag'}
                                     hideName
                                 />
                             </li>
@@ -104,6 +105,7 @@ export const ActiveGame = ({ state }: Props) => {
                                     grid={grid}
                                     onSelectCoordinate={coord => setOtherCoord(coord)}
                                     selectedCoordinate={otherCoord}
+                                    isCellInteractive={cell => (actionType === 'guess' && !cell.revealed)}
                                 />
                             </li>
                         ))}

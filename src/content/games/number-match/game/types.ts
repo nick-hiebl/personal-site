@@ -19,6 +19,7 @@ export type ConnectOptions = {
 
 export type Tag =
     | { type: 'value', value: number }
+    | { type: 'yellow' }
 
 export type GridValue = {
     value: number
@@ -66,6 +67,8 @@ export type CurrentAction =
 export type GameState = {
     state: 'active'
     valueDetails: ValueDetails[]
+    totalYellows: number
+    totalReds: number
     grids: Grid[]
     action: CurrentAction
     errors: number
@@ -74,6 +77,8 @@ export type GameState = {
 export type CompleteState = {
     state: 'complete'
     valueDetails: ValueDetails[]
+    totalReds: number
+    totalYellows: number
     grids: Grid[]
     errors: number
 }
@@ -107,6 +112,8 @@ export type ActiveOutput = {
     grids: OutputGridOption[]
     action: CurrentAction
     errors: number
+    totalReds: number
+    totalYellows: number
 }
 
 export type CompleteOutput = {
@@ -114,6 +121,8 @@ export type CompleteOutput = {
     valueDetails: ValueDetails[]
     grids: OutputGridOption[]
     errors: number
+    totalReds: number
+    totalYellows: number
 }
 
 export type Coordinate = {
@@ -131,13 +140,30 @@ export type GuessAction = {
     otherCoord: Coordinate
 }
 
-export type RevealAllAction = {
-    value: number
-}
+export type RevealAllAction =
+    | {
+        value: number
+        isRed?: false
+        isYellow?: false
+    }
+    | {
+        value?: undefined
+        isRed?: false
+        isYellow: true
+    }
+    | {
+        value?: undefined
+        isRed: true
+        isYellow?: false
+    }
 
 export type GameSettings = {
     numGrids: number
     autoAssignGrids: boolean
     gridHeight: number
     valueDetails: ValueDetails[]
+    totalReds: number
+    extraReds: number
+    totalYellows: number
+    extraYellows: number
 }
