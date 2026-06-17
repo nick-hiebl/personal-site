@@ -12,17 +12,16 @@ export const PlayerList = ({ extraContent }: PlayerListProps) => {
 
     return (
         <div id="player-list">
-            {output.state.players.map((playerId) => {
-                const { id, name } = output.players.find(p => p.id === playerId) ?? { id: playerId, name: 'Unknown player' }
-
+            {output.players.filter(p => output.state.state === 'pending' || p.status !== 'waiting').map(player => {
                 return (
-                    <div key={id} className="player-item">
-                        <span>{name}</span>
+                    <div key={player.id} className="player-item">
+                        <span>{player.name}</span>
                         <div className="player-tag-list">
-                            {id === guesserId && '🔍'}
-                            {extraContent ? extraContent(id) : (
-                                <ReadyNode playerId={id} />
+                            {player.id === guesserId && '🔍'}
+                            {extraContent ? extraContent(player.id) : (
+                                <ReadyNode playerId={player.id} />
                             )}
+                            {player.status === 'disconnected' && '📵'}
                         </div>
                     </div>
                 )

@@ -7,6 +7,7 @@ type EverythingProps = {
   output: Output
   settings: GameSettings | undefined
   socket: Socket
+  isReadOnly: boolean
 }
 
 export const GameContext = createContext<EverythingProps | null>(null)

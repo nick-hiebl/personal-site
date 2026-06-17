@@ -6,6 +6,7 @@ export type Player = {
     name: string
     password: string
     lastGuessedInRound: number
+    status: 'disconnected' | 'waiting' | 'active'
 }
 
 export type ConnectOptions = {
@@ -16,6 +17,7 @@ export type ConnectOptions = {
 export type BasicPlayer = {
     id: string
     name: string
+    status: 'disconnected' | 'waiting' | 'active'
 }
 
 export type GameStateKey = 'pending' | 'giving-clues' | 'assessing-clues' | 'guessing' | 'post-game'
@@ -23,7 +25,6 @@ export type GameStateKey = 'pending' | 'giving-clues' | 'assessing-clues' | 'gue
 export type PendingGameState = {
     state: 'pending'
     readyPlayerIds: Set<string>
-    players: Set<string>
 }
 
 export type WordTag = 'illegal' | 'duplicate'
@@ -40,7 +41,6 @@ export type ClueingState = {
     guesserId: string
     clues: Clue[]
     readyPlayerIds: Set<string>
-    players: Set<string>
     startedAt: number
 }
 
@@ -50,7 +50,6 @@ export type AssessingState = {
     guesserId: string
     clues: Clue[]
     readyPlayerIds: Set<string>
-    players: Set<string>
 }
 
 export type GuessingState = {
@@ -58,7 +57,6 @@ export type GuessingState = {
     secretWord: string
     guesserId: string
     clues: Clue[]
-    players: Set<string>
 }
 
 export type PostGameState = {
@@ -68,14 +66,12 @@ export type PostGameState = {
     guesserId: string
     clues: Clue[]
     readyPlayerIds: Set<string>
-    players: Set<string>
 }
 
 export type GameState = PendingGameState | ClueingState | AssessingState | GuessingState | PostGameState
 
 export type PendingOutput = {
     state: 'pending'
-    players: string[]
     readyPlayerIds: string[]
 }
 
@@ -87,7 +83,6 @@ export type GivingCluesOutputGiver = {
     state: 'giving-clues'
     guesserId: string
     readyPlayerIds: string[]
-    players: string[]
     secretWord: string
     clues: MyClueOrOthers[]
     cluesPerPlayer: number
@@ -98,7 +93,6 @@ export type GivingCluesOutputReceiver = {
     state: 'giving-clues'
     guesserId: string
     readyPlayerIds: string[]
-    players: string[]
     clues: Pick<Clue, 'sender'>[]
     cluesPerPlayer: number
     remainingDuration: number
@@ -108,7 +102,6 @@ type AssessingCluesOutputCommon = {
     state: 'assessing-clues'
     guesserId: string
     readyPlayerIds: string[]
-    players: string[]
 }
 
 export type AssessingCluesOutputGiver = AssessingCluesOutputCommon & {
@@ -125,7 +118,6 @@ export type AssessingCluesOutput = AssessingCluesOutputGiver | AssessingCluesOut
 export type GuessingOutput = {
     state: 'guessing'
     guesserId: string
-    players: string[]
 } & ({ clues: Clue[]; secretWord: string } | { clues: Pick<Clue, 'word'>[] })
 
 export type PostGameOutput = {
@@ -135,7 +127,6 @@ export type PostGameOutput = {
     guess: string
     clues: Clue[]
     readyPlayerIds: string[]
-    players: string[]
 }
 
 export type StateOutput =

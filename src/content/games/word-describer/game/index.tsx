@@ -83,8 +83,11 @@ export const WordDescriberGame = ({ code, onLobbyNotFound }: GameProps) => {
         )
     }
 
+    const self = state.players.find(p => p.id === state.yourId)
+    const isReadOnly = self?.status !== 'active'
+
     return (
-        <GameContext.Provider value={{ output: state, settings, socket }}>
+        <GameContext.Provider value={{ isReadOnly, output: state, settings, socket }}>
             <section>
                 <Menu isOpen={isMenuOpen} onClose={() => setMenuOpen(false)} code={code} />
                 <div id="top-bar">

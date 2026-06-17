@@ -9,7 +9,7 @@ import type { Clue, GivingCluesOutput, GivingCluesOutputGiver, GivingCluesOutput
 import { idOfGuesser } from '../utils'
 
 export const GivingClues = () => {
-    const { output, socket } = useGameContext()
+    const { isReadOnly, output, socket } = useGameContext()
 
     const numClues = output.state.state === 'giving-clues' ? output.state.cluesPerPlayer : 0
 
@@ -52,8 +52,10 @@ export const GivingClues = () => {
         ]
     }
 
-    if (output.state.guesserId === output.yourId) {
+    if (output.state.guesserId === output.yourId || isReadOnly) {
         const state = output.state as GivingCluesOutputReceiver
+
+        const relevantPlayers = output.players.filter(p => p.status !== 'waiting')
 
         return (
             <div id="others-giving-clues">
@@ -61,7 +63,7 @@ export const GivingClues = () => {
                 <div className="center">
                     <div>Clues given:</div>
                     <div className="big-text">
-                        {state.clues.length} / {state.cluesPerPlayer * (state.players.length - 1)}
+                        {state.clues.length} / {state.cluesPerPlayer * (relevantPlayers.length - 1)}
                     </div>
                 </div>
             </div>
@@ -72,9 +74,10 @@ export const GivingClues = () => {
 
     const myClues = state.clues.filter((clue) => clue.sender === output.yourId) as Clue[]
 
-    const everyoneReady = state.players.every(
-        (playerId) => playerId === state.guesserId ||
-            state.clues.filter((clue) => clue.sender === playerId).length >= state.cluesPerPlayer
+    const everyoneReady = output.players.every(
+        player => player.id === state.guesserId ||
+            player.status === 'waiting' ||
+            state.clues.filter((clue) => clue.sender === player.id).length >= state.cluesPerPlayer
     )
 
     return (

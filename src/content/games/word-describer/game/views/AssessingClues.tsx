@@ -8,7 +8,7 @@ import { Hint } from '../components/Hint'
 import { ReadyUp } from '../components/ReadyUp'
 
 export const AssessingClues = () => {
-    const { output, socket } = useGameContext()
+    const { isReadOnly, output, socket } = useGameContext()
 
     const [selected, setSelected] = useState<'fine' | 'illegal' | 'duplicate'>('fine')
 
@@ -22,7 +22,7 @@ export const AssessingClues = () => {
         return null
     }
 
-    if ('word' in clues[0]) {
+    if (!isReadOnly && 'word' in clues[0]) {
         const state = output.state as AssessingCluesOutputGiver
 
         return (
