@@ -72,7 +72,7 @@ export const Grid = ({ grid, hideName, onSelectCoordinate, isCellInteractive, se
                                             className="grid-cell-button"
                                             aria-selected={isSelected}
                                             disabled={isCellInteractive ? !isCellInteractive(cell) : true}
-                                            data-revealed={cell.revealed}
+                                            data-revealed={cell.revealed ? isYellow ? 'yellow' : isRed ? 'red' : true : undefined}
                                             onClick={() => {
                                                 const coordinate: Coordinate = {
                                                     gridId: grid.id,

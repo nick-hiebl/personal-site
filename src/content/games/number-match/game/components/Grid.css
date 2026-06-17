@@ -76,6 +76,14 @@ button.grid-cell-button[data-revealed=true] {
     background-color: light-dark(var(--G300), var(--G600));
     cursor: default;
 }
+button.grid-cell-button[data-revealed=yellow] {
+    background-color: light-dark(var(--Y300), var(--Y600));
+    cursor: default;
+}
+button.grid-cell-button[data-revealed=red] {
+    background-color: light-dark(var(--R300), var(--R600));
+    cursor: default;
+}
 
 .cell-tags {
     display: flex;
