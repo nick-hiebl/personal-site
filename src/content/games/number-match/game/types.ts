@@ -103,6 +103,7 @@ export type GameStateOutput = {
     password: string
     lobby: string
     hostPlayerId: string
+    eventLog: GameEvent[]
     state: PendingGameState | ActiveOutput | CompleteOutput
 }
 
@@ -168,3 +169,8 @@ export type GameSettings = {
     totalYellows: number
     extraYellows: number
 }
+
+export type GameEvent =
+    | { type: 'tag', user: string, cell: Coordinate, value: Tag }
+    | { type: 'guess', user: string, value: Tag, targetCell: Coordinate }
+    | { type: 'reveal-all', user: string, value: Tag | { type: 'red' } }

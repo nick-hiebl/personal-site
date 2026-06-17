@@ -1,0 +1,4 @@
+ul.event-log {
+    display: flex;
+    flex-direction: column;
+}

@@ -6,6 +6,8 @@ import { useGameContext } from '../context'
 import type { Coordinate, ActiveOutput } from '../types'
 import { ValueDetails } from '../components/ValueDetails'
 
+import { EventLog } from './EventLog'
+
 type Props = {
     state: ActiveOutput
 }
@@ -112,6 +114,7 @@ export const ActiveGame = ({ state }: Props) => {
                     </ul>
                 </div>
             </div>
+            <EventLog />
         </div>
     )
 }

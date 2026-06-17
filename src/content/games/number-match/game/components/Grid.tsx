@@ -3,6 +3,8 @@ import { Fragment } from 'react'
 import { useGameContext } from '../context'
 import type { Coordinate, GridValue, OutputGridOption, OutputGridValue, Tag } from '../types'
 
+import { getColName, getRowName } from './Coord'
+
 import './Grid.css'
 
 type Props = {
@@ -11,14 +13,6 @@ type Props = {
     selectedCoordinate?: Coordinate
     onSelectCoordinate?: (coordinate: Coordinate | undefined) => void
     isCellInteractive?: (cellValue: OutputGridValue | GridValue) => boolean
-}
-
-const getColName = (columnIndex: number) => {
-    return 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[columnIndex]
-}
-
-const getRowName = (rowIndex: number, numRows: number) => {
-    return numRows - rowIndex
 }
 
 export const Grid = ({ grid, hideName, onSelectCoordinate, isCellInteractive, selectedCoordinate }: Props) => {
