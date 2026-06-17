@@ -3,14 +3,14 @@ import { useEffect, useState } from 'react'
 import { useSocket } from '../../../../components/games/common/socket'
 import { MenuTrigger } from '../../../../components/games/common/Menu'
 
-// import { StatusMenu } from './components/StatusMenu'
 import { NUMBER_MATCH_PASSWORD } from './constants'
 import { GameContext, useGameContext } from './context'
 import type { GameSettings, GameStateOutput } from './types'
 import { formatData } from './utils/format-data'
-import { Pending } from './views/Pending'
 import { ActiveGame } from './views/ActiveGame'
 import { CompleteGame } from './views/CompleteGame'
+import { Pending } from './views/Pending'
+import { StatusBar } from './views/StatusBar'
 
 import './game.css'
 
@@ -85,9 +85,7 @@ export const NumberMatchGame = ({ code, onLobbyNotFound }: GameProps) => {
         <GameContext.Provider value={{ output: state, settings, socket }}>
             <section>
                 <div id="top-bar">
-                    <div id="core-bar">
-                        Number match game ({code})
-                    </div>
+                    <StatusBar />
                     {state.hostPlayerId === state.yourId && (
                         <MenuTrigger>
                             {({ onClose }) => (

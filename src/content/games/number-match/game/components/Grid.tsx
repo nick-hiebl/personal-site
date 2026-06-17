@@ -32,11 +32,9 @@ export const Grid = ({ grid, hideName, onSelectCoordinate, isCellInteractive, se
 
     return (
         <div className="grid-container">
-            {!hideName && (
-                <div className="grid-title">
-                    G{grid.id} - {ownerName}
-                </div>
-            )}
+            <div className="grid-title">
+                G{grid.id}{hideName ? null : ` - ${ownerName}`}
+            </div>
             <table className="grid" width={tableWidth} style={{ width: `${tableWidth}px` }}>
                 <thead className="grid-header">
                     <tr className="grid-row">
