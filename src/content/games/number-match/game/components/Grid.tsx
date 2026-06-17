@@ -13,20 +13,43 @@ type Props = {
     isCellInteractive?: (cellValue: OutputGridValue | GridValue) => boolean
 }
 
+const getColName = (columnIndex: number) => {
+    return 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[columnIndex]
+}
+
+const getRowName = (rowIndex: number, numRows: number) => {
+    return numRows - rowIndex
+}
+
 export const Grid = ({ grid, hideName, onSelectCoordinate, isCellInteractive, selectedCoordinate }: Props) => {
     const { output: { players, state } } = useGameContext()
 
     const valueDetails = state.state === 'pending' ? [] : state.valueDetails
 
+    const ownerName = !grid.ownerId ? 'Unassigned' : players.find(p => p.id === grid.ownerId)?.name ?? 'Unknown owner'
+
+    const tableWidth = (32 + 2) * grid.values[0].length + 8
+
     return (
         <div className="grid-container">
             {!hideName && (
-                <div>Owner: {!grid.ownerId ? 'Unassigned' : players.find(p => p.id === grid.ownerId)?.name ?? 'Unknown owner'}</div>
+                <div className="grid-title">
+                    G{grid.id} - {ownerName}
+                </div>
             )}
-            <table className="grid">
-                <tbody>
+            <table className="grid" width={tableWidth} style={{ width: `${tableWidth}px` }}>
+                <thead className="grid-header">
+                    <tr className="grid-row">
+                        <th />
+                        {grid.values[0].map((_, columnIndex) => (
+                            <th key={columnIndex} className="grid-heading">{getColName(columnIndex)}</th>
+                        ))}
+                    </tr>
+                </thead>
+                <tbody className="grid-body">
                     {grid.values.map((row, rowIndex) => (
                         <tr key={rowIndex} className="grid-row">
+                            <td className="grid-row-label">{getRowName(rowIndex, grid.values.length)}</td>
                             {row.map((cell, columnIndex) => {
                                 if (cell.empty) {
                                     return <td key={columnIndex} />

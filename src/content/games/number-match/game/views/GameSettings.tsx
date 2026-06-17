@@ -11,6 +11,56 @@ export type Props = {
     settings: GameSettings
 }
 
+type Preset = {
+    name: string
+    settings: GameSettings
+}
+
+const PRESETS: Preset[] = [
+    {
+        name: 'Intro',
+        settings: {
+            numGrids: 4,
+            autoAssignGrids: true,
+            gridHeight: 1,
+            maxValue: 8,
+            duplicates: 4,
+            totalReds: 0,
+            extraReds: 0,
+            totalYellows: 0,
+            extraYellows: 0,
+        },
+    },
+    {
+        name: '"Mission 8"',
+        settings: {
+            numGrids: 4,
+            autoAssignGrids: true,
+            gridHeight: 1,
+            maxValue: 12,
+            duplicates: 4,
+            totalReds: 1,
+            extraReds: 2,
+            totalYellows: 2,
+            extraYellows: 3,
+        },
+    },
+    {
+        name: 'Test square',
+        settings: {
+            numGrids: 4,
+            autoAssignGrids: false,
+            gridHeight: 3,
+            maxValue: 10,
+            duplicates: 8,
+            totalReds: 1,
+            extraReds: 1,
+            totalYellows: 2,
+            extraYellows: 2,
+        },
+    }
+]
+
 export const GameSettingsPanel = ({ settings }: Props) => {
     const { socket } = useGameContext()
 
@@ -55,9 +105,37 @@ export const GameSettingsPanel = ({ settings }: Props) => {
         socket.emit('updateGameSettings', newGameSettings)
     }
 
+    const onSetPreset = (preset: GameSettings) => {
+        setNumGrids(preset.numGrids)
+        setAutoAssign(preset.autoAssignGrids)
+        setGridHeight(preset.gridHeight)
+        setMaxValue(preset.maxValue)
+        setDuplicates(preset.duplicates)
+        setTotalReds(preset.totalReds)
+        setBonusReds(preset.extraReds - preset.totalReds)
+        setTotalYellows(preset.totalYellows)
+        setBonusYellows(preset.extraYellows - preset.totalYellows)
+    }
+
     return (
         <div className="column gap-8px flex-start full-width">
             <h3>Game settings</h3>
+            <h4>Presets</h4>
+            <ul>
+                {PRESETS.map(({ name, settings: preset }) => (
+                    <li key={name}>
+                        <button
+                            onClick={() => {
+                                onSetPreset(preset)
+                                socket.emit('updateGameSettings', preset)
+                            }}
+                        >
+                            {name}
+                        </button>
+                    </li>
+                ))}
+            </ul>
+            <h4>Settings</h4>
             <div className="column flex-start">
                 <div className="row">
                     <span>Number of grids</span>
