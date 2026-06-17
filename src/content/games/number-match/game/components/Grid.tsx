@@ -85,7 +85,9 @@ export const Grid = ({ grid, hideName, onSelectCoordinate, isCellInteractive, se
                                             {isYellow && <span className="tag-bubble yellow non-inverse" />}
                                             {isRed && <span className="tag-bubble red non-inverse" />}
                                         </button>
-                                        <Tags tags={cell.tags} />
+                                        {!cell.revealed && (
+                                            <Tags tags={cell.tags} />
+                                        )}
                                     </td>
                                 )
                             })}

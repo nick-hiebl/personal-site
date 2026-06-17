@@ -119,7 +119,10 @@ export const GameSettingsPanel = ({ settings }: Props) => {
 
     return (
         <div className="column gap-8px flex-start full-width">
-            <h3>Game settings</h3>
+            <h3>
+                Game settings
+                {isDirty && <span className="error">*</span>}
+            </h3>
             <h4>Presets</h4>
             <ul>
                 {PRESETS.map(({ name, settings: preset }) => (
@@ -136,6 +139,9 @@ export const GameSettingsPanel = ({ settings }: Props) => {
                 ))}
             </ul>
             <h4>Settings</h4>
+            <div>
+                <button disabled={!isDirty} onClick={onSave}>Save</button>
+            </div>
             <div className="column flex-start">
                 <div className="row">
                     <span>Number of grids</span>

@@ -17,6 +17,10 @@
     background-color: light-dark(var(--Y200), var(--Y800));
 }
 
+.value-detail > div {
+    line-height: 0.95;
+}
+
 .value-title-row {
     display: flex;
     flex-direction: row;
@@ -26,6 +30,8 @@
 
 .value-title {
     color: light-dark(var(--N900), var(--N050));
+    margin: 0px;
+    line-height: 0.95;
 }
 
 .value-title[data-complete=true] {
