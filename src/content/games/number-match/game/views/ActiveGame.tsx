@@ -85,7 +85,6 @@ export const ActiveGame = ({ state }: Props) => {
                                     onSelectCoordinate={coord => setMyCoord(coord)}
                                     selectedCoordinate={myCoord}
                                     isCellInteractive={cell => (actionType === 'guess' && !cell.revealed) || actionType === 'tag'}
-                                    hideName
                                 />
                             </li>
                         ))}

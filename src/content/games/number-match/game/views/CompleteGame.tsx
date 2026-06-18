@@ -27,7 +27,7 @@ export const CompleteGame = ({ state }: Props) => {
                     <ul>
                         {state.grids.filter(grid => grid.ownerId === yourId).map(grid => (
                             <li key={grid.id}>
-                                <Grid grid={grid} hideName />
+                                <Grid grid={grid} />
                             </li>
                         ))}
                     </ul>

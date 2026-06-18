@@ -5,12 +5,35 @@
     border-radius: 4px;
 }
 
+.grid-title-row {
+    justify-content: space-between;
+}
+
 .grid-title {
     padding-inline: 4px;
 }
 
+@keyframes wiggle-animation {
+    0%,
+    40%,
+    100% {
+        transform: rotate(0deg);
+    }
+
+    5%, 25% {
+        transform: rotate(10deg);
+    }
+
+    15%, 35% {
+        transform: rotate(-10deg);
+    }
+}
+
+.my-turn-now {
+    animation: wiggle-animation 2s linear infinite;
+}
+
 table.grid {
-    /* table-layout: fixed; */
     display: inline-block;
     border-collapse: collapse;
 }
@@ -48,6 +71,7 @@ td.grid-row-label {
 }
 
 button.grid-cell-button {
+    color: var(--color-text);
     width: 100%;
     height: 100%;
     border: none;
