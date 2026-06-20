@@ -65,6 +65,12 @@ export const EventLog = () => {
                                 {playerName} revealed all instances of {tagToText(item.value)}
                             </li>
                         )
+                    } else if (item.type === 'use-item') {
+                        return (
+                            <li key={index}>
+                                {playerName} tagged <Coord coordinate={item.action.coordinate} />
+                            </li>
+                        )
                     }
 
                     return (

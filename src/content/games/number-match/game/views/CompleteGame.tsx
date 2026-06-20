@@ -1,8 +1,9 @@
 import { Grid } from '../components/Grid'
+import { Items } from '../components/Items'
 import { PlayerList } from '../components/PlayerList'
+import { ValueDetails } from '../components/ValueDetails'
 import { useGameContext } from '../context'
 import type { CompleteOutput } from '../types'
-import { ValueDetails } from '../components/ValueDetails'
 
 import { EventLog } from './EventLog'
 
@@ -55,6 +56,7 @@ export const CompleteGame = ({ state }: Props) => {
                     </div>
                 </>
             )}
+            <Items />
             <EventLog />
         </div>
     )

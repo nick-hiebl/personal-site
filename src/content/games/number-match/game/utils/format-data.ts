@@ -1,4 +1,14 @@
-import type { ActiveOutput, CompleteOutput, GameStateOutput, PendingGameState } from '../types'
+import type { ActiveOutput, CompleteOutput, GameStateOutput, ItemTrigger, PendingGameState } from '../types'
+
+const getTriggerSortKey = (trigger: ItemTrigger) => {
+    if (trigger.type === 'immediate') {
+        return 0
+    } else if (trigger.type === 'yellow-all' || trigger.type === 'yellow-some') {
+        return 10_000
+    } else {
+        return trigger.value
+    }
+}
 
 const formatState = (state: PendingGameState | ActiveOutput | CompleteOutput): PendingGameState | ActiveOutput | CompleteOutput => {
     if (state.state === 'active' || state.state === 'complete') {
@@ -7,6 +17,10 @@ const formatState = (state: PendingGameState | ActiveOutput | CompleteOutput): P
 
         const grids = state.grids.slice()
         grids.sort((grid, grid2) => grid.ownerId.localeCompare(grid2.ownerId))
+
+        const itemsToSort = state.items.slice().map(item => ({ item, sortKey: getTriggerSortKey(item.unlock) }))
+        itemsToSort.sort((item, item2) => item.sortKey - item2.sortKey)
+        const items = itemsToSort.map(({ item }) => item)
 
         if (state.state === 'active') {
             return {
@@ -17,6 +31,7 @@ const formatState = (state: PendingGameState | ActiveOutput | CompleteOutput): P
                 totalYellows: state.totalYellows,
                 action: state.action,
                 errors: state.errors,
+                items,
             }
         } else {
             return {
@@ -26,6 +41,7 @@ const formatState = (state: PendingGameState | ActiveOutput | CompleteOutput): P
                 totalReds: state.totalReds,
                 totalYellows: state.totalYellows,
                 errors: state.errors,
+                items,
             }
         }
     } else {

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 
 import { Grid } from '../components/Grid'
+import { Items } from '../components/Items'
 import { PlayerList } from '../components/PlayerList'
+import { ValueDetails } from '../components/ValueDetails'
 import { useGameContext } from '../context'
 import type { Coordinate, ActiveOutput } from '../types'
-import { ValueDetails } from '../components/ValueDetails'
 
 import { EventLog } from './EventLog'
 
@@ -113,6 +114,7 @@ export const ActiveGame = ({ state }: Props) => {
                     </ul>
                 </div>
             </div>
+            <Items />
             <EventLog />
         </div>
     )

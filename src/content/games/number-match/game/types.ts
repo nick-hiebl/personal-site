@@ -72,6 +72,7 @@ export type GameState = {
     grids: Grid[]
     action: CurrentAction
     errors: number
+    items: Item[]
 }
 
 export type CompleteState = {
@@ -81,6 +82,7 @@ export type CompleteState = {
     totalYellows: number
     grids: Grid[]
     errors: number
+    items: Item[]
 }
 
 export type OutputGridValue = {
@@ -115,6 +117,7 @@ export type ActiveOutput = {
     errors: number
     totalReds: number
     totalYellows: number
+    items: Item[]
 }
 
 export type CompleteOutput = {
@@ -124,6 +127,7 @@ export type CompleteOutput = {
     errors: number
     totalReds: number
     totalYellows: number
+    items: Item[]
 }
 
 export type Coordinate = {
@@ -174,3 +178,26 @@ export type GameEvent =
     | { type: 'tag', user: string, cell: Coordinate, value: Tag }
     | { type: 'guess', user: string, value: Tag, targetCell: Coordinate }
     | { type: 'reveal-all', user: string, value: Tag | { type: 'red' } }
+    | { type: 'use-item', user: string, action: UseItemAction }
+
+export type ItemKey =
+    | 'tag-one'
+
+export type ItemTrigger =
+    | { type: 'immediate' }
+    | { type: 'yellow-all' }
+    | { type: 'yellow-some' }
+    | { type: 'value-all', value: number }
+    | { type: 'value-some', value: number }
+
+export type Item = {
+    type: ItemKey
+    unlock: ItemTrigger
+    used: boolean
+}
+
+export type UseItemAction =
+    | {
+        type: 'tag-one'
+        coordinate: Coordinate
+    }
