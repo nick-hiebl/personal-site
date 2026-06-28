@@ -121,7 +121,7 @@ const MenuContents = ({ onClose }: MenuContentsProps) => {
     return (
         <div>
             <h1>Menu!</h1>
-            {output.hostPlayerId === output.yourId && (
+            {output.hostPlayerId === output.yourId && output.state.state !== 'pending' && (
                 <div>
                     <div>Fully reset the game? Warning, this will happen immediately.</div>
                     <button

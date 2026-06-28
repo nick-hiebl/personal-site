@@ -67,7 +67,7 @@ td.grid-row-label {
     width: 8px;
     font-size: 0.5em;
     text-align: center;
-    transform: rotate(-90deg) translateY(6px);
+    transform: rotate(90deg) translateY(9px);
 }
 
 button.grid-cell-button {

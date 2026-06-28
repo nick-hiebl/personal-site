@@ -1,5 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 
+import { ThemeSwitcher } from '../../../ThemeSwitcher'
+
 import './Menu.css'
 
 type MenuProps = {
@@ -49,6 +51,10 @@ export const MenuTrigger = ({ children }: Props) => {
                 {typeof children === 'function' ? (
                     children({ onClose: () => setMenuOpen(false) })
                 ) : children}
+                <div className="column-center">
+                    <h4>Choose theme</h4>
+                    <ThemeSwitcher />
+                </div>
             </Menu>
         </>
     )

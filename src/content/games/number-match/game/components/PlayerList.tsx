@@ -16,12 +16,6 @@ export const PlayerList = ({ extraContent }: PlayerListProps) => {
                     <div key={player.id} className="player-item">
                         <span>
                             {player.name}
-                            {output.yourId === player.id && (
-                                <>
-                                    {' '}
-                                    (You)
-                                </>
-                            )}
                         </span>
                         <div className="player-tag-list">
                             {extraContent ? extraContent(player.id) : (
@@ -39,13 +33,14 @@ const ReadyNode = ({ playerId }: { playerId: string }) => {
     const { output: state } = useGameContext()
 
     switch (state.state.state) {
-        default:
-            return null
         case 'pending':
             if (state.state.readyPlayers.includes(playerId)) {
                 return <span>✅</span>
             } else {
                 return <span>❌</span>
             }
+        default:
+            return null
+
     }
 }

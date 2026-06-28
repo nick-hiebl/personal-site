@@ -22,7 +22,7 @@ export const Coord = ({ coordinate }: CoordinateProps) => {
 
     return (
         <span className="coordinate">
-            G{coordinate.gridId}: {getColName(coordinate.column)}{getRowName(coordinate.row, grid.values.length)}
+            #{coordinate.gridId}: {getColName(coordinate.column)}{getRowName(coordinate.row)}
         </span>
     )
 }
@@ -31,6 +31,6 @@ export const getColName = (columnIndex: number) => {
     return 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[columnIndex]
 }
 
-export const getRowName = (rowIndex: number, numRows: number) => {
-    return numRows - rowIndex
+export const getRowName = (rowIndex: number) => {
+    return rowIndex + 1
 }

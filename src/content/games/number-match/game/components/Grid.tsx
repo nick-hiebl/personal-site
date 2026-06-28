@@ -32,7 +32,7 @@ export const Grid = ({ grid, onSelectCoordinate, isCellInteractive, selectedCoor
         <div className="grid-container">
             <div className="row grid-title-row">
                 <div className="grid-title">
-                    G{grid.id} - {ownerName}
+                    #{grid.id} - {ownerName}
                 </div>
                 {isOwnerTurn && (
                     <div className={isMyGrid ? 'my-turn-now' : undefined}>{isMyGrid ? '❗' : '🤔'}</div>
@@ -50,7 +50,7 @@ export const Grid = ({ grid, onSelectCoordinate, isCellInteractive, selectedCoor
                 <tbody className="grid-body">
                     {grid.values.map((row, rowIndex) => (
                         <tr key={rowIndex} className="grid-row">
-                            <td className="grid-row-label">{getRowName(rowIndex, grid.values.length)}</td>
+                            <td className="grid-row-label">{getRowName(rowIndex)}</td>
                             {row.map((cell, columnIndex) => {
                                 if (cell.empty) {
                                     return <td key={columnIndex} />

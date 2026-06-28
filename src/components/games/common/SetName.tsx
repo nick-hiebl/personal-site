@@ -22,7 +22,7 @@ export const SetName = ({ currentName, onSetName }: SetNameProps) => {
                 onSetName(newName)
             }
         }}>
-            <div className="gap-line">
+            <div className="row-center gap-4px">
                 <label htmlFor="name">Name:</label>
                 <input id="name" name="name" type="text" onChange={(e) => setName(e.currentTarget.value)} value={name} />
                 <button id="update-name-button" type="submit" data-is-matching={currentName === name}>Update</button>

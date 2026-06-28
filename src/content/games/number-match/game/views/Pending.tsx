@@ -25,17 +25,17 @@ export const Pending = ({ code }: Props) => {
     }
 
     return (
-        <div className="column gap-8px">
+        <div className="column-center gap-8px">
             <PlayerList />
-            <div className="column gap-16px full-width">
-                <div className="column">
+            <div className="column-center gap-16px full-width">
+                <div className="column-center">
                     <div>The room code is:</div>
                     <div className="big-text">{code}</div>
                     <button onClick={copyLinkToClipboard}>
                         Copy link
                     </button>
                 </div>
-                <div className="column gap-8px">
+                <div className="column-center gap-8px">
                     <SetName
                         currentName={currentName}
                         onSetName={(newName: string) => {

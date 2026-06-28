@@ -218,16 +218,18 @@ img {
 	white-space: nowrap;
 }
 
-.column {
+.column, .column-center {
 	display: flex;
 	flex-direction: column;
+}
+
+.column-center, .row-center {
 	align-items: center;
 }
 
-.row {
+.row, .row-center {
 	display: flex;
 	flex-direction: row;
-	align-items: center;
 }
 
 .flex-start {
