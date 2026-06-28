@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { BACKEND_BASE } from '../../../components/common/constants'
 import { LobbyBrowser } from '../../../components/games/common/LobbyBrowser'
 
-import { WordDescriberGame } from './game'
+import { GeckoUpGame } from './game'
 import { GAME_ACTIVITY, type GameActivity } from './game/constants'
 
 type RoomProps = {
@@ -33,7 +33,7 @@ export const Game = () => {
     if (lobbyInvalid) {
         return (
             <section>
-                <h1>Word describer!</h1>
+                <h1>Gecko up!</h1>
                 <p>Lobby is invalid or no longer exists: {lobby}</p>
                 <a href=".">Back to home</a>
             </section>
@@ -43,7 +43,7 @@ export const Game = () => {
     if (!lobby) {
         return (
             <section>
-                <h1>Word describer!</h1>
+                <h1>Gecko up!</h1>
                 <button
                     onClick={async () => {
                         try {
@@ -77,5 +77,5 @@ export const Game = () => {
         )
     }
 
-    return <WordDescriberGame onLobbyNotFound={onLobbyNotFound} code={lobby} />
+    return <GeckoUpGame onLobbyNotFound={onLobbyNotFound} code={lobby} />
 }

@@ -32,9 +32,12 @@ ul {
     height: 38px;
 }
 
-.column {
+.column, .column-center {
     display: flex;
     flex-direction: column;
+}
+
+.column-center {
     align-items: center;
 }
 

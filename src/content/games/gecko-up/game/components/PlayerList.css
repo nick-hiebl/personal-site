@@ -1,0 +1,15 @@
+ul.player-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+    margin-block: 4px;
+}
+
+li.player-list-item {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 4px 8px;
+    background-color: light-dark(var(--p200), var(--p800));
+}

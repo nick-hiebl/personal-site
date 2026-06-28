@@ -1,0 +1,9 @@
+body {
+    background-color: light-dark(var(--B100), var(--B900));
+}
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
