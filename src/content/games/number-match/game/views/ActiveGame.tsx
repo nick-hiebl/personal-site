@@ -46,8 +46,8 @@ export const ActiveGame = ({ state }: Props) => {
             <h1>Active</h1>
             <ValueDetails state={state} />
             <div className="stack gap-16px full-width">
-                <div>
-                    Errors: {state.errors}, Actions
+                <div className="row-center gap-4px">
+                    <span>Errors: {state.errors}, Actions</span>
                     {actionType === 'tag' && isMyAction && (
                         <button
                             disabled={!myCoord}

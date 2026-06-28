@@ -21,7 +21,7 @@ export const CompleteGame = ({ state }: Props) => {
             <ValueDetails state={state} />
             <div className="stack gap-16px full-width">
                 <div>
-                    Errors: {state.errors}, Actions
+                    Errors: {state.errors}
                 </div>
                 <div className="stack stack-center gap-8px">
                     <h3>Your grids</h3>

@@ -32,7 +32,7 @@ export const Grid = ({ grid, onSelectCoordinate, isCellInteractive, selectedCoor
         <div className="grid-container">
             <div className="row grid-title-row">
                 <div className="grid-title">
-                    #{grid.id} - {ownerName}
+                    #{grid.id + 1} - {ownerName}
                 </div>
                 {isOwnerTurn && (
                     <div className={isMyGrid ? 'my-turn-now' : undefined}>{isMyGrid ? '❗' : '🤔'}</div>

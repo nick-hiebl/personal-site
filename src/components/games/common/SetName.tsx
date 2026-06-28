@@ -24,8 +24,22 @@ export const SetName = ({ currentName, onSetName }: SetNameProps) => {
         }}>
             <div className="row-center gap-4px">
                 <label htmlFor="name">Name:</label>
-                <input id="name" name="name" type="text" onChange={(e) => setName(e.currentTarget.value)} value={name} />
-                <button id="update-name-button" type="submit" data-is-matching={currentName === name}>Update</button>
+                <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    onChange={(e) => setName(e.currentTarget.value)}
+                    value={name}
+                    autoComplete="off"
+                />
+                <button
+                    id="update-name-button"
+                    type="submit"
+                    data-is-matching={currentName === name}
+                    disabled={currentName === name}
+                >
+                    Update
+                </button>
             </div>
         </form>
     )
