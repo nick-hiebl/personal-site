@@ -156,7 +156,7 @@ export const ValueDetails = ({ state }: Props) => {
                                     }}
                                     disabled={!isYourTurn}
                                 >
-                                    Reveal remaining
+                                    Reveal rest
                                 </button>
                             )}
                         </div>
