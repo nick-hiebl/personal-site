@@ -1,5 +1,5 @@
 import { Grid } from '../components/Grid'
-import { Items } from '../components/Items'
+import { Items } from '../components/Items/index'
 import { PlayerList } from '../components/PlayerList'
 import { ValueDetails } from '../components/ValueDetails'
 import { useGameContext } from '../context'
