@@ -1,5 +1,5 @@
 import { Coord, GridName } from '../components/Coord'
-import { ITEM_NAMES } from '../components/Items/utils'
+import { ITEM_NAMES } from '../components/items/utils'
 import { useGameContext } from '../context'
 import type { Coordinate, OutputGridOption, Tag, ValueDetails } from '../types'
 
