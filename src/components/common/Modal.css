@@ -4,6 +4,10 @@ dialog.Modal {
     position: relative;
 }
 
+dialog::backdrop {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
 .Modal-title-row {
     display: flex;
     flex-direction: row;

@@ -15,8 +15,8 @@ type Props = {
 
 export const ActiveGame = ({ state }: Props) => {
     const { output: { yourId }, socket } = useGameContext()
-    const [myCoord, setMyCoord] = useState<Coordinate | undefined>()
-    const [otherCoord, setOtherCoord] = useState<Coordinate | undefined>()
+    const [myCoord, setMyCoord] = useState<Coordinate | undefined>(undefined)
+    const [otherCoord, setOtherCoord] = useState<Coordinate | undefined>(undefined)
 
     const actionType = state.action.type
     const isMyAction = state.action.type === 'guess'
@@ -30,11 +30,21 @@ export const ActiveGame = ({ state }: Props) => {
         setOtherCoord(undefined)
     }, [actionType, isMyAction])
 
+    const amIRevealing = actionType === 'reveal' && state.action.revealingUser === yourId
+
+    useEffect(() => {
+        if (amIRevealing) {
+            setMyCoord(undefined)
+        }
+    }, [amIRevealing])
+
     return (
         <div className="stack gap-8px">
             <PlayerList
                 extraContent={playerId => {
-                    if (actionType === 'claim' && state.action.users.includes(playerId)) {
+                    if (actionType === 'reveal' && state.action.revealingUser === playerId) {
+                        return <span>🔎</span>
+                    } else if (actionType === 'claim' && state.action.users.includes(playerId)) {
                         return <span>🤔</span>
                     } else if (actionType === 'guess' && state.action.user === playerId) {
                         return <span>🔎</span>
@@ -77,15 +87,39 @@ export const ActiveGame = ({ state }: Props) => {
                     )}
                 </div>
                 <div className="stack stack-center gap-8px">
+                    {amIRevealing && state.action.type === 'reveal' && (
+                        <div>
+                            <div>Select a {state.action.revealValue} to reveal from your highlighted grid.</div>
+                            <button
+                                disabled={!myCoord}
+                                onClick={() => {
+                                    socket.emit('reveal-action-value', { coordinate: myCoord })
+                                }}
+                            >
+                                Reveal
+                            </button>
+                        </div>
+                    )}
                     <h3>Your grids</h3>
                     <ul>
                         {state.grids.filter(grid => grid.ownerId === yourId).map(grid => (
                             <li key={grid.id}>
                                 <Grid
                                     grid={grid}
+                                    isGridSelected={amIRevealing && state.action.type === 'reveal' && state.action.revealGrid === grid.id}
                                     onSelectCoordinate={coord => setMyCoord(coord)}
                                     selectedCoordinate={myCoord}
-                                    isCellInteractive={cell => (actionType === 'guess' && !cell.revealed) || actionType === 'tag'}
+                                    isCellInteractive={cell => {
+                                        if (cell.revealed) {
+                                            return false
+                                        }
+
+                                        if (state.action.type === 'reveal' && amIRevealing) {
+                                            return cell.value === state.action.revealValue
+                                        } else {
+                                            return actionType === 'guess' || actionType === 'tag'
+                                        }
+                                    }}
                                 />
                             </li>
                         ))}

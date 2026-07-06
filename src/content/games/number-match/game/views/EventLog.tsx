@@ -1,4 +1,5 @@
-import { Coord } from '../components/Coord'
+import { Coord, GridName } from '../components/Coord'
+import { ITEM_NAMES } from '../components/Items/utils'
 import { useGameContext } from '../context'
 import type { Coordinate, OutputGridOption, Tag, ValueDetails } from '../types'
 
@@ -66,11 +67,21 @@ export const EventLog = () => {
                             </li>
                         )
                     } else if (item.type === 'use-item') {
-                        return (
-                            <li key={index}>
-                                {playerName} tagged <Coord coordinate={item.action.coordinate} />
-                            </li>
-                        )
+                        if (item.action.type === 'tag-one') {
+                            return (
+                                <li key={index}>
+                                    {playerName} used {ITEM_NAMES[item.action.type]} to tag <Coord coordinate={item.action.coordinate} />
+                                </li>
+                            )
+                        } else if (item.action.type === 'ask-all') {
+                            return (
+                                <li key={index}>
+                                    {playerName} asked if <GridName id={item.action.targetGrid} /> has any {item.action.value}
+                                </li>
+                            )
+                        } else {
+                            return <li key={index}>Unknown item used</li>
+                        }
                     }
 
                     return (

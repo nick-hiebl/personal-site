@@ -22,7 +22,7 @@ export const Modal = ({ actions, children, isOpen, onClose, title }: ModalProps)
     }, [isOpen])
 
     return (
-        <dialog className="Modal" ref={dialogRef} onClose={onClose}>
+        <dialog className="Modal column gap-8px" ref={dialogRef} onClose={onClose}>
             <div className="Modal-title-row">
                 {title && (
                     <h1 className="Modal-title">{title}</h1>
@@ -31,7 +31,7 @@ export const Modal = ({ actions, children, isOpen, onClose, title }: ModalProps)
             </div>
             {children}
             {actions && (
-                <div className="Modal-actions" role="group">
+                <div className="row-center gap-4px" role="group">
                     {actions}
                 </div>
             )}

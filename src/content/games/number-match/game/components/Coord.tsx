@@ -1,6 +1,10 @@
 import { useGameContext } from '../context'
 import type { Coordinate } from '../types'
 
+export const GridName = ({ id }: { id: number }) => {
+    return <span>#{id + 1}</span>
+}
+
 type CoordinateProps = {
     coordinate: Coordinate
 }
@@ -22,7 +26,7 @@ export const Coord = ({ coordinate }: CoordinateProps) => {
 
     return (
         <span className="coordinate">
-            #{coordinate.gridId + 1}: {getColName(coordinate.column)}{getRowName(coordinate.row)}
+            <GridName id={coordinate.gridId} />: {getColName(coordinate.column)}{getRowName(coordinate.row)}
         </span>
     )
 }

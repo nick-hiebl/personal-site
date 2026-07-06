@@ -5,6 +5,10 @@
     border-radius: 4px;
 }
 
+.grid-container[data-selected=true] {
+    outline: 2px solid light-dark(var(--N800), var(--N100));
+}
+
 .grid-title-row {
     justify-content: space-between;
 }

@@ -1,5 +1,5 @@
 import { useGameContext } from '../../context'
-import type { Item } from '../../types'
+import type { Item, ItemKey } from '../../types'
 
 export const useItemUnlocked = (item: Item): boolean => {
     const { output: { state } } = useGameContext()
@@ -29,4 +29,9 @@ export const useItemUnlocked = (item: Item): boolean => {
     }
 
     return false
+}
+
+export const ITEM_NAMES: Record<ItemKey, string> = {
+    'tag-one': 'Tag One',
+    'ask-all': 'Ask All',
 }

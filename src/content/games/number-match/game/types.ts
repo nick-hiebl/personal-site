@@ -63,6 +63,20 @@ export type CurrentAction =
         min: number
         max: number
     }
+    | {
+        type: 'reveal'
+        triggeringUser: string
+        triggeringCoordinate: Coordinate
+        revealingUser: string
+        revealGrid: number
+        revealValue: number
+    }
+
+export type RevealActionPublic = Omit<Extract<CurrentAction, { type: 'reveal' }>, 'triggeringCoordinate'>
+
+export type CurrentActionPublic =
+    | Exclude<CurrentAction, { type: 'reveal' }>
+    | RevealActionPublic
 
 export type GameState = {
     state: 'active'
@@ -113,7 +127,7 @@ export type ActiveOutput = {
     state: 'active'
     valueDetails: ValueDetails[]
     grids: OutputGridOption[]
-    action: CurrentAction
+    action: CurrentActionPublic
     errors: number
     totalReds: number
     totalYellows: number
@@ -178,10 +192,11 @@ export type GameEvent =
     | { type: 'tag', user: string, cell: Coordinate, value: Tag }
     | { type: 'guess', user: string, value: Tag, targetCell: Coordinate }
     | { type: 'reveal-all', user: string, value: Tag | { type: 'red' } }
-    | { type: 'use-item', user: string, action: UseItemAction }
+    | { type: 'use-item', user: string, action: PublicUseItemAction }
 
 export type ItemKey =
     | 'tag-one'
+    | 'ask-all'
 
 export type ItemTrigger =
     | { type: 'immediate' }
@@ -200,4 +215,20 @@ export type UseItemAction =
     | {
         type: 'tag-one'
         coordinate: Coordinate
+    }
+    | {
+        type: 'ask-all'
+        ownWire: Coordinate
+        targetGrid: number
+    }
+
+export type PublicUseItemAction =
+    | {
+        type: 'tag-one'
+        coordinate: Coordinate
+    }
+    | {
+        type: 'ask-all'
+        value: number
+        targetGrid: number
     }

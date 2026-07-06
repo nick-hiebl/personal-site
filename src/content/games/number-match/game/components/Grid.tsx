@@ -12,9 +12,11 @@ type Props = {
     selectedCoordinate?: Coordinate
     onSelectCoordinate?: (coordinate: Coordinate | undefined) => void
     isCellInteractive?: (cellValue: OutputGridValue | GridValue) => boolean
+    specialSymbol?: React.ReactNode
+    isGridSelected?: boolean
 }
 
-export const Grid = ({ grid, onSelectCoordinate, isCellInteractive, selectedCoordinate }: Props) => {
+export const Grid = ({ grid, onSelectCoordinate, isCellInteractive, isGridSelected, selectedCoordinate, specialSymbol }: Props) => {
     const { output: { players, state, yourId } } = useGameContext()
 
     const valueDetails = state.state === 'pending' ? [] : state.valueDetails
@@ -29,14 +31,15 @@ export const Grid = ({ grid, onSelectCoordinate, isCellInteractive, selectedCoor
         (state.action.type === 'tag' ? state.action.users.includes(grid.ownerId) : state.action.type === 'guess' && state.action.user === grid.ownerId)
 
     return (
-        <div className="grid-container">
+        <div className="grid-container" data-selected={isGridSelected}>
             <div className="row grid-title-row">
                 <div className="grid-title">
                     #{grid.id + 1} - {ownerName}
                 </div>
-                {isOwnerTurn && (
-                    <div className={isMyGrid ? 'my-turn-now' : undefined}>{isMyGrid ? '❗' : '🤔'}</div>
-                )}
+                {specialSymbol ??
+                    (isOwnerTurn ? (
+                        <div className={isMyGrid ? 'my-turn-now' : undefined}>{isMyGrid ? '❗' : '🤔'}</div>
+                    ) : null)}
             </div>
             <table className="grid" width={tableWidth} style={{ width: `${tableWidth}px` }}>
                 <thead className="grid-header">

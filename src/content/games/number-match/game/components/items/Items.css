@@ -1,0 +1,11 @@
+.item {
+    border: 2px solid black;
+    border-radius: 8px;
+}
+
+.condition {
+    background-color: black;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
