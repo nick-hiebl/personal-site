@@ -1,0 +1,64 @@
+---
+title: 'Intro to my grid game'
+description: 'An introduction to my grid game puzzle'
+pubDate: '2026-07-09T11:20:00'
+---
+
+import { GridPuzzle } from '../../../components/grid-game/GridPuzzle.tsx'
+import { basicSchemaGenerator } from '../../../components/grid-game/schema/generators.ts'
+
+This is my grid game.
+
+<GridPuzzle
+    isCentered
+    schema={basicSchemaGenerator(1, 1, [1], [1])}
+    client:only
+/>
+
+It's a puzzle format involving getting a grid into a desired state. You interact with it by clicking on the boxes to change their states.
+
+<GridPuzzle
+    isCentered
+    schema={basicSchemaGenerator(1, 2, [1, 1], [2])}
+    client:only
+/>
+
+You want to satisfy all of the rules indicated on the grid, to turn the whole board green. The only rule type we have so far is a number at the edge of a row or column, which indicates the total number of circles that should be present in that row or column.
+
+<GridPuzzle
+    isCentered
+    schema={basicSchemaGenerator(2, 2, [1, 2], [2, 1])}
+    client:only
+/>
+
+They can be of various sizes as you've seen so far, and can get increasingly complex.
+
+<GridPuzzle
+    isCentered
+    schema={basicSchemaGenerator(3, 3, [1, 2, 3], [1, 3, 2])}
+    client:only
+/>
+
+This particular sequence of introductory puzzles I'm reasonably happy with. I've refined them quite well for a previous iteration of this game.
+
+<GridPuzzle
+    isCentered
+    schema={basicSchemaGenerator(3, 3, [2, 3, 1], [2, 3, 1])}
+    client:only
+/>
+
+There are only so many arrangements that can be made at certain sizes which are meaningfully distinct with this limited set of possible rules.
+
+<GridPuzzle
+    isCentered
+    schema={basicSchemaGenerator(3, 3, [3, 2, 3], [3, 2, 3])}
+    client:only
+/>
+
+Let's end on this note.
+
+<GridPuzzle
+    isCentered
+    schema={basicSchemaGenerator(4, 3, [3, 4, 1], [2, 1, 3, 2])}
+    client:only
+/>
