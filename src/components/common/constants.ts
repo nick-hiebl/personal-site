@@ -1,1 +1,3 @@
-export const BACKEND_BASE = 'https://api.nick-h.net'
+export const BACKEND_BASE = location.hostname === 'localhost'
+    ? 'http://localhost'
+    : 'https://api.nick-h.net'
