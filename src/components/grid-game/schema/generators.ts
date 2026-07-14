@@ -1,6 +1,14 @@
 import type { PuzzleSchema } from './types'
 
-export const basicSchemaGenerator = (width: number, height: number, rows: (number | null)[] | null, cols: (number | null)[] | null): PuzzleSchema => {
+type EdgeRuleShorthand =
+    // No rule
+    | null
+    // Count rule
+    | number
+    // Nonogram rule
+    | number[]
+
+export const basicSchemaGenerator = (width: number, height: number, rows: EdgeRuleShorthand[] | null, cols: EdgeRuleShorthand[] | null): PuzzleSchema => {
     if (rows && rows.length !== height) {
         throw Error('Wrong number of row rules')
     }
@@ -12,10 +20,18 @@ export const basicSchemaGenerator = (width: number, height: number, rows: (numbe
         width,
         height,
         verticalEdgeRules: cols
-            ? cols.map(rule => rule ? { type: 'count', count: rule } : null)
+            ? cols.map(rule => rule
+                ? Array.isArray(rule)
+                    ? { type: 'nonogram', groups: rule }
+                    : { type: 'count', count: rule }
+                : null)
             : undefined,
         horizontalEdgeRules: rows
-            ? rows.map(rule => rule ? { type: 'count', count: rule } : null)
+            ? rows.map(rule => rule
+                ? Array.isArray(rule)
+                    ? { type: 'nonogram', groups: rule }
+                    : { type: 'count', count: rule }
+                : null)
             : undefined,
     }
 }

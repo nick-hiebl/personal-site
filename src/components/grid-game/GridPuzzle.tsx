@@ -2,18 +2,40 @@ import { type CSSProperties, useMemo, useState } from 'react'
 
 import type { PuzzleSchema, PuzzleState } from './schema/types'
 
-import './GridPuzzle.css'
 import { EdgeRuleComponent } from './EdgeRule'
 import { isCorrect } from './schema/validate'
+
+import './GridPuzzle.css'
+
+type Size = 'small' | 'medium'
+
+const SIZE_PROPERTIES: Record<Size, CSSProperties> = {
+    medium: {
+        '--info-scale': '64px',
+        '--cell-scale': '96px',
+        fontSize: '2em',
+        '--gap': '8px',
+        '--border': '4px',
+    } as CSSProperties,
+    small: {
+        '--info-scale': '32px',
+        '--cell-scale': '48px',
+        fontSize: '1em',
+        '--gap': '4px',
+        '--border': '2px',
+    } as CSSProperties,
+}
 
 type Props = {
     schema: PuzzleSchema
 
     /* The puzzle should be centered horitzontally within the content area */
     isCentered?: boolean
+
+    size?: Size
 }
 
-export const GridPuzzle = ({ isCentered, schema }: Props) => {
+export const GridPuzzle = ({ isCentered, schema, size = 'medium' }: Props) => {
     const { width, height } = schema
 
     const [state, setState] = useState<PuzzleState>(() => {
@@ -58,6 +80,7 @@ export const GridPuzzle = ({ isCentered, schema }: Props) => {
             style={{
                 '--columns': width,
                 '--rows': height,
+                ...SIZE_PROPERTIES[size],
             } as CSSProperties}
         >
             <div className="grid-puzzle-grid">

@@ -11,6 +11,7 @@ export type EdgeRule =
     | { type: 'count', count: number }
     | { type: 'groups', count: number }
     | { type: 'inverted-groups', count: number }
+    | { type: 'nonogram', groups: number[] }
 
 export type PuzzleState = {
     values: PuzzleStateValue[][]

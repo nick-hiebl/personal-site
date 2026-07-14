@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 
+import { NonogramIcon } from './NonogramIcon'
 import { validateEdgeRule } from './schema/edge-rule'
 import type { EdgeRule, PuzzleState } from './schema/types'
 
@@ -26,8 +27,16 @@ export const EdgeRuleComponent = ({ index, mode, rule, state }: Props) => {
     if (rule.type === 'count') {
         return (
             <div data-valid={isValid} className={className}>
-                <span className="lozenge">
+                <span className="lozenge text-only">
                     {rule.count}
+                </span>
+            </div>
+        )
+    } else if (rule.type === 'nonogram') {
+        return (
+            <div data-valid={isValid} className={className}>
+                <span className={mode === 'horizontal' ? 'lozenge horizontal' : 'lozenge'}>
+                    <NonogramIcon groups={rule.groups} />
                 </span>
             </div>
         )

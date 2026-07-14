@@ -1,9 +1,6 @@
 .grid-puzzle-container {
-    --info-scale: 64px;
-    --cell-scale: 96px;
-
-    border: 24px solid light-dark(var(--N900), var(--N700));
-    padding: 12px;
+    border: 1em solid light-dark(var(--N900), var(--N700));
+    padding: 0.6em;
     background-color: var(--B400);
 }
 
@@ -13,9 +10,9 @@
 
 .grid-puzzle-grid {
     display: grid;
-    grid-template-columns: repeat(var(--columns), var(--cell-scale)) var(--info-scale);
-    grid-template-rows: var(--info-scale) repeat(var(--rows), var(--cell-scale));
-    gap: 8px;
+    grid-template-columns: repeat(var(--columns), 2.4em) 1.6em;
+    grid-template-rows: 1.6em repeat(var(--rows), 2.4em);
+    gap: 0.2em;
 }
 
 .grid-puzzle-cell {
@@ -28,7 +25,6 @@
     align-items: center;
     justify-content: center;
     color: var(--N0);
-    font-size: 2em;
     font-weight: bold;
     --lozenge-background: transparent;
 }
@@ -39,14 +35,24 @@
 
 .lozenge {
     background-color: var(--lozenge-background);
-    border-radius: 8px;
-    padding: 0px 20px;
+    border-radius: 0.25em;
+    padding: 0.2em;
+    line-height: 0;
+}
+
+.lozenge.text-only {
+    padding: 0 0.6em;
     line-height: 1.25;
+}
+
+.lozenge.horizontal {
+    transform: rotate(-90deg);
 }
 
 .grid-puzzle-button {
     background: none;
-    border: 4px solid white;
+    font-size: inherit;
+    border: 0.15em solid white;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -55,4 +61,8 @@
 
 .grid-puzzle-button:hover {
     background-color: rgba(255, 255, 255, 0.3);
+}
+
+.clue-icon {
+    width: 1em;
 }
