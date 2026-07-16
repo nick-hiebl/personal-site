@@ -30,4 +30,34 @@ const games = defineCollection({
 		}),
 })
 
-export const collections = { blog, games }
+const edgeRuleValidator = z.union([
+	z.null(),
+	z.object({
+		type: z.union([z.literal('count'), z.literal('groups'), z.literal('inverted-groups')]),
+		count: z.number(),
+	}),
+	z.object({
+		type: z.literal('nonogram'),
+		groups: z.array(z.number()),
+	}),
+])
+
+const gridGameDailyPuzzles = defineCollection({
+	loader: glob({ base: './src/content/grid-game-daily', pattern: '*/*/*.json' }),
+	schema: () =>
+		z.object({
+			year: z.number(),
+			month: z.number(),
+			day: z.number(),
+			puzzles: z.array(z.object({
+				schema: z.object({
+					width: z.number(),
+					height: z.number(),
+					verticalEdgeRules: z.optional(z.array(edgeRuleValidator)),
+					horizontalEdgeRules: z.optional(z.array(edgeRuleValidator)),
+				}),
+			})),
+		}),
+})
+
+export const collections = { blog, games, gridGameDaily: gridGameDailyPuzzles }

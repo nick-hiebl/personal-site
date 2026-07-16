@@ -1,0 +1,65 @@
+---
+import { type CollectionEntry } from 'astro:content'
+
+import GridGameLayout from '../../layouts/GridGame.astro'
+import { DailyPage } from '../../components/grid-game/daily/DailyPage'
+import { ThemeSwitcher } from '../../components/ThemeSwitcher'
+
+import { getStaticPaths } from './[year]-[month].astro'
+
+type Day = CollectionEntry<'gridGameDaily'>
+
+const date = new Date()
+
+type Month = {
+    month: number
+    year: number
+    days: Day[]
+}
+
+const allYearsAndMonths = (await getStaticPaths()).map<Month>(entry => ({
+    month: parseInt(entry.props.month, 10),
+    year: parseInt(entry.props.year, 10),
+    days: entry.props.days,
+}))
+
+let currentMonth =
+    allYearsAndMonths.find(
+        (month) =>
+            month.year === date.getFullYear() &&
+            month.month === date.getMonth() + 1,
+    ) ??
+    allYearsAndMonths.reduce<Month | null>((best, thisMonth) => {
+        if (!best) {
+            return thisMonth
+        }
+
+        if (thisMonth.year > best.year) {
+            return thisMonth
+        } else if (
+            thisMonth.year === best.year &&
+            thisMonth.month > best.month
+        ) {
+            return thisMonth
+        } else {
+            return best
+        }
+    }, null)
+
+if (!currentMonth) {
+    throw new Error('Could not find appropriate grid-game data')
+}
+
+const { days, month, year } = currentMonth
+---
+
+<GridGameLayout>
+    <DailyPage
+        days={days}
+        year={year.toString()}
+        month={month.toString()}
+        client:only
+    />
+
+    <ThemeSwitcher client:only />
+</GridGameLayout>

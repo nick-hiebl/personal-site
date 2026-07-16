@@ -1,0 +1,58 @@
+---
+import { type CollectionEntry, getCollection } from 'astro:content'
+
+import GridGameLayout from '../../layouts/GridGame.astro'
+import { DailyMonthPage } from '../../components/grid-game/daily/MonthlyPage'
+import { ThemeSwitcher } from '../../components/ThemeSwitcher'
+
+type Day = CollectionEntry<'gridGameDaily'>
+
+export async function getStaticPaths() {
+    const puzzles = await getCollection('gridGameDaily')
+
+    const yearMonthMap = new Map<string, Day[]>()
+
+    puzzles.forEach((entry) => {
+        const { data: { year, month } } = entry
+
+        const key = `${year}-${month}`
+
+        if (yearMonthMap.has(key)) {
+            yearMonthMap.get(key)!.push(entry)
+        } else {
+            yearMonthMap.set(key, [entry])
+        }
+    })
+
+    const entries = Array.from(yearMonthMap.entries())
+
+    const staticPaths = entries.map(([yearMonthString, days]) => {
+        console.error('WORKING WITH', yearMonthString, puzzles)
+        const [year, month] = yearMonthString.split('-')
+
+        const sortedDays = days.slice()
+        
+        sortedDays.sort((day1, day2) => day1.data.day - day2.data.day);
+
+        return {
+            params: { year, month },
+            props: { days, year, month },
+        }
+    })
+
+    return staticPaths
+}
+
+type Props = {
+    days: Day[]
+    year: string
+    month: string
+}
+
+const { days, year, month } = Astro.props
+---
+<GridGameLayout>
+    <DailyMonthPage days={days} year={year} month={month} client:only />
+
+    <ThemeSwitcher client:only />
+</GridGameLayout>

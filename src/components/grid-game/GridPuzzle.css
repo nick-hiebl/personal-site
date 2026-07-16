@@ -2,6 +2,7 @@
     border: 1em solid light-dark(var(--N900), var(--N700));
     padding: 0.6em;
     background-color: var(--B400);
+    touch-action: none;
 }
 
 .grid-puzzle-container[data-correct=true] {
@@ -52,7 +53,7 @@
 .grid-puzzle-button {
     background: none;
     font-size: inherit;
-    border: 0.15em solid white;
+    border: 0.15em solid rgba(255, 255, 255, 0.5);
     display: flex;
     flex-direction: column;
     justify-content: center;
