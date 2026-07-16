@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { PuzzleSchema } from '../schema/types'
 import { GridPuzzle } from '../GridPuzzle'
 
+import '../GridPuzzle.css'
 import './Page.css'
 
 type Day = CollectionEntry<'gridGameDaily'>
@@ -18,8 +19,6 @@ export const DailyPage = ({ days, year, month }: Props) => {
     const date = useMemo(() => new Date(), [])
 
     const isCurrentMonth = date.getFullYear().toString() === year && (date.getMonth() + 1).toString() === month
-
-    console.log('DAYS', days)
 
     if (!isCurrentMonth) {
         return <LoadingDailyPage />

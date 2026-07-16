@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 
 import { GridPuzzle } from '../GridPuzzle'
 
+import '../GridPuzzle.css'
 import './Page.css'
 
 type Day = CollectionEntry<'gridGameDaily'>
