@@ -21,6 +21,12 @@ export const DailyMonthPage = ({ days, year, month }: Props) => {
     const isCurrentMonth = date.getFullYear().toString() === year && (date.getMonth() + 1).toString() === month
 
     const [dayOfMonth, setDayOfMonth] = useState(() => {
+        const hashNum = parseInt(window.location.hash.slice(1))
+
+        if (days.some(day => day.data.day === hashNum)) {
+            return hashNum
+        }
+
         if (isCurrentMonth) {
             return (days.find(({ data: { day } }) => day === date.getDate()) ?? days[0]).data.day
         }
