@@ -27,6 +27,7 @@ const games = defineCollection({
 			gameId: z.string(),
 			pubDate: z.coerce.date(),
 			unlisted: z.optional(z.boolean()),
+			url: z.optional(z.string()),
 		}),
 })
 
