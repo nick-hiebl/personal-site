@@ -34,7 +34,6 @@ export async function getStaticPaths() {
     })
 
     return Array.from(yearMonthSet).map(yearMonthString => {
-        console.error('WORKING WITH', yearMonthString, puzzles)
         const [year, month] = yearMonthString.split('-')
         return {
             params: { year, month },

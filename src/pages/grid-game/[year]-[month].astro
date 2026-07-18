@@ -27,7 +27,6 @@ export async function getStaticPaths() {
     const entries = Array.from(yearMonthMap.entries())
 
     const staticPaths = entries.map(([yearMonthString, days]) => {
-        console.error('WORKING WITH', yearMonthString, puzzles)
         const [year, month] = yearMonthString.split('-')
 
         const sortedDays = days.slice()
