@@ -2,7 +2,7 @@
     "json.schemas": [
         {
             "fileMatch": [
-                "/src/content/grid-game-daily/2026/07/19.json"
+                "/src/content/grid-game-daily/**/*.json"
             ],
             "schema": {
                 "$defs": {
