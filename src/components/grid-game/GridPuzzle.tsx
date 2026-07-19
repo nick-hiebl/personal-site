@@ -53,8 +53,10 @@ export const GridPuzzle = ({ isCentered, schema }: Props) => {
         const availableWidth = Math.min(window.screen.availWidth, PAGE_WIDTH)
 
         if (actualPxWidth > availableWidth) {
-            const scale = availableWidth / actualPxWidth * 32
-            setFontScale(`${scale}px`)
+            const BASE_FONT_SCALE = 32
+            const MIN_FONT_SCALE = 8
+            const scale = availableWidth / actualPxWidth * BASE_FONT_SCALE
+            setFontScale(`${Math.max(scale, MIN_FONT_SCALE)}px`)
         }
     }, [height, width])
 
