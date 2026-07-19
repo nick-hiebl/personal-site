@@ -52,13 +52,15 @@ export const DailyMonthPage = ({ days, year, month }: Props) => {
     }
 
     return (
-        <div>
-            <MonthDayPicker
-                days={days}
-                dayOfMonth={dayOfMonth}
-                onDayChange={setDayOfMonth}
-                isCurrentMonth={isCurrentMonth}
-            />
+        <div className="column gap-16px">
+            <div>
+                <MonthDayPicker
+                    days={days}
+                    dayOfMonth={dayOfMonth}
+                    onDayChange={setDayOfMonth}
+                    isCurrentMonth={isCurrentMonth}
+                />
+            </div>
             <ul>
                 {activeDay.data.puzzles.map((puzzle, index) => (
                     <GridPuzzle key={`${activeDay.id}-${index}`} schema={puzzle.schema} isCentered />

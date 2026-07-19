@@ -1,4 +1,4 @@
-import { type CSSProperties, useMemo, useState } from 'react'
+import { type CSSProperties, useEffect, useMemo, useState } from 'react'
 
 import type { PuzzleSchema, PuzzleState } from './schema/types'
 
@@ -13,14 +13,14 @@ const SIZE_PROPERTIES: Record<Size, CSSProperties> = {
     medium: {
         '--info-scale': '64px',
         '--cell-scale': '96px',
-        fontSize: '2em',
+        fontSize: '32px',
         '--gap': '8px',
         '--border': '4px',
     } as CSSProperties,
     small: {
         '--info-scale': '32px',
         '--cell-scale': '48px',
-        fontSize: '1em',
+        fontSize: '16px',
         '--gap': '4px',
         '--border': '2px',
     } as CSSProperties,
@@ -35,8 +35,28 @@ type Props = {
     size?: Size
 }
 
-export const GridPuzzle = ({ isCentered, schema, size = 'medium' }: Props) => {
+const PAGE_WIDTH = 720
+
+export const GridPuzzle = ({ isCentered, schema }: Props) => {
     const { width, height } = schema
+
+    const [fontScale, setFontScale] = useState<`${number}px` | undefined>(undefined)
+
+    // Effect to shrink font scale to fit puzzle to screen
+    useEffect(() => {
+        const widthAtOne = 236.78
+        const widthAtTwo = 319.98
+        const growth = widthAtTwo - widthAtOne
+
+        const actualPxWidth = (width - 1) * growth + widthAtOne
+
+        const availableWidth = Math.min(window.screen.availWidth, PAGE_WIDTH)
+
+        if (actualPxWidth > availableWidth) {
+            const scale = availableWidth / actualPxWidth * 32
+            setFontScale(`${scale}px`)
+        }
+    }, [height, width])
 
     const [state, setState] = useState<PuzzleState>(() => {
         return {
@@ -80,7 +100,8 @@ export const GridPuzzle = ({ isCentered, schema, size = 'medium' }: Props) => {
             style={{
                 '--columns': width,
                 '--rows': height,
-                ...SIZE_PROPERTIES[size],
+                ...SIZE_PROPERTIES.medium,
+                fontSize: fontScale ?? SIZE_PROPERTIES.medium.fontSize,
             } as CSSProperties}
         >
             <div className="grid-puzzle-grid">

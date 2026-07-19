@@ -108,7 +108,7 @@ const RootPage = ({ day }: RootPageProps) => {
     const date = new Date(`${year}-${month}-${dayOfMonth}`)
 
     return (
-        <div>
+        <div className="column gap-16px">
             <h1>Puzzle for {date.toLocaleDateString()}</h1>
             <ul>
                 {puzzles.map((puzzle, index) => (
