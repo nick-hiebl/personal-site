@@ -62,7 +62,21 @@ export const GridPuzzle = ({ isCentered, schema }: Props) => {
 
     const [state, setState] = useState<PuzzleState>(() => {
         return {
-            values: new Array(height).fill(0).map(() => new Array(width).fill(null)),
+            values: new Array(height)
+                .fill(null)
+                .map((_, rowIndex) =>
+                    new Array(width)
+                        .fill(null)
+                        .map((val, columnIndex) => {
+                            const cellRule = schema.cellRules?.find(rule => rule.row === rowIndex && rule.column === columnIndex)
+
+                            if (cellRule?.rule.type === 'forced') {
+                                return cellRule.rule.state
+                            }
+
+                            return val
+                        }),
+                ),
         }
     })
 
@@ -124,38 +138,53 @@ export const GridPuzzle = ({ isCentered, schema }: Props) => {
                     const horizontalEdgeRule = schema.horizontalEdgeRules?.[rowIndex] ?? null
 
                     return [
-                        ...row.map((cell, cellIndex) => (
-                            <button
-                                className="grid-puzzle-button"
-                                key={`${rowIndex}-${cellIndex}`}
-                                onClick={() => {
-                                    onCellClicked(rowIndex, cellIndex, false)
-                                }}
-                                onContextMenu={(e: React.MouseEvent<HTMLButtonElement>) => {
-                                    e.preventDefault()
+                        ...row.map((cell, cellIndex) => {
+                            const key = `${rowIndex}-${cellIndex}`
 
-                                    onCellClicked(rowIndex, cellIndex, true)
-                                }}
-                            >
-                                {cell === true ? (
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-                                        <circle cx="50" cy="50" r="50" fill="white" />
-                                    </svg>
-                                ) : cell === false ? (
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-                                        <circle
-                                            cx="50"
-                                            cy="50"
-                                            r="47"
-                                            stroke="white"
-                                            fill="transparent"
-                                            strokeWidth="6"
-                                            strokeDasharray="11.3 11.3"
-                                        />
-                                    </svg>
-                                ) : null}
-                            </button>
-                        )),
+                            const contents = cell === true ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                                    <circle cx="50" cy="50" r="50" fill="white" />
+                                </svg>
+                            ) : cell === false ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                                    <circle
+                                        cx="50"
+                                        cy="50"
+                                        r="47"
+                                        stroke="white"
+                                        fill="transparent"
+                                        strokeWidth="6"
+                                        strokeDasharray="11.3 11.3"
+                                    />
+                                </svg>
+                            ) : null
+
+                            const relevantCellRule = schema.cellRules?.find(rule => rule.row === rowIndex && rule.column === cellIndex)
+
+                            if (relevantCellRule?.rule.type === 'forced') {
+                                return (
+                                    <div key={key} className="grid-puzzle-forced-cell">{contents}</div>
+                                )
+                            }
+
+                            return (
+                                <button
+                                    className="grid-puzzle-button"
+                                    key={key}
+                                    onClick={() => {
+                                        onCellClicked(rowIndex, cellIndex, false)
+                                    }}
+                                    onContextMenu={(e: React.MouseEvent<HTMLButtonElement>) => {
+                                        e.preventDefault()
+
+                                        onCellClicked(rowIndex, cellIndex, true)
+                                    }}
+                                >
+                                    {contents}
+                                </button>
+
+                            )
+                        }),
                         <EdgeRuleComponent
                             key={rowIndex}
                             index={rowIndex}

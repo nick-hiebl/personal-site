@@ -43,6 +43,13 @@ const edgeRuleValidator = z.union([
 	}),
 ])
 
+const cellRuleValidator = z.union([
+	z.object({
+		type: z.literal('forced'),
+		state: z.boolean(),
+	}),
+])
+
 const gridGameDailyPuzzles = defineCollection({
 	loader: glob({ base: './src/content/grid-game-daily', pattern: '*/*/*.json' }),
 	schema: () =>
@@ -56,6 +63,11 @@ const gridGameDailyPuzzles = defineCollection({
 					height: z.number(),
 					verticalEdgeRules: z.optional(z.array(edgeRuleValidator)),
 					horizontalEdgeRules: z.optional(z.array(edgeRuleValidator)),
+					cellRules: z.optional(z.array(z.object({
+						row: z.number(),
+						column: z.number(),
+						rule: cellRuleValidator,
+					}))),
 				}),
 			})),
 		}),

@@ -4,6 +4,8 @@ export type PuzzleSchema = {
 
     verticalEdgeRules?: EdgeRule[]
     horizontalEdgeRules?: EdgeRule[]
+
+    cellRules?: { row: number, column: number, rule: CellRule }[]
 }
 
 export type EdgeRule =
@@ -12,6 +14,9 @@ export type EdgeRule =
     | { type: 'groups', count: number }
     | { type: 'inverted-groups', count: number }
     | { type: 'nonogram', groups: number[] }
+
+export type CellRule =
+    | { type: 'forced', state: boolean }
 
 export type PuzzleState = {
     values: PuzzleStateValue[][]

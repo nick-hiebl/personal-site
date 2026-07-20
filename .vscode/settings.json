@@ -53,6 +53,24 @@
                                 "type": "null"
                             }
                         ]
+                    },
+                    "cellRule": {
+                        "type": "object",
+                        "required": ["type"],
+                        "anyOf": [
+                            {
+                                "type": "object",
+                                "required": ["type", "state"],
+                                "properties": {
+                                    "type": {
+                                        "const": "forced",
+                                    },
+                                    "forced": {
+                                        "type": "boolean"
+                                    }
+                                }
+                            }
+                        ]
                     }
                 },
                 "type": "object",
@@ -113,6 +131,24 @@
                                             "type": "array",
                                             "items": {
                                                 "$ref": "#/$defs/edgeRule"
+                                            }
+                                        },
+                                        "cellRules": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "required": ["row", "column", "rule"],
+                                                "properties": {
+                                                    "row": {
+                                                        "type": "number"
+                                                    },
+                                                    "column": {
+                                                        "type": "number"
+                                                    },
+                                                    "rule": {
+                                                        "$ref": "#/$defs/cellRule"
+                                                    }
+                                                }
                                             }
                                         }
                                     }
