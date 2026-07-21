@@ -95,6 +95,8 @@ export const GridPuzzle = ({ isCentered, schema }: Props) => {
                             }
                         } else {
                             if (cell === true) {
+                                return false
+                            } else if (cell === false) {
                                 return null
                             } else {
                                 return true
@@ -151,7 +153,7 @@ export const GridPuzzle = ({ isCentered, schema }: Props) => {
                                         cx="50"
                                         cy="50"
                                         r="47"
-                                        stroke="white"
+                                        stroke="rgba(255, 255, 255, 0.6)"
                                         fill="transparent"
                                         strokeWidth="6"
                                         strokeDasharray="11.3 11.3"

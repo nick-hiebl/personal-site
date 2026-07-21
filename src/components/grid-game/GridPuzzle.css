@@ -59,6 +59,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    cursor: pointer;
 }
 
 .grid-puzzle-button:hover {
