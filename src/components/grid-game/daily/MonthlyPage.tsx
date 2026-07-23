@@ -81,6 +81,12 @@ const MonthDayPicker = ({ days, dayOfMonth, onDayChange, isCurrentMonth }: Month
     const date = new Date()
     const today = date.getDate()
 
+    const nonFutureDays = days.filter(day => {
+        const itsDate = new Date(`${day.data.year}-${day.data.month}-${day.data.day}`)
+
+        return itsDate.getTime() <= date.getTime()
+    })
+
     return (
         <select
             id="day-picker"
@@ -91,7 +97,7 @@ const MonthDayPicker = ({ days, dayOfMonth, onDayChange, isCurrentMonth }: Month
                 onDayChange(parseInt(dayValue, 10))
             }}
         >
-            {days.map(({ id, data: { year, month, day } }) => (
+            {nonFutureDays.map(({ id, data: { year, month, day } }) => (
                 <option key={id} value={day}>
                     {year}/{month}/{day} {isCurrentMonth && day === today && ' - Today'}
                 </option>
