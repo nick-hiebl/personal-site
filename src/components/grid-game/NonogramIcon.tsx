@@ -31,7 +31,7 @@ export const NonogramIcon = ({ groups }: NonogramIconProps) => {
                     fill="white"
                 />
             )))}
-            {groups.map((_, rowIndex) => (rowIndex === 0 && groups.length > 1) ? null : (
+            {groups.map((_, rowIndex) => rowIndex === 0 ? null : (
                 <line
                     key={rowIndex}
                     x1={0}
@@ -43,17 +43,6 @@ export const NonogramIcon = ({ groups }: NonogramIconProps) => {
                     stroke="white"
                 />
             ))}
-            {groups.length === 1 && (
-                <line
-                    x1={0}
-                    x2={maxGroup * GRID_X_SCALE}
-                    y1={groups.length * GRID_Y_SCALE}
-                    y2={groups.length * GRID_Y_SCALE}
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    stroke="white"
-                />
-            )}
         </svg>
     )
 }
