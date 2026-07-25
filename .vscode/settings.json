@@ -33,6 +33,23 @@
                                 "type": "object",
                                 "required": [
                                     "type",
+                                    "count"
+                                ],
+                                "properties": {
+                                    "type": {
+                                        "const": "groups"
+                                    },
+                                    "count": {
+                                        "type": "number",
+                                        "minimum": 1,
+                                        "maximum": 7
+                                    }
+                                }
+                            },
+                            {
+                                "type": "object",
+                                "required": [
+                                    "type",
                                     "groups"
                                 ],
                                 "properties": {

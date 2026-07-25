@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 
+import { GroupsIcon } from './GroupsIcon'
 import { NonogramIcon } from './NonogramIcon'
 import { validateEdgeRule } from './schema/edge-rule'
 import type { EdgeRule, PuzzleState } from './schema/types'
@@ -37,6 +38,14 @@ export const EdgeRuleComponent = ({ index, mode, rule, state }: Props) => {
             <div data-valid={isValid} className={className}>
                 <span className={mode === 'horizontal' ? 'lozenge horizontal' : 'lozenge'}>
                     <NonogramIcon groups={rule.groups} />
+                </span>
+            </div>
+        )
+    } else if (rule.type === 'groups') {
+        return (
+            <div data-valid={isValid} className={className}>
+                <span className={mode === 'horizontal' ? 'lozenge horizontal' : 'lozenge'}>
+                    <GroupsIcon count={rule.count} mode={mode} />
                 </span>
             </div>
         )
