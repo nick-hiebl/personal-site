@@ -68,7 +68,7 @@ export const DailyMonthPage = ({ days, year, month }: Props) => {
                     onDayChange={setDayOfMonth}
                     isCurrentMonth={isCurrentMonth}
                 />
-                <ExplanationTrigger isOpen={isExplanationOpen} setOpen={open => setExplanationOpen(open)} />
+                <ExplanationTrigger isOpen={isExplanationOpen} setOpen={setExplanationOpen} />
             </div>
             <div className="expand-collapse" aria-hidden={!isExplanationOpen}>
                 <PuzzlesExplanations schemas={schemas} />

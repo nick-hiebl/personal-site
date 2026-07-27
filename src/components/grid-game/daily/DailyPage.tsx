@@ -1,8 +1,10 @@
 import type { CollectionEntry } from 'astro:content'
 import { useEffect, useMemo, useState } from 'react'
 
-import type { PuzzleSchema } from '../schema/types'
 import { GridPuzzle } from '../GridPuzzle'
+import type { PuzzleSchema } from '../schema/types'
+import { ExplanationTrigger } from '../rule-explanations/ExplanationTrigger'
+import { PuzzlesExplanations } from '../rule-explanations/PuzzlesExplanations'
 
 import '../GridPuzzle.css'
 import './Page.css'
@@ -97,6 +99,8 @@ type RootPageProps = {
 }
 
 const RootPage = ({ day }: RootPageProps) => {
+    const [isExplanationOpen, setExplanationOpen] = useState(false)
+
     const { year, month, day: dayOfMonth } = 'data' in day
         ? day.data
         : day
@@ -107,9 +111,20 @@ const RootPage = ({ day }: RootPageProps) => {
 
     const date = new Date(`${year}-${month}-${dayOfMonth}`)
 
+    const schemas = useMemo(() => {
+        return puzzles.map(puzzle => puzzle.schema) ?? []
+    }, [puzzles])
+
     return (
         <div className="column gap-16px">
-            <h1>Puzzle for {date.toLocaleDateString()}</h1>
+            <div className="row row-center spread">
+                <h1>Puzzle for {date.toLocaleDateString()}</h1>
+                <ExplanationTrigger isOpen={isExplanationOpen} setOpen={setExplanationOpen} />
+            </div>
+            <div className="expand-collapse" aria-hidden={!isExplanationOpen}>
+                <PuzzlesExplanations schemas={schemas} />
+            </div>
+
             <ul>
                 {puzzles.map((puzzle, index) => (
                     <GridPuzzle key={`${dayOfMonth}-${index}`} schema={puzzle.schema} isCentered />

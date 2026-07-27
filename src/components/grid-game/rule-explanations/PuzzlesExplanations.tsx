@@ -35,7 +35,7 @@ export const PuzzlesExplanations = ({ schemas }: Props) => {
 
     return (
         <div id="puzzles-explanations" className="column gap-8px">
-            <h1>What is this puzzle?</h1>
+            <h2>What is this puzzle?</h2>
             <p className="no-p">
                 This is a grid puzzle game in which you must set the correct state of all cells in
                 a grid to satisfy a number of rules, which vary for each puzzle.
