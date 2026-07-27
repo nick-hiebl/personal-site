@@ -1,12 +1,13 @@
 type NonogramIconProps = {
     groups: number[]
+    size?: `${number}px` | `${number}%`
 }
 
 const GRID_Y_SCALE = 15
 const GRID_X_SCALE = 10
 const RADIUS = 3.2
 
-export const NonogramIcon = ({ groups }: NonogramIconProps) => {
+export const NonogramIcon = ({ groups, size }: NonogramIconProps) => {
     if (!groups.length) {
         throw Error('Invalid nonogram groups')
     }
@@ -21,7 +22,13 @@ export const NonogramIcon = ({ groups }: NonogramIconProps) => {
     const viewBox = `${centerX - maxScale / 2} ${centerY - maxScale / 2} ${maxScale} ${maxScale}`
 
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox={viewBox} className="clue-icon">
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox={viewBox}
+            className={size ? undefined : 'clue-icon'}
+            height={size}
+            width={size}
+        >
             {groups.flatMap((group, rowIndex) => new Array(group).fill(0).map((_, colIndex) => (
                 <circle
                     key={`${rowIndex}-${colIndex}`}

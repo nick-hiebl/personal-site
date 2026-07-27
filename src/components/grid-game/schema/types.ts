@@ -23,3 +23,10 @@ export type PuzzleState = {
 }
 
 export type PuzzleStateValue = null | true | false
+
+// This type represents rules requiring explanation
+export type RuleType =
+    // No explanation needed for null edge rule
+    | Exclude<EdgeRule, null>['type']
+    // No explanation for cell rule, as the UX gives the user no choice
+    | Exclude<CellRule['type'], 'forced'>

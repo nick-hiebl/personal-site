@@ -1,0 +1,48 @@
+.rule-expand {
+    border: 1px solid light-dark(var(--N999), var(--N0));
+    border-radius: 8px;
+}
+
+.rule-expand:open > .rule-expand-summary {
+    border-bottom: 1px solid light-dark(var(--N999), var(--N0));
+}
+
+.rule-expand-summary {
+    cursor: pointer;
+    padding: 8px;
+}
+
+.rule-expand:open > .rule-expand-summary::before {
+    font-size: 2em;
+    line-height: 24px;
+    content: '\25bE\0020';
+}
+
+.rule-expand:not(:open) > .rule-expand-summary::before {
+    font-size: 2em;
+    line-height: 24px;
+    content: '\25b8\0020';
+}
+
+.rule-expand-icon {
+    background-color: var(--B400);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 6px;
+}
+
+.expand-details {
+    padding: 8px;
+}
+
+.rot-90 {
+    line-height: 0;
+    transform: rotate(-90deg);
+}
+
+.max-320 {
+    max-width: 320px;
+}

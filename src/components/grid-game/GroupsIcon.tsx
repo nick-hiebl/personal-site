@@ -3,12 +3,13 @@ import { useMemo } from 'react'
 type GroupsIconProps = {
     count: number
     mode: 'horizontal' | 'vertical'
+    size?: `${number}px` | `${number}%`
 }
 
 const GRID_SCALE = 10
 const RADIUS = 8
 
-export const GroupsIcon = ({ count, mode }: GroupsIconProps) => {
+export const GroupsIcon = ({ count, mode, size }: GroupsIconProps) => {
     if (!count) {
         throw Error('Invalid groups count')
     }
@@ -28,7 +29,13 @@ export const GroupsIcon = ({ count, mode }: GroupsIconProps) => {
 
 
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox={viewBox} className="clue-icon">
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox={viewBox}
+            className={size ? undefined : 'clue-icon'}
+            height={size}
+            width={size}
+        >
             {boxes.flatMap((group, rowIndex) => new Array(group).fill(0).map((_, colIndex, row) => (
                 <rect
                     key={`${rowIndex}-${colIndex}`}

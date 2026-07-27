@@ -1,0 +1,16 @@
+.example-grid {
+    background-color: var(--B400);
+    padding: 8px;
+}
+
+.example-grid-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--columns), 1fr);
+    grid-template-rows: 1fr;
+    gap: 4px;
+}
+
+.example-grid-cell {
+    /* padding: 4px; */
+    line-height: 0;
+}

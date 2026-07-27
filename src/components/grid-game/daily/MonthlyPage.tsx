@@ -2,6 +2,8 @@ import type { CollectionEntry } from 'astro:content'
 import { useMemo, useState } from 'react'
 
 import { GridPuzzle } from '../GridPuzzle'
+import { ExplanationTrigger } from '../rule-explanations/ExplanationTrigger'
+import { PuzzlesExplanations } from '../rule-explanations/PuzzlesExplanations'
 
 import '../GridPuzzle.css'
 import './Page.css'
@@ -17,6 +19,8 @@ type Props = {
 export const DailyMonthPage = ({ days, year, month }: Props) => {
     // Persisting the current date as we don't want the page to bug out over midnight
     const date = useMemo(() => new Date(), [])
+
+    const [isExplanationOpen, setExplanationOpen] = useState(false)
 
     const isCurrentMonth = date.getFullYear().toString() === year && (date.getMonth() + 1).toString() === month
 
@@ -37,6 +41,10 @@ export const DailyMonthPage = ({ days, year, month }: Props) => {
 
     const activeDay = days.find(({ data: { day } }) => day === dayOfMonth)
 
+    const schemas = useMemo(() => {
+        return activeDay?.data.puzzles.map(puzzle => puzzle.schema) ?? []
+    }, [activeDay])
+
     if (!activeDay) {
         return (
             <div>
@@ -53,14 +61,19 @@ export const DailyMonthPage = ({ days, year, month }: Props) => {
 
     return (
         <div className="column gap-16px">
-            <div>
+            <div className="row row-center spread">
                 <MonthDayPicker
                     days={days}
                     dayOfMonth={dayOfMonth}
                     onDayChange={setDayOfMonth}
                     isCurrentMonth={isCurrentMonth}
                 />
+                <ExplanationTrigger isOpen={isExplanationOpen} setOpen={open => setExplanationOpen(open)} />
             </div>
+            <div className="expand-collapse" aria-hidden={!isExplanationOpen}>
+                <PuzzlesExplanations schemas={schemas} />
+            </div>
+
             <ul>
                 {activeDay.data.puzzles.map((puzzle, index) => (
                     <GridPuzzle key={`${activeDay.id}-${index}`} schema={puzzle.schema} isCentered />

@@ -171,6 +171,10 @@ p {
 	margin-bottom: 2em;
 }
 
+p.no-p {
+	margin: 0;
+}
+
 textarea {
 	width: 100%;
 	font-size: 16px;
@@ -232,6 +236,10 @@ img {
 	flex-direction: row;
 }
 
+.spread {
+	justify-content: space-between;
+}
+
 .flex-start {
 	align-items: flex-start;
 }
@@ -254,4 +262,8 @@ img {
 
 .gap-16px {
 	gap: 16px;
+}
+
+.expand-collapse[aria-hidden=true] {
+	display: none;
 }
