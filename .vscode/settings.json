@@ -82,7 +82,7 @@
                                     "type": {
                                         "const": "forced",
                                     },
-                                    "forced": {
+                                    "state": {
                                         "type": "boolean"
                                     }
                                 }
