@@ -5,7 +5,7 @@ import { RuleExpand } from '../RuleExpand'
 export const GroupsExplanation = () => {
     return (
         <RuleExpand
-            title="Nonogram rules"
+            title="Square rules"
             icons={[
                 <GroupsIcon key="1" count={1} mode="vertical" size="24px" />,
                 <GroupsIcon key="2" count={2} mode="vertical" size="24px" />,
