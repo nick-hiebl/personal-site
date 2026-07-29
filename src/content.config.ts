@@ -41,6 +41,9 @@ const edgeRuleValidator = z.union([
 		type: z.literal('nonogram'),
 		groups: z.array(z.number()),
 	}),
+	z.object({
+		type: z.literal('takuzu'),
+	}),
 ])
 
 const cellRuleValidator = z.union([

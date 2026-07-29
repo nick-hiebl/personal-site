@@ -4,6 +4,7 @@ import { GroupsIcon } from './GroupsIcon'
 import { NonogramIcon } from './NonogramIcon'
 import { validateEdgeRule } from './schema/edge-rule'
 import type { EdgeRule, PuzzleState } from './schema/types'
+import { TakuzuIcon } from './TakuzuIcon'
 
 type Props = {
     rule: EdgeRule
@@ -46,6 +47,14 @@ export const EdgeRuleComponent = ({ index, mode, rule, state }: Props) => {
             <div data-valid={isValid} className={className}>
                 <span className={mode === 'horizontal' ? 'lozenge horizontal' : 'lozenge'}>
                     <GroupsIcon count={rule.count} mode={mode} />
+                </span>
+            </div>
+        )
+    } else if (rule.type === 'takuzu') {
+        return (
+            <div data-valid={isValid} className={className}>
+                <span className={mode === 'horizontal' ? 'lozenge horizontal' : 'lozenge'}>
+                    <TakuzuIcon />
                 </span>
             </div>
         )

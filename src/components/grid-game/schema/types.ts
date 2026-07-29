@@ -14,6 +14,7 @@ export type EdgeRule =
     | { type: 'groups', count: number }
     | { type: 'inverted-groups', count: number }
     | { type: 'nonogram', groups: number[] }
+    | { type: 'takuzu' }
 
 export type CellRule =
     | { type: 'forced', state: boolean }

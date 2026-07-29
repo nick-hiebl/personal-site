@@ -28,6 +28,16 @@ export const validateEdgeRule = (edgeRule: EdgeRule, data: PuzzleStateValue[]): 
 
         return groups.length === edgeRule.groups.length &&
             edgeRule.groups.every((groupSize, index) => groupSize === groups[index])
+    } else if (edgeRule.type === 'takuzu') {
+        const trueCount = data.reduce((c, value) => c + (value ? 1 : 0), 0)
+        return trueCount >= Math.floor(data.length / 2) &&
+            trueCount <= Math.ceil(data.length / 2) &&
+            data.reduce<{ groupSize: number, groupType: boolean, invalid: boolean }>(
+                ({ groupSize, groupType, invalid }, value) => !!value === groupType
+                    ? { groupSize: groupSize + 1, groupType, invalid: invalid || groupSize + 1 >= 3 }
+                    : { groupSize: 1, groupType: !!value, invalid },
+                { groupSize: 0, groupType: false, invalid: false }
+            ).invalid === false
     } else {
         throw Error('Unknown edge rule type')
     }

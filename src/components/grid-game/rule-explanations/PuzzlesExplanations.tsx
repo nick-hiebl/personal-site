@@ -4,6 +4,7 @@ import type { PuzzleSchema, RuleType } from '../schema/types'
 
 import { GroupsExplanation } from './rules/Groups'
 import { NonogramExplanation } from './rules/Nonogram'
+import { TakuzuExplanation } from './rules/Takuzu'
 
 type Props = {
     schemas: PuzzleSchema[]
@@ -12,6 +13,7 @@ type Props = {
 const RULE_EXPLANATIONS: Partial<Record<RuleType, () => ReactNode>> = {
     nonogram: NonogramExplanation,
     groups: GroupsExplanation,
+    takuzu: TakuzuExplanation,
 }
 
 const useSchemaRuleTypes = (schemas: PuzzleSchema[]): RuleType[] => {

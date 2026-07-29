@@ -67,6 +67,15 @@
                                 }
                             },
                             {
+                                "type": "object",
+                                "required": ["type"],
+                                "properties": {
+                                    "type": {
+                                        "const": "takuzu"
+                                    }
+                                }
+                            },
+                            {
                                 "type": "null"
                             }
                         ]
