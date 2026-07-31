@@ -1,0 +1,33 @@
+{
+    "year": 2026,
+    "month": 8,
+    "day": 3,
+    "puzzles": [
+        {
+            "schema": {
+                "width": 5,
+                "height": 6,
+                "verticalEdgeRules": [
+                    { "type": "takuzu" },
+                    { "type": "nonogram", "groups": [2] },
+                    { "type": "nonogram", "groups": [2, 2] },
+                    { "type": "nonogram", "groups": [1, 3] },
+                    { "type": "takuzu" }
+                ],
+                "horizontalEdgeRules": [
+                    { "type": "groups", "count": 2 },
+                    { "type": "groups", "count": 1 },
+                    { "type": "nonogram", "groups": [2, 1] },
+                    { "type": "takuzu" },
+                    { "type": "takuzu" },
+                    { "type": "count", "count": 3 }
+                ],
+                "cellRules": [
+                    { "row": 0, "column": 0, "rule": { "type": "forced", "state": false } },
+                    { "row": 3, "column": 4, "rule": { "type": "forced", "state": true } },
+                    { "row": 4, "column": 0, "rule": { "type": "forced", "state": false } }
+                ]
+            }
+        }
+    ]
+}
