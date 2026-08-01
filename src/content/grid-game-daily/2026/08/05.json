@@ -1,0 +1,26 @@
+{
+    "year": 2026,
+    "month": 8,
+    "day": 5,
+    "puzzles": [
+        {
+            "schema": {
+                "width": 4,
+                "height": 5,
+                "verticalEdgeRules": [
+                    { "type": "count", "count": 4 },
+                    { "type": "count", "count": 3 },
+                    { "type": "nonogram", "groups": [1, 2] },
+                    { "type": "count", "count": 1 }
+                ],
+                "horizontalEdgeRules": [
+                    { "type": "takuzu" },
+                    { "type": "nonogram", "groups": [1, 1] },
+                    { "type": "takuzu" },
+                    { "type": "nonogram", "groups": [1, 2] },
+                    { "type": "groups", "count": 1 }
+                ]
+            }
+        }
+    ]
+}
