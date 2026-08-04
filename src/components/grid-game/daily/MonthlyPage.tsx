@@ -5,6 +5,8 @@ import { GridPuzzle } from '../GridPuzzle'
 import { ExplanationTrigger } from '../rule-explanations/ExplanationTrigger'
 import { PuzzlesExplanations } from '../rule-explanations/PuzzlesExplanations'
 
+import { CommonLinks } from './Common'
+
 import '../GridPuzzle.css'
 import './Page.css'
 
@@ -47,27 +49,40 @@ export const DailyMonthPage = ({ days, year, month }: Props) => {
 
     if (!activeDay) {
         return (
-            <div>
-                We couldn't find the day you selected...
-                <MonthDayPicker
-                    days={days}
-                    dayOfMonth={dayOfMonth}
-                    onDayChange={setDayOfMonth}
-                    isCurrentMonth={isCurrentMonth}
-                />
+            <div className="column gap-16px">
+                <div className="row-center gap-8px">
+                    We couldn't find the day you selected...
+                    <MonthDayPicker
+                        days={days}
+                        dayOfMonth={dayOfMonth}
+                        onDayChange={setDayOfMonth}
+                        isCurrentMonth={isCurrentMonth}
+                    />
+                </div>
+                <CommonLinks />
             </div>
         )
     }
 
+    const activeDayDate = new Date(Date.UTC(
+        activeDay.data.year,
+        // Dates are zero-indexed from January, so we have to subtract 1
+        activeDay.data.month - 1,
+        activeDay.data.day,
+    ))
+
     return (
         <div className="column gap-16px">
-            <div className="row row-center spread">
-                <MonthDayPicker
-                    days={days}
-                    dayOfMonth={dayOfMonth}
-                    onDayChange={setDayOfMonth}
-                    isCurrentMonth={isCurrentMonth}
-                />
+            <div className="row row-center spread wrap">
+                <div className="row row-center gap-16px wrap">
+                    <MonthDayPicker
+                        days={days}
+                        dayOfMonth={dayOfMonth}
+                        onDayChange={setDayOfMonth}
+                        isCurrentMonth={isCurrentMonth}
+                    />
+                    <h1>Puzzle for {activeDayDate.toLocaleDateString()}</h1>
+                </div>
                 <ExplanationTrigger isOpen={isExplanationOpen} setOpen={setExplanationOpen} />
             </div>
             <div className="expand-collapse" aria-hidden={!isExplanationOpen}>
@@ -79,6 +94,8 @@ export const DailyMonthPage = ({ days, year, month }: Props) => {
                     <GridPuzzle key={`${activeDay.id}-${index}`} schema={puzzle.schema} isCentered />
                 ))}
             </ul>
+
+            <CommonLinks />
         </div>
     )
 }

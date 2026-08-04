@@ -240,6 +240,14 @@ img {
 	justify-content: space-between;
 }
 
+.justify-center {
+	justify-content: center;
+}
+
+.wrap {
+	flex-wrap: wrap;
+}
+
 .flex-start {
 	align-items: flex-start;
 }

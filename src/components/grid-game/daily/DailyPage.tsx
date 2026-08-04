@@ -6,6 +6,8 @@ import type { PuzzleSchema } from '../schema/types'
 import { ExplanationTrigger } from '../rule-explanations/ExplanationTrigger'
 import { PuzzlesExplanations } from '../rule-explanations/PuzzlesExplanations'
 
+import { CommonLinks } from './Common'
+
 import '../GridPuzzle.css'
 import './Page.css'
 
@@ -130,6 +132,7 @@ const RootPage = ({ day }: RootPageProps) => {
                     <GridPuzzle key={`${dayOfMonth}-${index}`} schema={puzzle.schema} isCentered />
                 ))}
             </ul>
+            <CommonLinks />
         </div>
     )
 }
@@ -141,6 +144,8 @@ const ErrorPage = () => {
             <p>For some reason, there don't appear to be any puzzles for this day or month.</p>
             <p>Your local device time might be way ahead, the puzzles might be a bit late, or this project might be abandoned.</p>
             <p>An easy way to browse previous months will be coming soon!</p>
+
+            <CommonLinks />
         </div>
     )
 }

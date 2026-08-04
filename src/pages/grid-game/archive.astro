@@ -1,0 +1,61 @@
+---
+import { ThemeSwitcher } from '../../components/ThemeSwitcher'
+import GridGameLayout from '../../layouts/GridGame.astro'
+
+import { getStaticPaths } from './[year]-[month].astro'
+
+type Month = {
+    month: number
+    year: number
+}
+
+const allYearsAndMonths = (await getStaticPaths()).map<Month>(entry => ({
+    month: parseInt(entry.props.month, 10),
+    year: parseInt(entry.props.year, 10),
+}))
+---
+
+<GridGameLayout>
+    <style>
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        li {
+            display: contents;
+        }
+
+        a.archive-month {
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            padding: 4px 12px;
+            color: var(--color-text);
+        }
+
+        a.archive-month:hover {
+            background-color: light-dark(var(--N100), var(--N900));
+        }
+    </style>
+
+    <ul class="column gap-8px">
+        {allYearsAndMonths.map(({ month, year }) => {
+            const monthName = new Date(`${year}-${month}-03`);
+
+            return (
+                <li class="archive-month">
+                    <a href={`/grid-game/${year}-${month}`} class="archive-month">
+                        {monthName.toLocaleDateString('en-US', {
+                            weekday: undefined,
+                            day: undefined,
+                            year: 'numeric',
+                            month: 'long',
+                        })}
+                    </a>
+                </li>
+            )
+        })}
+    </ul>
+    <ThemeSwitcher client:only />
+</GridGameLayout>
