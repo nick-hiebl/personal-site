@@ -64,9 +64,52 @@ export type WireModule = {
     }
 }
 
-export type Module = | WireModule
+export type DirectionModulePhase = 0 | 1 | 2 | 3 | 4
 
-export type Rules = Record<Module['id'], Module['mute']>
+export type Direction = 'up' | 'down' | 'left' | 'right'
+
+export type DirectionModule = {
+    id: 'direction'
+    blind: {
+        id: 'direction'
+        index: number
+        light: BlindColor
+        digit: number
+        phase: DirectionModulePhase
+        complete: boolean
+    }
+    deaf: {
+        id: 'direction'
+        index: number
+        light: BaseColor
+        // Incorrect digit
+        digit: number
+        phase: DirectionModulePhase
+        complete: boolean
+    }
+    mute: {
+        id: 'direction'
+        rule: Record<number, Record<BaseColor, Direction>>
+    }
+    state: {
+        id: 'direction'
+        index: number
+        position: number
+        light: BaseColor
+        digit: number
+        phase: DirectionModulePhase
+        complete: boolean
+    }
+}
+
+export type Module =
+    | WireModule
+    | DirectionModule
+
+export type Rules = {
+    wire: WireModule['mute']
+    direction: DirectionModule['mute']
+}
 
 /* Internal state */
 

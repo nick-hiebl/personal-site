@@ -13,12 +13,14 @@ export const Lobby = () => {
 
     return (
         <section>
-            <SetName
-                currentName={me?.name}
-                onSetName={(name) => {
-                    socket.emit('updateName', { name })
-                }}
-            />
+            {output.state.state === 'pending' && (
+                <SetName
+                    currentName={me?.name}
+                    onSetName={(name) => {
+                        socket.emit('updateName', { name })
+                    }}
+                />
+            )}
             <div className="row gap-4px">
                 <button onClick={() => setRole('blind')}>Blind</button>
                 <button onClick={() => setRole('deaf')}>Deaf</button>

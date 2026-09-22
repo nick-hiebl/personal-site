@@ -11,6 +11,8 @@ import { Lobby } from './views/lobby'
 import { DeafView } from './views/deaf'
 import { MuteView } from './views/mute'
 
+import './see-hear-say.css'
+
 type GameProps = {
     code: string
     onLobbyNotFound: () => void
@@ -76,6 +78,9 @@ export const SeeHearSay = ({ code, onLobbyNotFound }: GameProps) => {
             <section>
                 <div className="column gap-16px">
                     <h1>Game!</h1>
+                    {state.state.state !== 'pending' && state.state.complete && (
+                        <h2>Success!</h2>
+                    )}
                     <Lobby />
                     {me?.type === 'blind' ? (
                         <BlindView />

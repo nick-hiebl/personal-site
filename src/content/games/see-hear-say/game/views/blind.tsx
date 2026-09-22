@@ -1,8 +1,12 @@
+import { useState } from 'react'
+
 import { Indicator } from '../components/Indicator'
 import { LightBulb } from '../components/LightBulb'
 import { Wire } from '../components/Wire'
 import { useGameContext } from '../context'
 import type { Module, WireModule } from '../types'
+
+import { DirectionPuzzleBlind } from './DirectionPuzzle'
 
 export const BlindView = () => {
     const { output } = useGameContext()
@@ -24,6 +28,8 @@ export const BlindView = () => {
 const BlindPuzzle = ({ puzzle }: { puzzle: Module['blind'] }) => {
     if (puzzle.id === 'wire') {
         return <WirePuzzle puzzle={puzzle} />
+    } else if (puzzle.id === 'direction') {
+        return <DirectionPuzzleBlind puzzle={puzzle} />
     }
 
     return <span>Unknown puzzle type!</span>
@@ -31,19 +37,37 @@ const BlindPuzzle = ({ puzzle }: { puzzle: Module['blind'] }) => {
 
 const WirePuzzle = ({ puzzle }: { puzzle: WireModule['blind'] }) => {
     const { socket } = useGameContext()
+    const [hoveredIndex, setHoveredIndex] = useState<number | undefined>(undefined)
 
     return (
-        <div className="row gap-8px">
+        <div className="module row gap-8px">
             <div className="row gap-8px">
                 {puzzle.wires.map((w, index) => (
                     <button
                         key={index}
                         disabled={puzzle.cut[index]}
+                        onMouseOver={() => {
+                            setHoveredIndex(index)
+                        }}
+                        onMouseLeave={() => {
+                            if (hoveredIndex === index) {
+                                setHoveredIndex(undefined)
+                            }
+                        }}
                         onClick={() => {
                             socket.emit('cut', { index: puzzle.index, wireIndex: index })
                         }}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: puzzle.cut[index] ? 'default' : 'pointer'
+                        }}
                     >
-                        <Wire color={w} cut={puzzle.cut[index]} />
+                        <Wire
+                            color={w}
+                            cut={puzzle.cut[index]}
+                            isHovered={hoveredIndex === index}
+                        />
                     </button>
                 ))}
             </div>

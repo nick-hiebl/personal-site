@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
+
 import { Indicator } from '../components/Indicator'
 import { LightBulb } from '../components/LightBulb'
 import { Wire } from '../components/Wire'
 import { useGameContext } from '../context'
 import type { Module, WireModule } from '../types'
+
+import { DirectionPuzzleDeaf } from './DirectionPuzzle'
 
 export const DeafView = () => {
     const { output } = useGameContext()
@@ -56,6 +59,8 @@ const InfoPanel = () => {
 const DeafPuzzle = ({ puzzle }: { puzzle: Module['deaf'] }) => {
     if (puzzle.id === 'wire') {
         return <WirePuzzle puzzle={puzzle} />
+    } else if (puzzle.id === 'direction') {
+        return <DirectionPuzzleDeaf puzzle={puzzle} />
     }
 
     return <span>Unknown puzzle type!</span>
@@ -63,7 +68,7 @@ const DeafPuzzle = ({ puzzle }: { puzzle: Module['deaf'] }) => {
 
 const WirePuzzle = ({ puzzle }: { puzzle: WireModule['deaf'] }) => {
     return (
-        <div className="row gap-8px">
+        <div className="module row gap-8px">
             <div className="row gap-8px">
                 {puzzle.wires.map((w, index) => (
                     <Wire color={w} key={index} cut={puzzle.cut[index]} />

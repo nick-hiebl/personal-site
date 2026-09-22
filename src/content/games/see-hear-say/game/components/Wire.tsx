@@ -3,11 +3,20 @@ import type { BaseColor, BlindColor } from '../types'
 type Props = {
     color: BaseColor | BlindColor
     cut?: boolean
+    isHovered?: boolean
 }
 
-export const Wire = ({ color, cut }: Props) => {
+const WIRE_PATH = 'M 25 25 Q 28 60 25 100 Q 22 140 25 175'
+
+const WIRE_SVG_PROPS = {
+    d: WIRE_PATH,
+    pathLength: 100,
+    fill: 'transparent',
+}
+
+export const Wire = ({ color, cut, isHovered }: Props) => {
     const wireColor = color === 'color' ? 'grey' : color
-    const conductorColor = color === 'color' ? 'var(--color-border)' : 'orange'
+    const conductorColor = color === 'color' ? 'white' : 'orange'
 
     return (
         <svg
@@ -16,73 +25,70 @@ export const Wire = ({ color, cut }: Props) => {
             width="50"
             height="200"
         >
+            <rect x="10" y="10" width="30" height="30" rx="5" ry="5" fill="#666666" />
+            <rect x="10" y="160" width="30" height="30" rx="5" ry="5" fill="#666666" />
             {cut ? (
                 <>
-                    <line
-                        x1="25"
-                        y1="105"
-                        x2="25"
-                        y2="175"
+                    <path
+                        {...WIRE_SVG_PROPS}
                         stroke={conductorColor}
                         strokeWidth="3"
-                        strokeLinecap="butt"
+                        strokeLinecap="round"
+                        strokeDasharray="46 100"
                     />
-                    <line
-                        x1="25"
-                        y1="25"
-                        x2="25"
-                        y2="95"
+                    <path
+                        {...WIRE_SVG_PROPS}
                         stroke={conductorColor}
                         strokeWidth="3"
-                        strokeLinecap="butt"
+                        strokeLinecap="round"
+                        strokeDasharray="0 54 100"
                     />
-                    <line
-                        x1="25"
-                        y1="25"
-                        x2="25"
-                        y2="70"
+                    <path
+                        {...WIRE_SVG_PROPS}
                         stroke={wireColor}
                         strokeWidth="10"
                         strokeLinecap="round"
+                        strokeDasharray="10 100"
                     />
-                    <line
-                        x1="25"
-                        y1="70"
-                        x2="25"
-                        y2="90"
+                    <path
+                        {...WIRE_SVG_PROPS}
                         stroke={wireColor}
                         strokeWidth="10"
                         strokeLinecap="butt"
+                        strokeDasharray="42 100"
                     />
-                    <line
-                        x1="25"
-                        y1="130"
-                        x2="25"
-                        y2="175"
+                    <path
+                        {...WIRE_SVG_PROPS}
                         stroke={wireColor}
                         strokeWidth="10"
                         strokeLinecap="round"
+                        strokeDasharray="0 90 10"
                     />
-                    <line
-                        x1="25"
-                        y1="110"
-                        x2="25"
-                        y2="130"
+                    <path
+                        {...WIRE_SVG_PROPS}
                         stroke={wireColor}
                         strokeWidth="10"
                         strokeLinecap="butt"
+                        strokeDasharray="0 58 100"
                     />
                 </>
             ) : (
-                <line
-                    x1="25"
-                    y1="25"
-                    x2="25"
-                    y2="175"
-                    stroke={color === 'color' ? 'grey' : color}
-                    strokeWidth="10"
-                    strokeLinecap="round"
-                />
+                <>
+                    {isHovered && (
+                        <path
+                            {...WIRE_SVG_PROPS}
+                            stroke="white"
+                            strokeWidth="14"
+                            strokeLinecap="round"
+                        />
+                    )}
+                    <path
+                        {...WIRE_SVG_PROPS}
+                        stroke={wireColor}
+                        strokeWidth="10"
+                        strokeLinecap="round"
+                    />
+                </>
             )}
         </svg>
     )

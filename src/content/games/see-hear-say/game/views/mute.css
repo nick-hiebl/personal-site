@@ -8,3 +8,8 @@
     text-align: center;
     line-height: 0;
 }
+
+.rule-section {
+    border: 2px solid var(--color-border);
+    padding: 16px;
+}

@@ -1,0 +1,53 @@
+.direction-puzzle {
+    display: grid;
+    grid-template-areas:
+        "phase . up light"
+        "phase left center right"
+        "phase . down .";
+}
+
+.direction-phase, .direction-light, .direction-up, .direction-left, .direction-right, .direction-down, .direction-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.direction-phase {
+    grid-area: phase;
+}
+
+.direction-light {
+    grid-area: light;
+}
+
+.direction-up {
+    grid-area: up;
+}
+
+.direction-left {
+    grid-area: left;
+}
+
+.direction-right {
+    grid-area: right;
+}
+
+.direction-down {
+    grid-area: down;
+}
+
+.direction-center {
+    grid-area: center;
+}
+
+.direction-center {
+    display: inline-flex;
+    min-width: 280px;
+    font-size: 3em;
+    background-color: var(--R600);
+    border-radius: 12px;
+}
+
+.direction-center.blind {
+    background-color: var(--N500);
+}
