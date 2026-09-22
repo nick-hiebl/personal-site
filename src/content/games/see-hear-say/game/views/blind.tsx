@@ -50,9 +50,7 @@ const WirePuzzle = ({ puzzle }: { puzzle: WireModule['blind'] }) => {
                             setHoveredIndex(index)
                         }}
                         onMouseLeave={() => {
-                            if (hoveredIndex === index) {
-                                setHoveredIndex(undefined)
-                            }
+                            setHoveredIndex(current => current === index ? undefined : current)
                         }}
                         onClick={() => {
                             socket.emit('cut', { index: puzzle.index, wireIndex: index })

@@ -68,7 +68,11 @@ export const DirectionPuzzleDeaf = ({ puzzle }: { puzzle: DirectionModule['deaf'
         <div className="module">
             <div className="direction-puzzle">
                 {DIRECTIONS.map((direction) => (
-                    <div className={`direction-${direction}`} key={direction}>
+                    <div
+                        className={`direction-${direction}`}
+                        key={direction}
+                        style={{ cursor: 'not-allowed' }}
+                    >
                         <DirectionalArrow direction={direction} />
                     </div>
                 ))}

@@ -17,7 +17,7 @@ export const Indicator = ({ enabled }: Props) => {
                 height="50"
                 rx="10"
                 ry="10"
-                fill="var(--N800)"
+                fill="#666666"
             />
             <circle
                 cx="25"

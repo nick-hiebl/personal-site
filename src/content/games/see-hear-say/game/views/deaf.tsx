@@ -67,11 +67,24 @@ const DeafPuzzle = ({ puzzle }: { puzzle: Module['deaf'] }) => {
 }
 
 const WirePuzzle = ({ puzzle }: { puzzle: WireModule['deaf'] }) => {
+    const [hoveredIndex, setHoveredIndex] = useState<number | undefined>()
+
     return (
         <div className="module row gap-8px">
             <div className="row gap-8px">
                 {puzzle.wires.map((w, index) => (
-                    <Wire color={w} key={index} cut={puzzle.cut[index]} />
+                    <div
+                        key={index}
+                        onMouseEnter={() => {
+                            setHoveredIndex(index)
+                        }}
+                        onMouseLeave={() => {
+                            setHoveredIndex(current => current === index ? undefined : current)
+                        }}
+                        style={{ cursor: 'not-allowed' }}
+                    >
+                        <Wire color={w} cut={puzzle.cut[index]} isHovered={hoveredIndex === index} />
+                    </div>
                 ))}
             </div>
             <div className="column-center gap-16px">
