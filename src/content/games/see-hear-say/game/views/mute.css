@@ -1,0 +1,10 @@
+.info-table {
+    border-collapse: collapse;
+}
+
+.info-table > thead > tr > th.head-cell,
+.info-table > tbody > tr > td {
+    border: 1px solid var(--color-border);
+    text-align: center;
+    line-height: 0;
+}

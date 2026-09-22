@@ -1,0 +1,13 @@
+---
+import { getCollection } from 'astro:content'
+
+import { Game } from '../../content/games/see-hear-say'
+import GameLayout from '../../layouts/Game.astro'
+
+const games = await getCollection('games')
+
+const game = games.find(game => game.data.gameId === 'see-hear-say')!
+---
+<GameLayout {...game.data}>
+	<Game client:only />
+</GameLayout>
