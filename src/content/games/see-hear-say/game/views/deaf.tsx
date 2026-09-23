@@ -103,11 +103,11 @@ const Timer = ({ complete, timeLeft }: { timeLeft: number, complete: boolean }) 
     const [remS, setRem] = useState(timeLeft)
 
     useEffect(() => {
-        const targetEndTime = (performance.now() / 1000) + timeLeft
+        const targetEndTime = timeLeft * 1000 + performance.now()
 
         const update = () => {
-            const remainingTime = (targetEndTime - performance.now() / 1000)
-            setRem(remainingTime)
+            const remainingTime = targetEndTime - performance.now()
+            setRem(remainingTime / 1000)
 
             if (remainingTime > 0) {
                 frameReqRef.current = requestAnimationFrame(update)

@@ -89,8 +89,8 @@ export const SeeHearSay = ({ code, onLobbyNotFound }: GameProps) => {
                     ) : me?.type === 'mute' ? (
                         <MuteView />
                     ) : null}
-                    <pre>{JSON.stringify(state, null, 2)}</pre>
                 </div>
+                <br />
                 <ThemeSwitcher />
             </section>
         </GameContext.Provider>
