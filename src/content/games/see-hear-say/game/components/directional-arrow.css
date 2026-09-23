@@ -1,0 +1,16 @@
+.directional-arrow {
+    transition: all 0.15s ease;
+}
+
+.directional-arrow-up {
+    transform: rotate(270deg);
+}
+.directional-arrow-right {
+    transform: rotate(0deg);
+}
+.directional-arrow-down {
+    transform: rotate(90deg);
+}
+.directional-arrow-left {
+    transform: rotate(180deg);
+}

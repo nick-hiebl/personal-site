@@ -92,7 +92,7 @@ export const DirectionPuzzleDeaf = ({ puzzle }: { puzzle: DirectionModule['deaf'
 
 const PHASES = 4
 
-const DirectionPhase = ({ phase }: { phase: DirectionModulePhase }) => {
+export const DirectionPhase = ({ phase }: { phase: DirectionModulePhase }) => {
     return (
         <div className="column gap-4px">
             {new Array(PHASES).fill(0).map((_, index) => (

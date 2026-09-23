@@ -102,13 +102,57 @@ export type DirectionModule = {
     }
 }
 
+export type Symbol = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j'
+
+export type SymbolModule = {
+    id: 'symbol'
+    blind: {
+        id: 'symbol'
+        index: number
+        symbols: Symbol[]
+        direction: Direction
+        noiseSymbol: Symbol
+        buttons: BlindColor[]
+        phase: DirectionModulePhase
+        complete: boolean
+    }
+    deaf: {
+        id: 'symbol'
+        index: number
+        symbols: Symbol[]
+        direction: Direction
+        buttons: BaseColor[]
+        phase: DirectionModulePhase
+        complete: boolean
+    }
+    mute: {
+        id: 'symbol'
+        // rule['a'][2] === 'red' means
+        // in stage 2, if the noise symbol is 'a', press the red button
+        rule: Record<Symbol, BaseColor[]>
+    }
+    state: {
+        id: 'symbol'
+        index: number
+        position: number
+        symbols: Symbol[]
+        direction: Direction
+        noiseSymbol: Symbol
+        buttons: BaseColor[]
+        phase: DirectionModulePhase
+        complete: boolean
+    }
+}
+
 export type Module =
     | WireModule
     | DirectionModule
+    | SymbolModule
 
 export type Rules = {
-    wire: WireModule['mute']
     direction: DirectionModule['mute']
+    symbol: SymbolModule['mute']
+    wire: WireModule['mute']
 }
 
 /* Internal state */

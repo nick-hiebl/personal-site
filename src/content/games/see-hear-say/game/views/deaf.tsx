@@ -7,6 +7,7 @@ import { useGameContext } from '../context'
 import type { Module, WireModule } from '../types'
 
 import { DirectionPuzzleDeaf } from './DirectionPuzzle'
+import { SymbolPuzzleDeaf } from './SymbolPuzzle'
 
 export const DeafView = () => {
     const { output } = useGameContext()
@@ -61,6 +62,8 @@ const DeafPuzzle = ({ puzzle }: { puzzle: Module['deaf'] }) => {
         return <WirePuzzle puzzle={puzzle} />
     } else if (puzzle.id === 'direction') {
         return <DirectionPuzzleDeaf puzzle={puzzle} />
+    } else if (puzzle.id === 'symbol') {
+        return <SymbolPuzzleDeaf puzzle={puzzle} />
     }
 
     return <span>Unknown puzzle type!</span>

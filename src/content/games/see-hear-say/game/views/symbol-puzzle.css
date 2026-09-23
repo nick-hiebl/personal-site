@@ -1,0 +1,88 @@
+.symbol-wheel {
+    aspect-ratio: 1;
+    width: 240px;
+    height: 240px;
+    display: grid;
+    grid-template-areas:
+        ". up ."
+        "left center right"
+        ". down .";
+}
+
+.symbol-wheel-up,
+.symbol-wheel-right,
+.symbol-wheel-down,
+.symbol-wheel-left,
+.symbol-wheel-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3em;
+    color: black;
+}
+
+.symbol-wheel-up,
+.symbol-wheel-right,
+.symbol-wheel-down,
+.symbol-wheel-left {
+    position: relative;
+}
+
+.symbol-wheel-music {
+    position: absolute;
+}
+
+.symbol-wheel-music.anim {
+    animation-name: note-anim;
+    animation-duration: 1100ms;
+    animation-timing-function: linear;
+}
+
+@keyframes note-anim {
+    0% {
+        top: 0px;
+        left: 0px;
+        opacity: 0;
+    }
+    50% {
+        top: -24px;
+        left: 4px;
+        opacity: 1;
+    }
+    100% {
+        top: -48px;
+        left: 6px;
+        opacity: 0;
+    }
+}
+
+.symbol-wheel-up {
+    grid-area: up;
+}
+
+.symbol-wheel-left {
+    grid-area: left;
+}
+
+.symbol-wheel-right {
+    grid-area: right;
+}
+
+.symbol-wheel-down {
+    grid-area: down;
+}
+
+.symbol-wheel-center {
+    grid-area: center;
+}
+
+.symbol-button {
+    width: 100px;
+    height: 60px;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.symbol-button.deaf {
+    cursor: not-allowed;
+}

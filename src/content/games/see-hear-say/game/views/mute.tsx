@@ -1,10 +1,20 @@
+import { ButtonIcon } from '../components/Button'
 import { DirectionalArrow } from '../components/DirectionalArrow'
 import { LightBulb } from '../components/LightBulb'
+import { SymbolComponent } from '../components/Symbols'
 import { WireSnip } from '../components/Wire'
 import { useGameContext } from '../context'
-import type { BaseColor, DirectionModule, Module, WireModule } from '../types'
+import type {
+    BaseColor,
+    DirectionModule,
+    Module,
+    Symbol,
+    SymbolModule,
+    WireModule,
+} from '../types'
 
 import { DirectionPuzzleReference } from './DirectionPuzzle'
+import { SymbolPuzzleReference } from './SymbolPuzzle'
 
 import './mute.css'
 
@@ -32,6 +42,8 @@ const Rule = ({ rule }: { rule: Module['mute'] }) => {
         return <WireRule rule={rule} />
     } else if (rule.id === 'direction') {
         return <DirectionRule rule={rule} />
+    } else if (rule.id === 'symbol') {
+        return <SymbolRule rule={rule} />
     }
 
     return <span>Unknown puzzle type!</span>
@@ -54,7 +66,7 @@ const WireRule = ({ rule }: { rule: WireModule['mute'] }) => {
                     <tr>
                         <th />
                         {keys.map(key => (
-                            <th key={key} className="head-cell">
+                            <th key={key} className="head-cell no-text">
                                 <LightBulb color={key} />
                             </th>
                         ))}
@@ -63,7 +75,7 @@ const WireRule = ({ rule }: { rule: WireModule['mute'] }) => {
                 <tbody>
                     {rows.map((row) => (
                         <tr key={row}>
-                            <td>{row}</td>
+                            <td className="row-label">{row}</td>
                             {keys.map((key, index) => (
                                 <td key={index}>
                                     <WireSnip color={rule.rule[row][key]} />
@@ -97,7 +109,7 @@ const DirectionRule = ({ rule }: { rule: DirectionModule['mute'] }) => {
                     <tr>
                         <th />
                         {keys.map(key => (
-                            <th key={key} className="head-cell">
+                            <th key={key} className="head-cell no-text">
                                 <LightBulb color={key} />
                             </th>
                         ))}
@@ -106,10 +118,57 @@ const DirectionRule = ({ rule }: { rule: DirectionModule['mute'] }) => {
                 <tbody>
                     {rows.map((row) => (
                         <tr key={row}>
-                            <td>{row}</td>
+                            <td className="row-label">{row}</td>
                             {keys.map((key, index) => (
                                 <td key={index}>
                                     <DirectionalArrow direction={rule.rule[row][key]} />
+                                </td>
+                            ))}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    )
+}
+
+const SymbolRule = ({ rule }: { rule: SymbolModule['mute'] }) => {
+    const rows = Object.keys(rule.rule) as Symbol[]
+    const keys = [0, 1, 2, 3]
+
+    return (
+        <div className="rule-section column gap-16px">
+            <h3>Symbol</h3>
+            <div>
+                Rotate the pointer to find the symbol that makes a sound.
+                Press the correct coloured button based on the current stage, and that symbol.
+            </div>
+            <div>
+                Puzzle looks as below:
+            </div>
+            <div>
+                <SymbolPuzzleReference />
+            </div>
+            <table className="info-table">
+                <thead>
+                    <tr>
+                        <th />
+                        {keys.map(key => (
+                            <th key={key} className="head-cell">
+                                {key + 1}
+                            </th>
+                        ))}
+                    </tr>
+                </thead>
+                <tbody>
+                    {rows.map((symbol) => (
+                        <tr key={symbol}>
+                            <td className="row-label">
+                                <SymbolComponent symbol={symbol} />
+                            </td>
+                            {keys.map((key, index) => (
+                                <td key={index}>
+                                    <ButtonIcon color={rule.rule[symbol][key]} />
                                 </td>
                             ))}
                         </tr>
