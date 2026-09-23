@@ -14,7 +14,6 @@ export const Pending = () => {
                     type="checkbox"
                     onChange={event => {
                         socket.emit('ready', { isReady: event.currentTarget.checked })
-                        console.log('READY', event.currentTarget.checked)
                     }}
                     checked={output.state.readyPlayers.includes(output.yourId)}
                 />

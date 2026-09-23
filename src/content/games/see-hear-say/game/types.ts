@@ -206,8 +206,20 @@ export type GameStateDetails =
 
 export type GameStateOutput = {
     state: GameStateDetails
+    settings: GameSettings
     players: Pick<Player, 'id' | 'name' | 'type'>[]
     yourId: string
     password: string
     lobby: string
+}
+
+/* Game settings */
+
+export type ModuleId = Module['id']
+
+export type GameSettings = {
+    freeRoleSwitching: boolean
+    maxTime: number
+    maxLives: number
+    modules: ModuleId[]
 }

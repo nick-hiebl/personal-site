@@ -8,3 +8,9 @@
 .big-text {
     font-size: 2em;
 }
+
+ul {
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+}
