@@ -1,14 +1,15 @@
 type Props = {
     enabled: boolean
+    size?: `${number}`
 }
 
-export const Indicator = ({ enabled }: Props) => {
+export const Indicator = ({ enabled, size = '50' }: Props) => {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 50 50"
-            width="50"
-            height="50"
+            width={size}
+            height={size}
         >
             <rect
                 x="0"

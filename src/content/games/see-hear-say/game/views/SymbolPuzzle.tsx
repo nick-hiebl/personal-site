@@ -90,6 +90,7 @@ export const SymbolPuzzleReference = () => {
                         />
                     ))}
                 </div>
+                <span className="big-text">EXAMPLE</span>
             </div>
         </div>
     )

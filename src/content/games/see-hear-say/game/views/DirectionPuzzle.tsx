@@ -19,10 +19,10 @@ export const DirectionPuzzleReference = () => {
                     </div>
                 ))}
                 <div className="direction-center">
-                    <BrailleDigit digit={8} />
+                    EXAMPLE
                 </div>
                 <div className="direction-light">
-                    <LightBulb color="green" />
+                    <LightBulb color="color" />
                 </div>
                 <div className="direction-phase">
                     <DirectionPhase phase={2} />
@@ -92,11 +92,11 @@ export const DirectionPuzzleDeaf = ({ puzzle }: { puzzle: DirectionModule['deaf'
 
 const PHASES = 4
 
-export const DirectionPhase = ({ phase }: { phase: DirectionModulePhase }) => {
+export const DirectionPhase = ({ phase, size }: { phase: DirectionModulePhase, size?: `${number}` }) => {
     return (
-        <div className="column gap-4px">
+        <div className="column-center gap-4px">
             {new Array(PHASES).fill(0).map((_, index) => (
-                <Indicator enabled={index >= PHASES - phase} key={index} />
+                <Indicator enabled={index >= PHASES - phase} key={index} size={size} />
             ))}
         </div>
     )

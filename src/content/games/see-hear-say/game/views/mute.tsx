@@ -7,13 +7,14 @@ import { useGameContext } from '../context'
 import type {
     BaseColor,
     DirectionModule,
+    DirectionModulePhase,
     Module,
     Symbol,
     SymbolModule,
     WireModule,
 } from '../types'
 
-import { DirectionPuzzleReference } from './DirectionPuzzle'
+import { DirectionPhase, DirectionPuzzleReference } from './DirectionPuzzle'
 import { SymbolPuzzleReference } from './SymbolPuzzle'
 
 import './mute.css'
@@ -58,7 +59,7 @@ const WireRule = ({ rule }: { rule: WireModule['mute'] }) => {
         <div className="rule-section">
             <h3>Wires</h3>
             <p>
-                Determine which wire to cut based on the number of wires
+                Determine which colour of wire to cut based on the number of wires
                 present and the colour of the active light bulb.
             </p>
             <table className="info-table">
@@ -75,7 +76,7 @@ const WireRule = ({ rule }: { rule: WireModule['mute'] }) => {
                 <tbody>
                     {rows.map((row) => (
                         <tr key={row}>
-                            <td className="row-label">{row}</td>
+                            <td className="row-label">{row}x wire(s)</td>
                             {keys.map((key, index) => (
                                 <td key={index}>
                                     <WireSnip color={rule.rule[row][key]} />
@@ -97,8 +98,11 @@ const DirectionRule = ({ rule }: { rule: DirectionModule['mute'] }) => {
         <div className="rule-section column gap-16px">
             <h3>Directions</h3>
             <div>
-                Determine which direction to press based on the colour of the
+                Determine which direction button to press based on the colour of the
                 active light bulb and the number displayed in the center.
+            </div>
+            <div>
+                The button in the center is displayed in <i>braille</i>.
             </div>
             <div>Puzzle looks as below:</div>
             <div>
@@ -141,8 +145,9 @@ const SymbolRule = ({ rule }: { rule: SymbolModule['mute'] }) => {
             <h3>Symbol</h3>
             <div>
                 Rotate the pointer to find the symbol that makes a sound.
-                Press the correct coloured button based on the current stage, and that symbol.
             </div>
+            <div>Indicator lights on the left show progress through the 4 stages.</div>
+            <div>Find the correct button colour to press based on the current stage, and the symbol which makes a noise.</div>
             <div>
                 Puzzle looks as below:
             </div>
@@ -155,7 +160,7 @@ const SymbolRule = ({ rule }: { rule: SymbolModule['mute'] }) => {
                         <th />
                         {keys.map(key => (
                             <th key={key} className="head-cell">
-                                {key + 1}
+                                <DirectionPhase phase={key as DirectionModulePhase} size="25" />
                             </th>
                         ))}
                     </tr>
