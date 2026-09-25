@@ -10,6 +10,7 @@ import { ChartPuzzleDeaf } from './ChartPuzzle'
 import { DirectionPuzzleDeaf } from './DirectionPuzzle'
 import { MatchPuzzleDeaf } from './MatchPuzzle'
 import { SymbolPuzzleDeaf } from './SymbolPuzzle'
+import { WashingPuzzleDeaf } from './WashingPuzzle'
 
 export const DeafView = () => {
     const { output } = useGameContext()
@@ -70,6 +71,8 @@ const DeafPuzzle = ({ puzzle }: { puzzle: Module['deaf'] }) => {
         return <MatchPuzzleDeaf puzzle={puzzle} />
     } else if (puzzle.id === 'chart') {
         return <ChartPuzzleDeaf puzzle={puzzle} />
+    } else if (puzzle.id === 'washing') {
+        return <WashingPuzzleDeaf puzzle={puzzle} />
     }
 
     return <span>Unknown puzzle type!</span>

@@ -1,0 +1,36 @@
+.washing-grid {
+    display: grid;
+    gap: 50px;
+    grid-template-columns: 1fr 1fr;
+}
+
+.washing-dial-button {
+    cursor: pointer;
+    padding: 0;
+    border-radius: 50%;
+}
+
+.washing-dial-arrow {
+    transition: all 0.15s ease;
+}
+
+.washing-dial-arrow-0 {
+    transform: rotate(-60deg);
+}
+.washing-dial-arrow-1 {
+    transform: rotate(0deg);
+}
+.washing-dial-arrow-2 {
+    transform: rotate(60deg);
+}
+
+.washing-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, 150px);
+    row-gap: 16px;
+}
+
+.washing-symbol-explanation {
+    line-height: 100%;
+    text-align: center;
+}

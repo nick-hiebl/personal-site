@@ -18,6 +18,7 @@ import { ChartPuzzleRule } from './ChartPuzzle'
 import { DirectionPhase, DirectionPuzzleReference } from './DirectionPuzzle'
 import { MatchPuzzleRule } from './MatchPuzzle'
 import { SymbolPuzzleReference } from './SymbolPuzzle'
+import { WashingPuzzleRule } from './WashingPuzzle'
 
 import './mute.css'
 
@@ -51,6 +52,8 @@ const Rule = ({ rule }: { rule: Module['mute'] }) => {
         return <MatchPuzzleRule rule={rule} />
     } else if (rule.id === 'chart') {
         return <ChartPuzzleRule rule={rule} />
+    } else if (rule.id === 'washing') {
+        return <WashingPuzzleRule rule={rule} />
     }
 
     return <span>Unknown puzzle type!</span>
@@ -82,9 +85,9 @@ const WireRule = ({ rule }: { rule: WireModule['mute'] }) => {
                 <tbody>
                     {rows.map((row) => (
                         <tr key={row}>
-                            <td className="row-label">{row}x wire(s)</td>
+                            <td className="row-label big-text">{row}x wire(s)</td>
                             {keys.map((key, index) => (
-                                <td key={index}>
+                                <td key={index} className="no-text">
                                     <WireSnip color={rule.rule[row][key]} />
                                 </td>
                             ))}
@@ -128,9 +131,9 @@ const DirectionRule = ({ rule }: { rule: DirectionModule['mute'] }) => {
                 <tbody>
                     {rows.map((row) => (
                         <tr key={row}>
-                            <td className="row-label">{row}</td>
+                            <td className="row-label big-text">{row}</td>
                             {keys.map((key, index) => (
-                                <td key={index}>
+                                <td key={index} className="no-text">
                                     <DirectionalArrow direction={rule.rule[row][key]} />
                                 </td>
                             ))}
@@ -174,11 +177,11 @@ const SymbolRule = ({ rule }: { rule: SymbolModule['mute'] }) => {
                 <tbody>
                     {rows.map((symbol) => (
                         <tr key={symbol}>
-                            <td className="row-label">
+                            <td className="row-label big-text">
                                 <SymbolComponent symbol={symbol} />
                             </td>
                             {keys.map((key, index) => (
-                                <td key={index}>
+                                <td key={index} className="no-text">
                                     <ButtonIcon color={rule.rule[symbol][key]} />
                                 </td>
                             ))}

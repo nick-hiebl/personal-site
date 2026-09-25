@@ -10,6 +10,7 @@ import { ChartPuzzleBlind } from './ChartPuzzle'
 import { DirectionPuzzleBlind } from './DirectionPuzzle'
 import { MatchPuzzleBlind } from './MatchPuzzle'
 import { SymbolPuzzleBlind } from './SymbolPuzzle'
+import { WashingPuzzleBlind } from './WashingPuzzle'
 
 export const BlindView = () => {
     const { output } = useGameContext()
@@ -39,6 +40,8 @@ const BlindPuzzle = ({ puzzle }: { puzzle: Module['blind'] }) => {
         return <MatchPuzzleBlind puzzle={puzzle} />
     } else if (puzzle.id === 'chart') {
         return <ChartPuzzleBlind puzzle={puzzle} />
+    } else if (puzzle.id === 'washing') {
+        return <WashingPuzzleBlind puzzle={puzzle} />
     }
 
     return <span>Unknown puzzle type!</span>

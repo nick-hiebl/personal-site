@@ -231,12 +231,72 @@ export type ChartModule = {
     }
 }
 
+export type WashingSpecial = 'dry-clean' | 'non-chlorine-bleach'
+export type WashingTempTrue = 30 | 40 | 50 | 60 | 70 | 95
+export type WashingTemp = '30' | '40' | '50' | '60' | '70' | '95' | `dot-${1 | 2 | 3 | 4 | 5 | 6}`
+export type WashingDry = 'tumble' | 'shade' | 'flat' | 'drip' | 'hang'
+export type WashingIron = 'low' | 'medium' | 'high' | 'no'
+
+export type WashingReqs = {
+    temperature: { min: number, max: number }
+    drying: WashingDry
+    iron: WashingIron
+    special?: WashingSpecial
+}
+
+type WashingCoreState = {
+    id: 'washing'
+    index: number
+    complete: boolean
+    temperature: 0 | 1 | 2
+    drying: 0 | 1 | 2
+    iron: 0 | 1 | 2
+    special: boolean
+}
+
+export type WashingLabels = {
+    tempLabels: WashingTemp[]
+    dryingLabels: WashingDry[]
+    ironLabels: WashingIron[]
+    specialLabel?: WashingSpecial
+}
+
+export type WashingItem =
+    | 'jacket'
+    | 'dress'
+    | 'onesie'
+    | 'lingerie'
+    | 't-shirt'
+    | 'towel'
+    | 'bedsheets'
+    | 'sheets'
+
+export type WashingModule = {
+    id: 'washing'
+    blind: WashingCoreState & {
+        specialLabel?: WashingSpecial
+    }
+    deaf: WashingCoreState & Omit<WashingLabels, 'specialLabel'> & {
+        currentItem: WashingItem
+    }
+    mute: {
+        id: 'washing'
+        requirements: Record<WashingItem, WashingReqs>
+    }
+    state: WashingCoreState & WashingLabels & {
+        position: number
+        items: WashingItem[]
+        currentItem: WashingItem
+    }
+}
+
 export type Module =
     | WireModule
     | DirectionModule
     | SymbolModule
     | MatchModule
     | ChartModule
+    | WashingModule
 
 export type Rules = {
     chart: ChartModule['mute']
@@ -244,6 +304,7 @@ export type Rules = {
     match: MatchModule['mute']
     symbol: SymbolModule['mute']
     wire: WireModule['mute']
+    washing: WashingModule['mute']
 }
 
 /* Internal state */
