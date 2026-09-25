@@ -144,13 +144,55 @@ export type SymbolModule = {
     }
 }
 
+export type MatchWord = 'check' | 'confirm' | 'ok' | 'submit'
+
+export type MatchChart = 'a' | 'b' | 'c' | 'd'
+
+export type MatchModule = {
+    id: 'match'
+    blind: {
+        id: 'match'
+        index: number
+        pairs: [number, number][]
+        complete: boolean
+    }
+    deaf: {
+        id: 'match'
+        index: number
+        pairs: [number, number][]
+        toggles: ('red' | 'green')[]
+        word: MatchWord
+        complete: boolean
+    }
+    mute: {
+        id: 'match'
+        // wordToChart['ok'] = 'a' means
+        // word 'ok' corresponds to using chart 'a'
+        wordToChart: Record<MatchWord, MatchChart>
+        // chartLayout['a'] = [1, 2, 3, 4, 5, 6, 7, 8] means
+        // those numbers are placed in that order in the chart for 'a'
+        chartLayout: Record<MatchChart, number[]>
+    }
+    state: {
+        id: 'match'
+        index: number
+        position: number
+        pairs: [number, number][]
+        toggles: ('red' | 'green')[]
+        word: MatchWord
+        complete: boolean
+    }
+}
+
 export type Module =
     | WireModule
     | DirectionModule
     | SymbolModule
+    | MatchModule
 
 export type Rules = {
     direction: DirectionModule['mute']
+    match: MatchModule['mute']
     symbol: SymbolModule['mute']
     wire: WireModule['mute']
 }

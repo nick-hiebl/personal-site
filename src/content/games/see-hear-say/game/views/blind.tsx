@@ -7,6 +7,7 @@ import { useGameContext } from '../context'
 import type { Module, WireModule } from '../types'
 
 import { DirectionPuzzleBlind } from './DirectionPuzzle'
+import { MatchPuzzleBlind } from './MatchPuzzle'
 import { SymbolPuzzleBlind } from './SymbolPuzzle'
 
 export const BlindView = () => {
@@ -33,6 +34,8 @@ const BlindPuzzle = ({ puzzle }: { puzzle: Module['blind'] }) => {
         return <DirectionPuzzleBlind puzzle={puzzle} />
     } else if (puzzle.id === 'symbol') {
         return <SymbolPuzzleBlind puzzle={puzzle} />
+    } else if (puzzle.id === 'match') {
+        return <MatchPuzzleBlind puzzle={puzzle} />
     }
 
     return <span>Unknown puzzle type!</span>

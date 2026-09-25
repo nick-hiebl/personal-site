@@ -2,13 +2,14 @@ import { IncDecNumber } from '../../../../../components/games/common/IncDecNumbe
 import { useGameContext } from '../context'
 import type { GameSettings, ModuleId } from '../types'
 
-const PUZZLES: ModuleId[] = ['wire', 'direction', 'symbol']
-
 const PUZZLE_NAMES: Record<ModuleId, string> = {
     wire: 'Wire module',
     direction: 'Direction module',
     symbol: 'Symbol module',
+    match: 'Match module',
 }
+
+const PUZZLES = Object.keys(PUZZLE_NAMES) as ModuleId[]
 
 export const Settings = () => {
     const { socket, output: { settings } } = useGameContext()

@@ -15,6 +15,7 @@ import type {
 } from '../types'
 
 import { DirectionPhase, DirectionPuzzleReference } from './DirectionPuzzle'
+import { MatchPuzzleRule } from './MatchPuzzle'
 import { SymbolPuzzleReference } from './SymbolPuzzle'
 
 import './mute.css'
@@ -45,6 +46,8 @@ const Rule = ({ rule }: { rule: Module['mute'] }) => {
         return <DirectionRule rule={rule} />
     } else if (rule.id === 'symbol') {
         return <SymbolRule rule={rule} />
+    } else if (rule.id === 'match') {
+        return <MatchPuzzleRule rule={rule} />
     }
 
     return <span>Unknown puzzle type!</span>
