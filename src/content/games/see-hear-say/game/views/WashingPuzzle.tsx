@@ -123,6 +123,43 @@ export const WashingPuzzleDeaf = ({ puzzle }: { puzzle: WashingModule['deaf']}) 
     )
 }
 
+export const WashingPuzzleReference = () => {
+    return (
+        <div className="module column-center gap-16px">
+            <div className="row-center gap-16px spread full-width">
+                <div className="chart-display-box-parent row-center">
+                    <div className="chart-display-box chart-monospace">
+                        example
+                    </div>
+                </div>
+                <Indicator enabled={false} />
+            </div>
+            <div className="row-center gap-16px spread full-width">
+                <button disabled>
+                    <DirectionalArrow direction="left" />
+                </button>
+                <button className="chart-big-button" disabled>
+                    LAUNDER
+                </button>
+                <button disabled>
+                    <DirectionalArrow direction="right" />
+                </button>
+            </div>
+            <div className="washing-grid">
+                <Dial direction={2} />
+                <Dial direction={0} />
+                <Dial direction={1} />
+                <button className="chart-button" disabled>
+                    <span className="chart-button-primary">
+                        <WashingSymbol symbol="blank" />
+                    </span>
+                    <span className="chart-button-indicator" data-enabled={false} />
+                </button>
+            </div>
+        </div>
+    )
+}
+
 type DialProps = {
     onClick?: () => void
     direction: 0 | 1 | 2
@@ -203,6 +240,7 @@ const WASHING_SYMBOL_DETAILS: { title: string, details: Detail[] }[] = [
         title: 'Special',
         details: [
             ['dry-clean', 'Dry clean'],
+            ['bleach', 'Bleach'],
             ['non-chlorine-bleach', 'Non chlorine bleach'],
         ],
     },
@@ -219,7 +257,9 @@ export const WashingPuzzleRule = ({ rule }: { rule: WashingModule['mute'] }) => 
                 suitably laundered with the options available.
             </div>
             <div>Puzzle looks as below:</div>
-            <div>...</div>
+            <div className="shrink-module">
+                <WashingPuzzleReference />
+            </div>
             <table className="info-table">
                 <thead>
                     <tr>
@@ -231,27 +271,41 @@ export const WashingPuzzleRule = ({ rule }: { rule: WashingModule['mute'] }) => 
                     </tr>
                 </thead>
                 <tbody>
-                    {items.map(item => (
-                        <tr key={item}>
-                            <td className="row-label">{item}</td>
-                            <td>
-                                {rule.requirements[item].temperature.min}°C
-                                {' - '}
-                                {rule.requirements[item].temperature.max}°C
-                            </td>
-                            <td className="no-text">
-                                <WashingSymbol symbol={rule.requirements[item].drying} background />
-                            </td>
-                            <td className="no-text">
-                                <WashingSymbol symbol={rule.requirements[item].iron} background />
-                            </td>
-                            <td className="no-text">
-                                {rule.requirements[item].special ? (
-                                    <WashingSymbol symbol={rule.requirements[item].special} background />
-                                ) : null}
-                            </td>
-                        </tr>
-                    ))}
+                    {items.map(item => {
+                        if (rule.requirements[item].special === 'dry-clean') {
+                            return (
+                                <tr key={item}>
+                                    <td className="row-label">{item}</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                    <td>Dry clean only</td>
+                                </tr>
+                            )
+                        }
+
+                        return (
+                            <tr key={item}>
+                                <td className="row-label">{item}</td>
+                                <td>
+                                    {rule.requirements[item].temperature.min}°C
+                                    {' - '}
+                                    {rule.requirements[item].temperature.max}°C
+                                </td>
+                                <td className="no-text">
+                                    <WashingSymbol symbol={rule.requirements[item].drying} background />
+                                </td>
+                                <td className="no-text">
+                                    <WashingSymbol symbol={rule.requirements[item].iron} background />
+                                </td>
+                                <td className="no-text">
+                                    {rule.requirements[item].special ? (
+                                        <WashingSymbol symbol={rule.requirements[item].special} background />
+                                    ) : null}
+                                </td>
+                            </tr>
+                        )
+                    })}
                 </tbody>
             </table>
             <div className="column gap-16px">

@@ -98,7 +98,7 @@ export const MatchPuzzleRule = ({ rule }: { rule: MatchModule['mute'] }) => {
                 appropriate graph below.
             </div>
             <div>Puzzle looks as below:</div>
-            <div>
+            <div className="shrink-module">
                 <MatchPuzzleReference />
             </div>
             {(Object.keys(rule.chartLayout) as MatchChart[]).map(chart => {

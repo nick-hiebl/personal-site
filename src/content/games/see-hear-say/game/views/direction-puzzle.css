@@ -1,9 +1,10 @@
 .direction-puzzle {
     display: grid;
+    gap: 4px;
     grid-template-areas:
-        "phase . up light"
-        "phase left center right"
-        "phase . down .";
+        ". up light"
+        "left center right"
+        ". down .";
 }
 
 .direction-phase, .direction-light, .direction-up, .direction-left, .direction-right, .direction-down, .direction-center {
@@ -22,6 +23,7 @@
 
 .direction-up {
     grid-area: up;
+    align-items: end;
 }
 
 .direction-left {

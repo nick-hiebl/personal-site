@@ -139,7 +139,7 @@ export const WashingSymbol = ({ symbol, background }: Props) => {
                 )}
             </svg>
         )
-    } else if (symbol === 'non-chlorine-bleach') {
+    } else if (['bleach', 'non-chlorine-bleach'].includes(symbol)) {
         return (
             <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -148,13 +148,15 @@ export const WashingSymbol = ({ symbol, background }: Props) => {
             >
                 {background && <rect x="2" y="2" width="96" height="96" rx="10" fill="white" />}
                 <path
-                    d="
-                        M 50 13 L 90 87 L 10 87 Z
-                        M 62 34 L 32 87
-                        M 72 55 L 55 87
-                    "
+                    d="M 50 13 L 90 87 L 10 87 Z"
                     {...COMMON_SYMBOL}
                 />
+                {symbol === 'non-chlorine-bleach' && (
+                    <path
+                        d="M 62 34 L 32 87 M 72 55 L 55 87"
+                        {...COMMON_SYMBOL}
+                    />
+                )}
             </svg>
         )
     } else if (symbol === 'dry-clean') {

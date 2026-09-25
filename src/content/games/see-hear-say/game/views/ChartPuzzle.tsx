@@ -92,6 +92,10 @@ export const ChartPuzzleBlind = ({ puzzle }: { puzzle: ChartModule['blind']}) =>
                 <button
                     className="chart-button"
                     onClick={() => {
+                        if (puzzle.complete) {
+                            return
+                        }
+
                         setStarPresses(c => c + 1)
                         socket.emit('chart-button', {
                             index: puzzle.index,
@@ -149,10 +153,10 @@ const DATA_POINTS = 40
 
 const useChartData = (resetIndex: number, step: number) => {
     const intervalRef = useRef<NodeJS.Timeout | null>(null)
-    const [data, setData] = useState(new Array(DATA_POINTS).fill(50))
+    const [data, setData] = useState([50])
 
     useEffect(() => {
-        setData(new Array(DATA_POINTS).fill(50))
+        setData([50])
     }, [resetIndex])
 
     useEffect(() => {
@@ -163,7 +167,12 @@ const useChartData = (resetIndex: number, step: number) => {
         intervalRef.current = setInterval(() => {
             setData(currentData => {
                 const last = currentData[currentData.length - 1] ?? 50
-                const next = last + 3 * step + Math.random() - 0.5
+                const stepNext = last + 3 * step
+                const next = stepNext > 99
+                    ? stepNext - Math.random() / 2
+                    : stepNext < 1
+                        ? stepNext + Math.random() / 2
+                        : stepNext + Math.random() - 0.5
 
                 const boundNext = next < 0
                     ? 100
@@ -173,8 +182,9 @@ const useChartData = (resetIndex: number, step: number) => {
 
                 if (currentData.length >= DATA_POINTS) {
                     return currentData.slice(currentData.length - DATA_POINTS + 1).concat(boundNext)
+                } else {
+                    return currentData.concat(boundNext)
                 }
-                return currentData.concat(boundNext).slice(1)
             })
         }, 100)
 
@@ -345,7 +355,7 @@ export const ChartPuzzleRule = ({ rule }: { rule: ChartModule['mute'] }) => {
                 observing their impact on the chart.
             </div>
             <div>Puzzle looks as below:</div>
-            <div>
+            <div className="shrink-module">
                 <ChartPuzzleReference />
             </div>
             <div>

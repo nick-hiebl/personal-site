@@ -11,7 +11,10 @@ const DIRECTIONS: Direction[] = ['up', 'down', 'left', 'right']
 
 export const DirectionPuzzleReference = () => {
     return (
-        <div className="module">
+        <div className="module row-center gap-16px">
+            <div className="direction-phase">
+                <DirectionPhase phase={2} />
+            </div>
             <div className="direction-puzzle">
                 {DIRECTIONS.map((direction) => (
                     <div className={`direction-${direction}`} key={direction}>
@@ -24,9 +27,6 @@ export const DirectionPuzzleReference = () => {
                 <div className="direction-light">
                     <LightBulb color="color" />
                 </div>
-                <div className="direction-phase">
-                    <DirectionPhase phase={2} />
-                </div>
             </div>
         </div>
     )
@@ -36,7 +36,10 @@ export const DirectionPuzzleBlind = ({ puzzle }: { puzzle: DirectionModule['blin
     const { socket } = useGameContext()
 
     return (
-        <div className="module">
+        <div className="module row-center gap-16px">
+            <div className="direction-phase">
+                <DirectionPhase phase={puzzle.phase} />
+            </div>
             <div className="direction-puzzle">
                 {DIRECTIONS.map((direction) => (
                     <div className={`direction-${direction}`} key={direction}>
@@ -55,9 +58,6 @@ export const DirectionPuzzleBlind = ({ puzzle }: { puzzle: DirectionModule['blin
                 <div className="direction-light">
                     <LightBulb color={puzzle.light} />
                 </div>
-                <div className="direction-phase">
-                    <DirectionPhase phase={puzzle.phase} />
-                </div>
             </div>
         </div>
     )
@@ -65,7 +65,10 @@ export const DirectionPuzzleBlind = ({ puzzle }: { puzzle: DirectionModule['blin
 
 export const DirectionPuzzleDeaf = ({ puzzle }: { puzzle: DirectionModule['deaf'] }) => {
     return (
-        <div className="module">
+        <div className="module row-center gap-16px">
+            <div className="direction-phase">
+                <DirectionPhase phase={puzzle.phase} />
+            </div>
             <div className="direction-puzzle">
                 {DIRECTIONS.map((direction) => (
                     <div
@@ -81,9 +84,6 @@ export const DirectionPuzzleDeaf = ({ puzzle }: { puzzle: DirectionModule['deaf'
                 </div>
                 <div className="direction-light">
                     <LightBulb color={puzzle.light} />
-                </div>
-                <div className="direction-phase">
-                    <DirectionPhase phase={puzzle.phase} />
                 </div>
             </div>
         </div>

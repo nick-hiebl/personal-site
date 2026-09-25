@@ -114,7 +114,7 @@ const DirectionRule = ({ rule }: { rule: DirectionModule['mute'] }) => {
                 The button in the center is displayed in <i>braille</i>.
             </div>
             <div>Puzzle looks as below:</div>
-            <div>
+            <div className="shrink-module">
                 <DirectionPuzzleReference />
             </div>
             <table className="info-table">
@@ -160,7 +160,7 @@ const SymbolRule = ({ rule }: { rule: SymbolModule['mute'] }) => {
             <div>
                 Puzzle looks as below:
             </div>
-            <div>
+            <div className="shrink-module">
                 <SymbolPuzzleReference />
             </div>
             <table className="info-table">
