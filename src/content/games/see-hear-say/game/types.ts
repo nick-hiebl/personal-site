@@ -290,6 +290,54 @@ export type WashingModule = {
     }
 }
 
+export type NumberKeyCondition =
+    | { type: 'exact', number: number }
+    | { type: 'prime' }
+    | { type: 'divisible', factor: number }
+    | { type: 'between', min: number, max: number }
+    | { type: 'lt', number: number }
+    | { type: 'gt', number: number }
+    | { type: 'or', a: NumberKeyCondition, b: NumberKeyCondition }
+    | { type: 'and', a: NumberKeyCondition, b: NumberKeyCondition }
+    | { type: 'else' }
+
+export type NumberKeyButton =
+    | 'a' | 'b' | 'c' | 'd' | 'e'
+    | 'f' | 'g' | 'h' | 'i' | 'j'
+
+export type NumberKeyRule = {
+    condition: NumberKeyCondition
+    button: NumberKeyButton
+}
+
+export type NumberKeyModule = {
+    id: 'number-key'
+    blind: {
+        id: 'number-key'
+        index: number
+        buttons: NumberKeyButton[]
+        complete: boolean
+    }
+    deaf: {
+        id: 'number-key'
+        index: number
+        number: number
+        complete: boolean
+    }
+    mute: {
+        id: 'number-key'
+        rules: NumberKeyRule[]
+    }
+    state: {
+        id: 'number-key'
+        index: number
+        position: number
+        number: number
+        buttons: NumberKeyButton[]
+        complete: boolean
+    }
+}
+
 export type Module =
     | WireModule
     | DirectionModule
@@ -297,6 +345,7 @@ export type Module =
     | MatchModule
     | ChartModule
     | WashingModule
+    | NumberKeyModule
 
 export type Rules = {
     chart: ChartModule['mute']
@@ -305,6 +354,7 @@ export type Rules = {
     symbol: SymbolModule['mute']
     wire: WireModule['mute']
     washing: WashingModule['mute']
+    'number-key': NumberKeyModule['mute']
 }
 
 /* Internal state */

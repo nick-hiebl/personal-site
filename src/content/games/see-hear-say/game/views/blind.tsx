@@ -9,6 +9,7 @@ import type { Module, WireModule } from '../types'
 import { ChartPuzzleBlind } from './ChartPuzzle'
 import { DirectionPuzzleBlind } from './DirectionPuzzle'
 import { MatchPuzzleBlind } from './MatchPuzzle'
+import { NumberKeyPuzzleBlind } from './NumberKeyPuzzle'
 import { SymbolPuzzleBlind } from './SymbolPuzzle'
 import { WashingPuzzleBlind } from './WashingPuzzle'
 
@@ -42,6 +43,8 @@ const BlindPuzzle = ({ puzzle }: { puzzle: Module['blind'] }) => {
         return <ChartPuzzleBlind puzzle={puzzle} />
     } else if (puzzle.id === 'washing') {
         return <WashingPuzzleBlind puzzle={puzzle} />
+    } else if (puzzle.id === 'number-key') {
+        return <NumberKeyPuzzleBlind puzzle={puzzle} />
     }
 
     return <span>Unknown puzzle type!</span>
