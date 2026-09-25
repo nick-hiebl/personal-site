@@ -14,6 +14,7 @@ import type {
     WireModule,
 } from '../types'
 
+import { ChartPuzzleRule } from './ChartPuzzle'
 import { DirectionPhase, DirectionPuzzleReference } from './DirectionPuzzle'
 import { MatchPuzzleRule } from './MatchPuzzle'
 import { SymbolPuzzleReference } from './SymbolPuzzle'
@@ -48,6 +49,8 @@ const Rule = ({ rule }: { rule: Module['mute'] }) => {
         return <SymbolRule rule={rule} />
     } else if (rule.id === 'match') {
         return <MatchPuzzleRule rule={rule} />
+    } else if (rule.id === 'chart') {
+        return <ChartPuzzleRule rule={rule} />
     }
 
     return <span>Unknown puzzle type!</span>

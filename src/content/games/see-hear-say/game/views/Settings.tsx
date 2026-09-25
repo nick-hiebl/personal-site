@@ -7,6 +7,7 @@ const PUZZLE_NAMES: Record<ModuleId, string> = {
     direction: 'Direction module',
     symbol: 'Symbol module',
     match: 'Match module',
+    chart: 'Chart module',
 }
 
 const PUZZLES = Object.keys(PUZZLE_NAMES) as ModuleId[]

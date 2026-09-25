@@ -184,13 +184,62 @@ export type MatchModule = {
     }
 }
 
+export type ChartFunction =
+    'mxc' | 'fstat' | 'overload' | 'reset' | 'clrnc' | 'spf'
+
+export type ChartFunctionBehavior = {
+    plus: 'increase' | 'decrease'
+    minus: 'increase' | 'decrease'
+    slash: 'glow' | 'color'
+}
+
+export type ChartModule = {
+    id: 'chart'
+    blind: {
+        id: 'chart'
+        index: number
+        glow: boolean
+        incActive: 'plus' | 'minus' | 'none'
+        slashPressed: boolean
+        complete: boolean
+    }
+    deaf: {
+        id: 'chart'
+        index: number
+        displayFunction: ChartFunction
+        colorChanged: boolean
+        incActive: 'plus' | 'minus' | 'none'
+        slashPressed: boolean
+        resetIndex: number
+        output: number
+        complete: boolean
+    }
+    mute: {
+        id: 'chart'
+        functions: Record<ChartFunction, ChartFunctionBehavior>
+    }
+    state: {
+        id: 'chart'
+        index: number
+        position: number
+        realFunction: ChartFunction
+        displayFunction: ChartFunction
+        incActive: 'plus' | 'minus' | 'none'
+        slashPressed: boolean
+        resetIndex: number
+        complete: boolean
+    }
+}
+
 export type Module =
     | WireModule
     | DirectionModule
     | SymbolModule
     | MatchModule
+    | ChartModule
 
 export type Rules = {
+    chart: ChartModule['mute']
     direction: DirectionModule['mute']
     match: MatchModule['mute']
     symbol: SymbolModule['mute']

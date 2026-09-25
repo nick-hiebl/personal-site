@@ -1,0 +1,104 @@
+.chart-display-box-parent {
+    flex-grow: 1;
+    justify-content: center;
+}
+
+.chart-display-box {
+    background-color: black;
+    border: 6px solid white;
+    width: 50%;
+    box-sizing: border-box;
+    height: 56px;
+    color: white;
+    font-family: monospace;
+    font-weight: bold;
+    text-align: center;
+    padding: 8px;
+}
+
+.chart-big-button {
+    font-size: 2em;
+    flex-grow: 1;
+    height: 60px;
+}
+
+.chart-monospace {
+    font-weight: bold;
+    font-family: monospace;
+    font-size: 1.25em;
+}
+
+.chart-panel-row {
+    display: flex;
+    justify-content: end;
+    align-items: end;
+    gap: 24px;
+}
+
+.chart-panel {
+    width: 400px;
+    background-color: black;
+    height: 200px;
+}
+
+@keyframes chart-glow {
+    0% {
+        background-color: black;
+    }
+    50% {
+        background-color: #092;
+    }
+    100% {
+        background-color: black;
+    }
+}
+
+.chart-panel.chart-glowing {
+    animation-name: chart-glow;
+    animation-duration: 2000ms;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+}
+
+.chart-button {
+    width: 160px;
+    height: 160px;
+    font-size: 4em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px;
+    border-style: outset;
+    border-width: 6px;
+    background-color: #888;
+    cursor: pointer;
+}
+
+.chart-button:disabled {
+    cursor: not-allowed;
+}
+
+.chart-button:hover {
+    background-color: #808080;
+}
+
+.chart-button:active {
+    background-color: #707070;
+}
+
+.chart-button-primary {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+}
+
+.chart-button-indicator {
+    width: 40px;
+    height: 12px;
+    border-radius: 6px;
+    background-color: #222;
+}
+
+.chart-button-indicator[data-enabled=true] {
+    background-color: #fff;
+}

@@ -6,6 +6,7 @@ import { Wire } from '../components/Wire'
 import { useGameContext } from '../context'
 import type { Module, WireModule } from '../types'
 
+import { ChartPuzzleBlind } from './ChartPuzzle'
 import { DirectionPuzzleBlind } from './DirectionPuzzle'
 import { MatchPuzzleBlind } from './MatchPuzzle'
 import { SymbolPuzzleBlind } from './SymbolPuzzle'
@@ -36,6 +37,8 @@ const BlindPuzzle = ({ puzzle }: { puzzle: Module['blind'] }) => {
         return <SymbolPuzzleBlind puzzle={puzzle} />
     } else if (puzzle.id === 'match') {
         return <MatchPuzzleBlind puzzle={puzzle} />
+    } else if (puzzle.id === 'chart') {
+        return <ChartPuzzleBlind puzzle={puzzle} />
     }
 
     return <span>Unknown puzzle type!</span>

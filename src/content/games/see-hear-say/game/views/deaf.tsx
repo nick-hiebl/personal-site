@@ -6,6 +6,7 @@ import { Wire } from '../components/Wire'
 import { useGameContext } from '../context'
 import type { Module, WireModule } from '../types'
 
+import { ChartPuzzleDeaf } from './ChartPuzzle'
 import { DirectionPuzzleDeaf } from './DirectionPuzzle'
 import { MatchPuzzleDeaf } from './MatchPuzzle'
 import { SymbolPuzzleDeaf } from './SymbolPuzzle'
@@ -67,6 +68,8 @@ const DeafPuzzle = ({ puzzle }: { puzzle: Module['deaf'] }) => {
         return <SymbolPuzzleDeaf puzzle={puzzle} />
     } else if (puzzle.id === 'match') {
         return <MatchPuzzleDeaf puzzle={puzzle} />
+    } else if (puzzle.id === 'chart') {
+        return <ChartPuzzleDeaf puzzle={puzzle} />
     }
 
     return <span>Unknown puzzle type!</span>
