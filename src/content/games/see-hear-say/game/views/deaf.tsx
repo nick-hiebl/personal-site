@@ -11,6 +11,7 @@ import { DirectionPuzzleDeaf } from './DirectionPuzzle'
 import { MatchPuzzleDeaf } from './MatchPuzzle'
 import { NumberKeyPuzzleDeaf } from './NumberKeyPuzzle'
 import { SymbolPuzzleDeaf } from './SymbolPuzzle'
+import { TrainPuzzleDeaf } from './TrainPuzzle'
 import { WashingPuzzleDeaf } from './WashingPuzzle'
 
 export const DeafView = () => {
@@ -76,6 +77,8 @@ const DeafPuzzle = ({ puzzle }: { puzzle: Module['deaf'] }) => {
         return <WashingPuzzleDeaf puzzle={puzzle} />
     } else if (puzzle.id === 'number-key') {
         return <NumberKeyPuzzleDeaf puzzle={puzzle} />
+    } else if (puzzle.id === 'train') {
+        return <TrainPuzzleDeaf puzzle={puzzle} />
     }
 
     return <span>Unknown puzzle type!</span>

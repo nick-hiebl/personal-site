@@ -19,6 +19,7 @@ import { DirectionPhase, DirectionPuzzleReference } from './DirectionPuzzle'
 import { MatchPuzzleRule } from './MatchPuzzle'
 import { NumberKeyPuzzleRule } from './NumberKeyPuzzle'
 import { SymbolPuzzleReference } from './SymbolPuzzle'
+import { TrainPuzzleRule } from './TrainPuzzle'
 import { WashingPuzzleRule } from './WashingPuzzle'
 
 import './mute.css'
@@ -57,6 +58,8 @@ const Rule = ({ rule }: { rule: Module['mute'] }) => {
         return <WashingPuzzleRule rule={rule} />
     } else if (rule.id === 'number-key') {
         return <NumberKeyPuzzleRule rule={rule} />
+    } else if (rule.id === 'train') {
+        return <TrainPuzzleRule rule={rule} />
     }
 
     return <span>Unknown puzzle type!</span>

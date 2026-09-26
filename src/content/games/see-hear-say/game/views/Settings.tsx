@@ -10,6 +10,7 @@ const PUZZLE_NAMES: Record<ModuleId, string> = {
     chart: 'Chart module',
     washing: 'Washing module',
     'number-key': 'Number key module',
+    train: 'Train module',
 }
 
 const PUZZLES = Object.keys(PUZZLE_NAMES) as ModuleId[]

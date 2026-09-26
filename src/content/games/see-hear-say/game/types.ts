@@ -338,6 +338,44 @@ export type NumberKeyModule = {
     }
 }
 
+export type TrainLine =
+    | 'T1' | 'T2' | 'T3' | 'T4' | 'T5' | 'T6' | 'T7' | 'T8' | 'T9'
+    | 'M1'
+
+export type TrainModule = {
+    id: 'train'
+    blind: {
+        id: 'train'
+        index: number
+        departure: string
+        destination: string
+        lines: (TrainLine | '')[]
+        complete: boolean
+    }
+    deaf: {
+        id: 'train'
+        index: number
+        departure: string
+        destination: string
+        lines: (TrainLine | '')[]
+        complete: boolean
+    }
+    mute: {
+        id: 'train'
+        bannedLines: TrainLine[]
+        bannedStations: string[]
+    }
+    state: {
+        id: 'train'
+        index: number
+        position: number
+        departure: string
+        destination: string
+        lines: (TrainLine | '')[]
+        complete: boolean
+    }
+}
+
 export type Module =
     | WireModule
     | DirectionModule
@@ -346,6 +384,7 @@ export type Module =
     | ChartModule
     | WashingModule
     | NumberKeyModule
+    | TrainModule
 
 export type Rules = {
     chart: ChartModule['mute']
@@ -355,6 +394,7 @@ export type Rules = {
     wire: WireModule['mute']
     washing: WashingModule['mute']
     'number-key': NumberKeyModule['mute']
+    train: TrainModule['mute']
 }
 
 /* Internal state */

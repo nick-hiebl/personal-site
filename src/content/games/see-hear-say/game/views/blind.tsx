@@ -11,6 +11,7 @@ import { DirectionPuzzleBlind } from './DirectionPuzzle'
 import { MatchPuzzleBlind } from './MatchPuzzle'
 import { NumberKeyPuzzleBlind } from './NumberKeyPuzzle'
 import { SymbolPuzzleBlind } from './SymbolPuzzle'
+import { TrainPuzzleBlind } from './TrainPuzzle'
 import { WashingPuzzleBlind } from './WashingPuzzle'
 
 export const BlindView = () => {
@@ -45,6 +46,8 @@ const BlindPuzzle = ({ puzzle }: { puzzle: Module['blind'] }) => {
         return <WashingPuzzleBlind puzzle={puzzle} />
     } else if (puzzle.id === 'number-key') {
         return <NumberKeyPuzzleBlind puzzle={puzzle} />
+    } else if (puzzle.id === 'train') {
+        return <TrainPuzzleBlind puzzle={puzzle} />
     }
 
     return <span>Unknown puzzle type!</span>

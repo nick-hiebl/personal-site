@@ -20,3 +20,11 @@ ul {
     display: flex;
     justify-content: center;
 }
+
+ul.list {
+    padding-left: 24px;
+}
+
+li.list-item {
+    list-style: disc;
+}
