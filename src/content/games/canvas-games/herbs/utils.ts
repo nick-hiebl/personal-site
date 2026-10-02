@@ -100,3 +100,20 @@ export const divideToGrid = (container: Rect, count: number, perRow: number, gap
         }
     }).map(rect => ({ ...rect, position: rect.position.add(container.position) }))
 }
+
+export const divideToFixedHeightGrid = (container: Rect, count: number, perRow: number, gap: number, cellHeight: number): Rect[] => {
+    const xSize = (container.size.x - (perRow - 1) * gap) / perRow
+
+    return new Array(count).fill(0).map((_, index) => {
+        const row = Math.floor(index / perRow)
+        const col = index % perRow
+
+        return {
+            position: new Vector(
+                col * (xSize + gap),
+                row * (cellHeight + gap),
+            ),
+            size: new Vector(xSize, cellHeight),
+        }
+    }).map(rect => ({ ...rect, position: rect.position.add(container.position) }))
+}

@@ -570,9 +570,6 @@ export class HerbsGame extends GameInstance {
             })
         })
 
-        ctx.fillStyle = 'white'
-        ctx.strokeStyle = 'black'
-
         ctx.shadowColor = 'rgba(0, 0, 0, 0.5)'
         ctx.shadowBlur = anyGrabbed
             ? 1
