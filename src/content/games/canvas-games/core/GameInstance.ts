@@ -50,6 +50,10 @@ export class GameInstance {
             this.mouseDown = false
         })
 
+        this.canvas.addEventListener('contextmenu', e => {
+            e.preventDefault()
+        })
+
         document.addEventListener('keydown', e => {
             this.keys.set(e.code, true)
         })

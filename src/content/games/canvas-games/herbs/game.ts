@@ -2,121 +2,25 @@ import { GameInstance } from '../core/GameInstance'
 import { Vector } from '../core/Vector'
 
 import { createDocumentImage } from './createDocument'
+import type { Document, Rect, Surface } from './types'
+import {
+    clampToSurface,
+    createId,
+    fastStep,
+    isSurface,
+    lerpVector,
+    overlaps,
+    overlapsRect,
+    randInt,
+    rectToDetails,
+    returnFirstLast,
+    smoothStep,
+} from './utils'
 
 const DROPPED_SCALE = 0.9
 
 const SURFACE_ANIMATION = 1000
 const SLIDE_TO_SURFACE = 150
-
-let nextId = 0
-const createId = () => nextId++
-
-type Rect = {
-    position: Vector
-    size: Vector
-}
-
-type Animation = {
-    startPos: Vector
-    endPos: Vector
-    duration: number
-    progress: number
-}
-
-type Surface = Rect & {
-    id: number
-    animation?: Animation
-    documents: Document[]
-    inset: number
-    trigger?: Rect & {
-        parentShift: Vector
-        enabled: boolean
-        hovered: boolean
-        onSurface: boolean
-    }
-}
-
-type Document = {
-    position: Vector
-    interaction?: {
-        hovered: boolean
-        grabbed: boolean
-        offset: Vector
-    }
-    animation?: Animation
-    shape: HTMLCanvasElement | HTMLImageElement
-    size: Vector
-    surfaceId: number
-}
-
-const rectToDetails = (rect: Rect): [number, number, number, number] => {
-    return [rect.position.x, rect.position.y, rect.size.x, rect.size.y]
-}
-
-const randInt = (a: number, b: number): number => {
-    return Math.floor(Math.random() * (b - a)) + a
-}
-
-const returnFirst = <T, U>(list: T[], predicate: (item: T) => U | undefined | false): U | undefined => {
-    for (const item of list) {
-        const res = predicate(item)
-
-        if (res) {
-            return res
-        }
-    }
-}
-
-const returnFirstLast = <T, U>(list: T[], predicate: (item: T) => U | undefined | false): U | undefined => {
-    for (let i = list.length - 1; i >= 0; i--) {
-        const res = predicate(list[i])
-
-        if (res) {
-            return res
-        }
-    }
-}
-
-const overlaps = (dist: Vector, size: Vector): boolean => {
-    return Math.abs(dist.x) < size.x / 2 && Math.abs(dist.y) < size.y / 2
-}
-
-const overlapsRect = (rect: Rect, pos: Vector): boolean => {
-    return rect.position.x <= pos.x &&
-        pos.x <= rect.position.x + rect.size.x &&
-        rect.position.y <= pos.y &&
-        pos.y <= rect.position.y + rect.size.y
-}
-
-const clamp = (value: number, low: number, high: number): number => {
-    return Math.max(low, Math.min(value, high))
-}
-
-const clampToSurface = (surface: Surface, position: Vector, size: Vector): Vector => {
-    const realPos = position.diff(surface.position)
-    const insetX = surface.inset + size.x / 2
-    const insetY = surface.inset + size.y / 2
-
-    return new Vector(
-        clamp(realPos.x, insetX, surface.size.x - insetX),
-        clamp(realPos.y, insetY, surface.size.y - insetY),
-    )
-}
-
-const smoothStep = (t: number): number => 3 * t * t - 2 * t * t * t
-const fastStep = (t: number): number => t * (2 - t)
-
-const lerp = (t: number, a: number, b: number): number => {
-    return (1 - t) * a + t * b
-}
-
-const lerpVector = (t: number, a: Vector, b: Vector): Vector => {
-    return a.scale(1 - t).add(b.scale(t))
-}
-
-const isSurface = (item: Surface | Document | undefined): item is Surface => {
-    return !!item && typeof item === 'object' && 'id' in item
-}
 
 export class HerbsGame extends GameInstance {
     surfaces: Surface[]
@@ -199,8 +103,6 @@ export class HerbsGame extends GameInstance {
                 surface.documents.push(newDoc)
             }
         })
-
-        window.surfaces = this.surfaces
     }
 
     clearSurfaceTriggerHovers() {
@@ -311,14 +213,37 @@ export class HerbsGame extends GameInstance {
                 special.interaction = undefined
             }
         } else if (special?.interaction) {
-            const dist = this.mousePos?.diff(special.position)
-            const overlaps = dist && Math.abs(dist.x) < special.size.x / 2 && Math.abs(dist.y) < special.size.y / 2
+            const surface = this.surfaces.find(s => s.id === special.surfaceId)!
+            const dist = this.mousePos?.diff(special.position.add(surface.position))
 
             if (this.mousePos && this.mouseDown && !special.interaction.grabbed) {
+                // Now grab
                 special.interaction.offset = special.position.diff(this.mousePos)
                 special.interaction.grabbed = true
-            } else if (!overlaps) {
+            } else if (!dist || !this.mousePos || !overlaps(dist, special.size)) {
+                // Not mousing over at all
                 special.interaction = undefined
+            } else {
+                const mousePos = this.mousePos
+
+                // Otherwise overlapping
+                const thingHovered = returnFirstLast(this.surfaces, (surface) => {
+                    const mouseInSpace = mousePos.diff(surface.position)
+
+                    const overlappedDocument = surface.documents.findLast(doc => overlaps(mouseInSpace.diff(doc.position), doc.size))
+
+                    if (overlappedDocument) {
+                        return overlappedDocument
+                    }
+
+                    if (overlapsRect(surface, mousePos)) {
+                        return surface
+                    }
+                })
+
+                if (thingHovered !== special) {
+                    special.interaction = undefined
+                }
             }
         }
 
