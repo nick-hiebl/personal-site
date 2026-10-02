@@ -5,11 +5,10 @@ import ImgGrab from './assets/grab.png'
 import ImgHand from './assets/hand.png'
 import ImgPoint from './assets/point.png'
 import ImgCursor from './assets/pointer.png'
-import type { CursorMode, SurfaceI } from './types'
+import type { CursorMode } from './types'
 import {
     clampToSurface,
     randInt,
-    rectToDetails,
     returnFirstLast,
 } from './utils'
 import { HerbGarden } from './HerbGarden'
@@ -113,14 +112,16 @@ export class HerbsGame extends GameInstance {
             // },
             new HerbGardenSurface(
                 'plant-shelf',
-                new Vector(-WIDTH * 0.8 + 10, 0),
+                new Vector(0, 0),
+                // new Vector(-WIDTH * 0.8 + 10, 0),
                 new Vector(WIDTH * 0.8, HEIGHT),
                 { noDrop: true, herbGarden: this.herbGarden },
             )
                 .addTrigger({
                     position: new Vector(WIDTH * 0.8, 0),
                     size: new Vector(knobSize, knobSize),
-                    enabled: false,
+                    enabled: true,
+                    // enabled: false,
                     parentShift: new Vector(WIDTH * 0.8 - 10, 0),
                     hovered: false,
                     onSurface: false,

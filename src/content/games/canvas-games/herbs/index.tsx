@@ -1,5 +1,7 @@
 import { useRef } from 'react'
 
+import { ThemeSwitcher } from '../../../../components/ThemeSwitcher'
+
 import { HerbsGame } from './game'
 
 export const Game = () => {
@@ -25,6 +27,7 @@ export const Game = () => {
                     cursor: 'none',
                 }}
             />
+            <ThemeSwitcher />
         </div>
     )
 }

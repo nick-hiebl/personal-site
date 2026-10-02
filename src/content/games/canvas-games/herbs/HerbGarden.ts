@@ -1,8 +1,3 @@
-import { Vector } from '../core/Vector'
-
-import type { Rect } from './types'
-import { divideToFixedHeightGrid, divideToGrid, insetRect, randInt, rectToDetails } from './utils'
-
 type Herb = {
     age: number
 }
@@ -25,8 +20,11 @@ export class HerbGarden {
         this.width = width
         this.height = height
 
-        this.pots = new Array(NUM_PLANTS).fill(0).map(() => ({
-            unlocked: false,
+        this.pots = new Array(NUM_PLANTS).fill(0).map((_, index) => ({
+            unlocked: index < 3,
+            herb: index < 3 ? {
+                age: 0,
+            } : undefined,
             cost: 1,
             color: 1,
         }))
