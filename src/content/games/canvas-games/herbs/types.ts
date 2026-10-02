@@ -23,6 +23,7 @@ export type Surface = Rect & {
         enabled: boolean
         hovered: boolean
         onSurface: boolean
+        animSpeed: number
     }
 }
 

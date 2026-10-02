@@ -73,3 +73,30 @@ export const lerpVector = (t: number, a: Vector, b: Vector): Vector => {
 export const isSurface = (item: Surface | Document | undefined): item is Surface => {
     return !!item && typeof item === 'object' && 'id' in item
 }
+
+export const insetRect = (rect: Rect, insetBy: number): Rect => {
+    return {
+        position: rect.position.add(new Vector(insetBy, insetBy)),
+        size: rect.size.diff(new Vector(insetBy, insetBy).scale(2)),
+    }
+}
+
+export const divideToGrid = (container: Rect, count: number, perRow: number, gap: number): Rect[] => {
+    const numRows = Math.ceil(count / perRow)
+
+    const xSize = (container.size.x - (perRow - 1) * gap) / perRow
+    const ySize = (container.size.y - (numRows - 1) * gap) / numRows
+
+    return new Array(count).fill(0).map((_, index) => {
+        const row = Math.floor(index / perRow)
+        const col = index % perRow
+
+        return {
+            position: new Vector(
+                col * (xSize + gap),
+                row * (ySize + gap),
+            ),
+            size: new Vector(xSize, ySize),
+        }
+    }).map(rect => ({ ...rect, position: rect.position.add(container.position) }))
+}

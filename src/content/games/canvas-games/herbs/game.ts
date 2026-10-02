@@ -2,6 +2,9 @@ import { GameInstance } from '../core/GameInstance'
 import { Vector } from '../core/Vector'
 
 import { createDocumentImage } from './createDocument'
+import GrabImg from './assets/grab.png'
+import HandImg from './assets/hand.png'
+import PointerImg from './assets/pointer.png'
 import type { Document, Rect, Surface } from './types'
 import {
     clampToSurface,
@@ -16,14 +19,23 @@ import {
     returnFirstLast,
     smoothStep,
 } from './utils'
+import { HerbGarden } from './HerbGarden'
 
 const DROPPED_SCALE = 0.9
 
 const SURFACE_ANIMATION = 1000
+const DRAWER_SPEED = 500
 const SLIDE_TO_SURFACE = 150
 
 const WIDTH = 480
 const HEIGHT = 270
+
+const grabImg = new Image()
+grabImg.src = GrabImg.src
+const handImg = new Image()
+handImg.src = HandImg.src
+const pointerImg = new Image()
+pointerImg.src = PointerImg.src
 
 export class HerbsGame extends GameInstance {
     innerCanvas: HTMLCanvasElement
@@ -31,8 +43,12 @@ export class HerbsGame extends GameInstance {
 
     surfaces: Surface[]
 
+    herbGarden: HerbGarden
+
     constructor(canvas: HTMLCanvasElement) {
         super(canvas)
+
+        this.herbGarden = new HerbGarden(WIDTH * 0.8, HEIGHT)
 
         this.innerCanvas = document.createElement('canvas')
         this.innerCanvas.width = WIDTH
@@ -51,6 +67,7 @@ export class HerbsGame extends GameInstance {
         ]
 
         const numDrawers = 4
+        const knobSize = 14
 
         for (let i = 0; i < numDrawers; i++) {
             const xInset = 10
@@ -58,7 +75,6 @@ export class HerbsGame extends GameInstance {
             const w = WIDTH / numDrawers - 2 * xInset
 
             const drawerInset = 12
-            const knobSize = 14
 
             this.surfaces.push({
                 id: createId(),
@@ -66,6 +82,7 @@ export class HerbsGame extends GameInstance {
                 size: new Vector(w, HEIGHT * 0.3 + drawerInset),
                 documents: [],
                 inset: 5,
+                draw: (surface) => this.drawDrawer(surface),
                 trigger: {
                     position: new Vector(w / 2 - knobSize / 2, HEIGHT * 0.3 + drawerInset),
                     size: new Vector(knobSize, knobSize),
@@ -73,6 +90,7 @@ export class HerbsGame extends GameInstance {
                     parentShift: new Vector(0, HEIGHT * 0.3),
                     hovered: false,
                     onSurface: false,
+                    animSpeed: DRAWER_SPEED,
                 },
             })
         }
@@ -97,8 +115,25 @@ export class HerbsGame extends GameInstance {
                     parentShift: new Vector(WIDTH / 2, 0),
                     hovered: false,
                     onSurface: true,
+                    animSpeed: SURFACE_ANIMATION,
                 },
                 inset: 3,
+            },
+            {
+                id: createId(),
+                position: new Vector(-WIDTH * 0.8 + 10, 0),
+                size: new Vector(WIDTH * 0.8, HEIGHT),
+                draw: (surface: Surface) => this.drawPlantShelf(surface),
+                trigger: {
+                    position: new Vector(WIDTH * 0.8, 0),
+                    size: new Vector(knobSize, knobSize),
+                    enabled: false,
+                    parentShift: new Vector(WIDTH * 0.8 - 10, 0),
+                    hovered: false,
+                    onSurface: true,
+                    animSpeed: SURFACE_ANIMATION,
+                },
+                inset: 0,
             },
         ])
 
@@ -111,7 +146,7 @@ export class HerbsGame extends GameInstance {
             let totalArea = 0
 
             while (totalArea < surfaceArea / 5) {
-                const newSize = new Vector(randInt(20, 40), randInt(30, 48))
+                const newSize = new Vector(randInt(45, 55), randInt(60, 75))
                 const newArea = newSize.x * newSize.y
                 totalArea += newArea
                 const startPos = new Vector(
@@ -141,10 +176,16 @@ export class HerbsGame extends GameInstance {
     }
 
     getMousePos(): Vector | undefined {
-        return this.mousePos?.scale(this.innerCanvas.width / this.canvas.width)
+        const raw = this.mousePos?.scale(this.innerCanvas.width / this.canvas.width)
+        return raw ? new Vector(
+            Math.round(raw.x),
+            Math.round(raw.y),
+        ) : undefined
     }
 
     update(elapsedTime: number) {
+        this.herbGarden.updateState(elapsedTime)
+
         const mousePos = this.getMousePos()
 
         this.surfaces.forEach(surface => {
@@ -298,7 +339,7 @@ export class HerbsGame extends GameInstance {
                     return surface
                 }
 
-                if (surface.trigger && !surface.trigger.onSurface) {
+                if (surface.trigger) {
                     const absoluteRect: Rect = {
                         position: surface.trigger.position.add(surface.position),
                         size: surface.trigger.size,
@@ -373,6 +414,52 @@ export class HerbsGame extends GameInstance {
         }
     }
 
+    drawDrawer(surface: Surface) {
+        const ctx = this.innerCtx
+
+        ctx.fillStyle = '#883300'
+
+        if (surface.trigger) {
+            ctx.fillRect(...rectToDetails(surface.trigger))
+        }
+
+        ctx.fillRect(0, 0, surface.size.x, surface.size.y)
+
+        ctx.beginPath()
+        ctx.rect(0, 0, surface.inset, surface.size.y)
+        ctx.rect(surface.size.x - surface.inset, 0, surface.inset, surface.size.y)
+        ctx.rect(0, surface.size.y - surface.inset, surface.size.x, surface.inset)
+        ctx.fill()
+    }
+
+    drawPlantShelf(surface: Surface) {
+        const ctx = this.innerCtx
+
+        ctx.fillStyle = '#883300'
+        if (surface.trigger) {
+            ctx.fillRect(...rectToDetails(surface.trigger))
+        }
+
+        ctx.fillRect(0, 0, surface.size.x, surface.size.y)
+
+        if (!surface.animation && !surface.trigger?.enabled) {
+            // Avoid rendering contents if closed
+        } else {
+            ctx.shadowColor = ''
+            ctx.shadowBlur = 0
+    
+            ctx.shadowOffsetX = 0
+            ctx.shadowOffsetY = 0
+
+            this.herbGarden.draw(ctx)
+    
+            // ctx.beginPath()
+            // ctx.fillStyle = 'yellow'
+            // ctx.ellipse(100, 100, 20, 20, 0, 0, 2 * Math.PI)
+            // ctx.fill()
+        }
+    }
+
     draw() {
         let anyGrabbed = false
         let anyHovered = false
@@ -402,8 +489,8 @@ export class HerbsGame extends GameInstance {
 
             ctx.drawImage(
                 document.shape,
-                (surface?.position?.x ?? 0) + document.position.x - w / 2,
-                (surface?.position?.y ?? 0) + document.position.y - h / 2,
+                Math.round((surface?.position?.x ?? 0) + document.position.x - w / 2),
+                Math.round((surface?.position?.y ?? 0) + document.position.y - h / 2),
                 w,
                 h,
             )
@@ -414,13 +501,8 @@ export class HerbsGame extends GameInstance {
 
             ctx.translate(surface.position.x, surface.position.y)
 
-            const drawTrigger = (trigger: Required<Surface>['trigger']) => {
-                ctx.fillStyle = trigger.hovered ? 'white' : '#bba726'
-
-                ctx.fillRect(...rectToDetails({
-                    position: trigger.position,
-                    size: trigger.size,
-                }))
+            if (surface.trigger?.hovered) {
+                anyHovered = true
             }
 
             ctx.shadowColor = 'rgba(0, 0, 0, 0.5)'
@@ -429,21 +511,41 @@ export class HerbsGame extends GameInstance {
             ctx.shadowOffsetX = 0
             ctx.shadowOffsetY = 1
 
-            if (surface.trigger && !surface.trigger.onSurface) {
-                drawTrigger(surface.trigger)
-            }
-
-            ctx.fillStyle = '#ffc766'
-            ctx.fillRect(0, 0, surface.size.x, surface.size.y)
-
-            if (surface.trigger && surface.trigger.onSurface) {
-                ctx.shadowColor = ''
-                ctx.shadowBlur = 0
+            if (surface.draw) {
+                surface.draw(surface)
+            } else {
+                const drawTrigger = (trigger: Required<Surface>['trigger']) => {
+                    ctx.fillStyle = '#bba726'
+    
+                    ctx.fillRect(...rectToDetails({
+                        position: trigger.position,
+                        size: trigger.size,
+                    }))
+                }
+    
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)'
+                ctx.shadowBlur = 3
+    
                 ctx.shadowOffsetX = 0
-                ctx.shadowOffsetY = 0
-
-                drawTrigger(surface.trigger)
+                ctx.shadowOffsetY = 1
+    
+                if (surface.trigger && !surface.trigger.onSurface) {
+                    drawTrigger(surface.trigger)
+                }
+    
+                ctx.fillStyle = '#ffc766'
+                ctx.fillRect(0, 0, surface.size.x, surface.size.y)
+    
+                if (surface.trigger && surface.trigger.onSurface) {
+                    ctx.shadowColor = ''
+                    ctx.shadowBlur = 0
+                    ctx.shadowOffsetX = 0
+                    ctx.shadowOffsetY = 0
+    
+                    drawTrigger(surface.trigger)
+                }
             }
+
     
             surface.documents?.forEach(document => {
                 if (document.interaction?.grabbed) {
@@ -483,20 +585,13 @@ export class HerbsGame extends GameInstance {
 
         const mousePos = this.getMousePos()
         if (mousePos) {
-            ctx.save()
-            ctx.translate(mousePos.x, mousePos.y)
-            ctx.beginPath()
-
-            ctx.moveTo(0, 0)
-            ctx.lineTo(15, 15)
-            ctx.lineTo(7, 15)
-            ctx.lineTo(0, 20)
-            ctx.lineTo(0, 0)
-            
-            ctx.stroke()
-            ctx.fill()
-            
-            ctx.restore()
+            if (anyGrabbed) {
+                ctx.drawImage(grabImg, mousePos.x - 10, mousePos.y - 5)
+            } else if (anyHovered) {
+                ctx.drawImage(handImg, mousePos.x - 9, mousePos.y - 6)
+            } else {
+                ctx.drawImage(pointerImg, mousePos.x, mousePos.y)
+            }
         }
 
         this.ctx.drawImage(this.innerCanvas, 0, 0, this.canvas.width, this.canvas.height)
