@@ -1,13 +1,21 @@
 import { Vector } from '../../core/Vector';
+import ImgSeedSheet from '../assets/seed-sheet.png'
+import ImgToolSheet from '../assets/tool-sheet.png'
 import type { Document } from '../Document';
 import type { HerbGarden } from '../HerbGarden';
 import { Surface, type SurfaceOptions } from '../Surface'
 import type { CursorMode, Rect } from '../types';
 import { divideToFixedHeightGrid, divideToGrid, insetRect, overlapsRect, rectToDetails } from '../utils';
+import { drawPot } from './plantArt';
 
 type HerbGardenOptions = SurfaceOptions & {
     herbGarden: HerbGarden
 }
+
+const seedSheetImg = new Image()
+seedSheetImg.src = ImgSeedSheet.src
+const toolSheetImg = new Image()
+toolSheetImg.src = ImgToolSheet.src
 
 const PER_ROW = 4
 const GAP = 10
@@ -35,6 +43,20 @@ const computeLayout = (width: number, height: number): [Rect, Rect, Rect] => {
             size: new Vector(rightSpace, height - 2 * GAP),
         },
     ]
+}
+
+enum Tool {
+    TROWEL = 0,
+    WATERING_CAN = 1,
+    SHEARS = 2,
+    STAR = 3,
+}
+
+enum Seed {
+    LEAF = 0,
+    RED = 1,
+    BLACK = 2,
+    CLOVER = 3,
 }
 
 type ThingType = 'tool' | 'seed'
@@ -66,7 +88,7 @@ export class HerbGardenSurface extends Surface {
 
         this.potPlaces = squares
 
-        this.toolPlaces = divideToFixedHeightGrid(toolSpace, 4, 1, GAP, toolSpace.size.x)
+        this.toolPlaces = divideToFixedHeightGrid(toolSpace, 4, 1, GAP - 2, toolSpace.size.x)
         this.seedPlaces = divideToFixedHeightGrid(seedSpace, 12, 2, GAP / 2, (seedSpace.size.x - GAP / 2) / 2)
 
         this.clickBuffer = false
@@ -101,36 +123,7 @@ export class HerbGardenSurface extends Surface {
                 spot.position.y + spot.size.y - 8,
             )
 
-            const CLAY = '#b66a50'
-            ctx.fillStyle = CLAY
-
-            ctx.beginPath()
-            ctx.ellipse(origin.x, origin.y, 10, 4, 0, 0, Math.PI)
-            ctx.lineTo(origin.x - 12, origin.y - 14)
-            ctx.ellipse(origin.x, origin.y - 17, 14, 5, 0, Math.PI, 2 * Math.PI)
-            ctx.lineTo(origin.x + 12, origin.y - 14)
-            ctx.fill()
-
-            ctx.shadowColor = ''
-            ctx.shadowBlur = 0
-            ctx.shadowOffsetX = 0
-            ctx.shadowOffsetY = 0
-
-            ctx.fillStyle = '#662200'
-            ctx.beginPath()
-            ctx.ellipse(origin.x, origin.y - 15, 11, 4, 0, 0, 2 * Math.PI)
-            ctx.fill()
-
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)'
-            ctx.shadowBlur = 2
-            ctx.shadowOffsetX = 0
-            ctx.shadowOffsetY = 1
-
-            ctx.fillStyle = CLAY
-            ctx.beginPath()
-            ctx.ellipse(origin.x, origin.y - 14, 14, 5, 0, 0, Math.PI)
-            ctx.ellipse(origin.x, origin.y - 19, 15, 5, 0, Math.PI, 0, true)
-            ctx.fill()
+            drawPot(ctx, origin)
 
             if (pot.herb) {
                 ctx.strokeStyle = 'green'
@@ -140,10 +133,6 @@ export class HerbGardenSurface extends Surface {
                 ctx.lineTo(origin.x, origin.y - 16 - pot.herb.age / 250)
                 ctx.stroke()
             }
-
-            ctx.fillStyle = 'black'
-            const measure = ctx.measureText(`${index}`)
-            ctx.fillText(`${index}`, spot.position.x + spot.size.x / 2 - measure.width / 2, spot.position.y + 14)
         })
 
         ctx.shadowColor = ''
@@ -153,43 +142,17 @@ export class HerbGardenSurface extends Surface {
 
         ctx.lineWidth = 1
 
-        this.toolPlaces.forEach((tool, index) => {
-            ctx.strokeStyle = 'white'
-            if (this.active?.type === 'tool' && this.active.index === index) {
-                ctx.strokeRect(...rectToDetails(insetRect(tool, 0.5)))
-            }
-            ctx.fillStyle = 'white'
-            ctx.beginPath()
-            ctx.ellipse(
-                tool.position.x + tool.size.x / 2,
-                tool.position.y + tool.size.y / 2,
-                tool.size.x / 3,
-                tool.size.y / 3,
-                0,
-                0,
-                2 * Math.PI,
-            )
-            ctx.fill()
-        })
+        ctx.drawImage(toolSheetImg, this.toolPlaces[0].position.x, this.toolPlaces[0].position.y)
+        ctx.drawImage(seedSheetImg, this.seedPlaces[0].position.x, this.seedPlaces[0].position.y)
 
-        this.seedPlaces.forEach((seed, index) => {
+        if (this.active) {
             ctx.strokeStyle = 'white'
-            if (this.active?.type === 'seed' && this.active.index === index) {
-                ctx.strokeRect(...rectToDetails(insetRect(seed, 0.5)))
+            if (this.active.type === 'tool') {
+                ctx.strokeRect(...rectToDetails(insetRect(this.toolPlaces[this.active.index], 0.5)))
+            } else {
+                ctx.strokeRect(...rectToDetails(insetRect(this.seedPlaces[this.active.index], 0.5)))
             }
-            ctx.fillStyle = 'white'
-            ctx.beginPath()
-            ctx.ellipse(
-                seed.position.x + seed.size.x / 2,
-                seed.position.y + seed.size.y / 2,
-                seed.size.x / 3,
-                seed.size.y / 3,
-                0,
-                0,
-                2 * Math.PI,
-            )
-            ctx.fill()
-        })
+        }
     }
 
     override isActing(mouse: Vector, mouseDown: boolean, onDrop: (doc: Document) => void): boolean {
@@ -267,6 +230,10 @@ export class HerbGardenSurface extends Surface {
                         ctx.fillRect(mousePos.x, mousePos.y + 22, 10 + width, 25)
                         ctx.fillStyle = 'white'
                         ctx.fillText(tooltip, mousePos.x + 5, mousePos.y + 38)
+
+                        if (this.active?.type === 'seed') {
+                            return 'cursor'
+                        }
                     }
 
                     if (this.active) {

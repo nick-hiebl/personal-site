@@ -97,7 +97,6 @@ export class Surface implements SurfaceI {
     }
 
     isActing(mouse: Vector, mouseDown: boolean, onDrop: (doc: Document) => void): boolean {
-        // console.log('Checking acting', this.name)
         const localMouse = mouse.diff(this.position)
 
         let cursorTaken = false
