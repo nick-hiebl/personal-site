@@ -31,9 +31,11 @@ export class GameInstance {
         this.keys = new Map()
 
         this.canvas.addEventListener('mousemove', e => {
+            const box = this.canvas.getBoundingClientRect()
+
             this.mousePos = new Vector(
-                e.clientX - this.canvas.getBoundingClientRect().x,
-                e.clientY - this.canvas.getBoundingClientRect().y,
+                (e.clientX - box.x) / box.width * canvas.width,
+                (e.clientY - box.y) / box.height * canvas.height,
             )
         })
 

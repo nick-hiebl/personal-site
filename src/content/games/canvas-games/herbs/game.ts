@@ -22,32 +22,55 @@ const DROPPED_SCALE = 0.9
 const SURFACE_ANIMATION = 1000
 const SLIDE_TO_SURFACE = 150
 
+const WIDTH = 480
+const HEIGHT = 270
+
 export class HerbsGame extends GameInstance {
+    innerCanvas: HTMLCanvasElement
+    innerCtx: CanvasRenderingContext2D
+
     surfaces: Surface[]
 
     constructor(canvas: HTMLCanvasElement) {
         super(canvas)
 
-        this.surfaces = []
+        this.innerCanvas = document.createElement('canvas')
+        this.innerCanvas.width = WIDTH
+        this.innerCanvas.height = HEIGHT
+        this.innerCtx = this.innerCanvas.getContext('2d')!
+
+        this.ctx.imageSmoothingEnabled = false
+
+        this.surfaces = [
+            {
+                id: createId(),
+                position: new Vector(WIDTH - 60, HEIGHT - 60),
+                size: new Vector(50, 50),
+                inset: 0,
+            },
+        ]
 
         const numDrawers = 4
 
         for (let i = 0; i < numDrawers; i++) {
-            const xInset = 30
-            const left = canvas.width * i / numDrawers + xInset
-            const w = canvas.width / numDrawers - 2 * xInset
+            const xInset = 10
+            const left = WIDTH * i / numDrawers + xInset
+            const w = WIDTH / numDrawers - 2 * xInset
+
+            const drawerInset = 12
+            const knobSize = 14
 
             this.surfaces.push({
                 id: createId(),
-                position: new Vector(left, canvas.height * 0.3 - 25),
-                size: new Vector(w, canvas.height * 0.3 + 25),
+                position: new Vector(left, HEIGHT * 0.3 - drawerInset),
+                size: new Vector(w, HEIGHT * 0.3 + drawerInset),
                 documents: [],
-                inset: 10,
+                inset: 5,
                 trigger: {
-                    position: new Vector(w / 2 - 15, canvas.height * 0.3 + 25),
-                    size: new Vector(30, 30),
+                    position: new Vector(w / 2 - knobSize / 2, HEIGHT * 0.3 + drawerInset),
+                    size: new Vector(knobSize, knobSize),
                     enabled: false,
-                    parentShift: new Vector(0, canvas.height * 0.3),
+                    parentShift: new Vector(0, HEIGHT * 0.3),
                     hovered: false,
                     onSurface: false,
                 },
@@ -58,20 +81,20 @@ export class HerbsGame extends GameInstance {
             {
                 id: createId(),
                 position: new Vector(0, 0),
-                size: new Vector(canvas.width, canvas.height * 0.6),
+                size: new Vector(WIDTH, HEIGHT * 0.6),
                 documents: [],
                 inset: 0,
             },
             {
                 id: createId(),
                 position: new Vector(0, 0),
-                size: new Vector(canvas.width / 2, canvas.height / 2),
+                size: new Vector(WIDTH / 2, HEIGHT / 2),
                 documents: [],
                 trigger: {
-                    position: new Vector(0, canvas.height / 2 - 40),
-                    size: new Vector(40, 40),
+                    position: new Vector(0, HEIGHT / 2 - 10),
+                    size: new Vector(WIDTH / 2, 10),
                     enabled: false,
-                    parentShift: new Vector(canvas.width / 2, 0),
+                    parentShift: new Vector(WIDTH / 2, 0),
                     hovered: false,
                     onSurface: true,
                 },
@@ -80,11 +103,15 @@ export class HerbsGame extends GameInstance {
         ])
 
         this.surfaces.forEach(surface => {
+            if (!surface.documents) {
+                return
+            }
+
             const surfaceArea = surface.size.x * surface.size.y
             let totalArea = 0
 
             while (totalArea < surfaceArea / 5) {
-                const newSize = new Vector(randInt(20, 100), randInt(20, 100))
+                const newSize = new Vector(randInt(20, 40), randInt(30, 48))
                 const newArea = newSize.x * newSize.y
                 totalArea += newArea
                 const startPos = new Vector(
@@ -113,10 +140,16 @@ export class HerbsGame extends GameInstance {
         })
     }
 
+    getMousePos(): Vector | undefined {
+        return this.mousePos?.scale(this.innerCanvas.width / this.canvas.width)
+    }
+
     update(elapsedTime: number) {
+        const mousePos = this.getMousePos()
+
         this.surfaces.forEach(surface => {
             if (surface.animation) {
-                surface.documents.forEach(doc => doc.interaction = undefined)
+                surface.documents?.forEach(doc => doc.interaction = undefined)
                 surface.animation.progress += elapsedTime
 
                 if (surface.animation.progress >= surface.animation.duration) {
@@ -131,7 +164,7 @@ export class HerbsGame extends GameInstance {
                 }
             }
 
-            surface.documents.forEach(document => {
+            surface.documents?.forEach(document => {
                 if (document.animation) {
                     document.animation.progress += elapsedTime
 
@@ -149,18 +182,18 @@ export class HerbsGame extends GameInstance {
             })
         })
 
-        const special = this.surfaces.flatMap(s => s.documents)
+        const special = this.surfaces.flatMap(s => s.documents ?? [])
             .findLast(doc => !!doc.interaction)
 
 
-        if (special) {
+        if (special || !mousePos) {
             this.clearSurfaceTriggerHovers()
         }
 
         if (special?.interaction!.grabbed) {
-            if (this.mousePos && this.mouseDown) {
+            if (mousePos && this.mouseDown) {
                 // Move it around
-                special.position = this.mousePos?.add(special.interaction.offset)
+                special.position = mousePos?.add(special.interaction.offset)
             } else {
                 special.interaction.grabbed = false
 
@@ -169,7 +202,7 @@ export class HerbsGame extends GameInstance {
 
                 const nextSurface = this.surfaces.findLast(surface => overlapsRect(surface, absolutePosition))
 
-                if (nextSurface && nextSurface !== currentSurface) {
+                if (nextSurface && nextSurface.documents && nextSurface !== currentSurface) {
                     // Dropping onto new surface
                     special.surfaceId = nextSurface.id
 
@@ -186,8 +219,8 @@ export class HerbsGame extends GameInstance {
                         }
                     }
                     
-                    currentSurface.documents = currentSurface.documents.filter(d => d !== special)
-                    nextSurface.documents.push(special)
+                    currentSurface.documents = currentSurface.documents?.filter(d => d !== special)
+                    nextSurface.documents?.push(special)
                 } else if (!nextSurface) {
                     special.animation = {
                         startPos: special.position,
@@ -214,23 +247,21 @@ export class HerbsGame extends GameInstance {
             }
         } else if (special?.interaction) {
             const surface = this.surfaces.find(s => s.id === special.surfaceId)!
-            const dist = this.mousePos?.diff(special.position.add(surface.position))
+            const dist = mousePos?.diff(special.position.add(surface.position))
 
-            if (this.mousePos && this.mouseDown && !special.interaction.grabbed) {
+            if (mousePos && this.mouseDown && !special.interaction.grabbed) {
                 // Now grab
-                special.interaction.offset = special.position.diff(this.mousePos)
+                special.interaction.offset = special.position.diff(mousePos)
                 special.interaction.grabbed = true
-            } else if (!dist || !this.mousePos || !overlaps(dist, special.size)) {
+            } else if (!dist || !mousePos || !overlaps(dist, special.size)) {
                 // Not mousing over at all
                 special.interaction = undefined
             } else {
-                const mousePos = this.mousePos
-
                 // Otherwise overlapping
                 const thingHovered = returnFirstLast(this.surfaces, (surface) => {
                     const mouseInSpace = mousePos.diff(surface.position)
 
-                    const overlappedDocument = surface.documents.findLast(doc => overlaps(mouseInSpace.diff(doc.position), doc.size))
+                    const overlappedDocument = surface.documents?.findLast(doc => overlaps(mouseInSpace.diff(doc.position), doc.size))
 
                     if (overlappedDocument) {
                         return overlappedDocument
@@ -247,12 +278,10 @@ export class HerbsGame extends GameInstance {
             }
         }
 
-        if (!special?.interaction?.hovered && this.mousePos) {
-            const mousePos = this.mousePos
-
+        if (!special?.interaction?.hovered && mousePos) {
             const hoveredThing = returnFirstLast(this.surfaces, (surface) => {
                 if (!surface.animation) {
-                    const hoveredDoc = surface.documents.findLast(document => {
+                    const hoveredDoc = surface.documents?.findLast(document => {
                         const pos = surface.position.add(document.position)
                         const dist = mousePos.diff(pos)
                         const size = document.size.scale(DROPPED_SCALE)
@@ -289,7 +318,7 @@ export class HerbsGame extends GameInstance {
                 } else if (surface.trigger) {
                     const hoveringNow = overlapsRect(
                         { position: surface.trigger.position.add(surface.position), size: surface.trigger.size },
-                        this.mousePos,
+                        mousePos,
                     )
 
                     if (surface.trigger.hovered) {
@@ -330,13 +359,13 @@ export class HerbsGame extends GameInstance {
 
                 const s = this.surfaces.find(s => s.id === hoveredThing.surfaceId)!
 
-                const docIndex = s.documents.findLastIndex(d => d === hoveredThing)
-                s.documents.splice(docIndex, 1)
-                s.documents.push(hoveredThing)
+                const docIndex = s.documents!.findLastIndex(d => d === hoveredThing)
+                s.documents!.splice(docIndex, 1)
+                s.documents!.push(hoveredThing)
                 hoveredThing.interaction = {
                     hovered: true,
                     grabbed: this.mouseDown,
-                    offset: hoveredThing.position.diff(this.mousePos).diff(s.position),
+                    offset: hoveredThing.position.diff(mousePos).diff(s.position),
                 }
             } else {
                 this.clearSurfaceTriggerHovers()
@@ -348,70 +377,75 @@ export class HerbsGame extends GameInstance {
         let anyGrabbed = false
         let anyHovered = false
 
-        this.ctx.fillStyle = 'black'
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+        const ctx = this.innerCtx
+        ctx.fillStyle = 'black'
+        ctx.fillRect(0, 0, WIDTH, HEIGHT)
 
-        const drawDocument = (surface: Surface, document: Document) => {
+        const drawDocument = (document: Document, surface?: Surface) => {
             const scale = document.interaction?.hovered ? 1 : DROPPED_SCALE
     
             const { x: w, y: h } = document.size.scale(scale)
 
-            this.ctx.shadowColor = 'rgba(0, 0, 0, 0.5)'
-            this.ctx.shadowBlur = document.interaction
-                ? document.interaction.grabbed
-                    ? 20
-                    : 10
-                : 5
-
-            this.ctx.shadowOffsetX = 0
-            this.ctx.shadowOffsetY = document.interaction
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)'
+            ctx.shadowBlur = document.interaction
                 ? document.interaction.grabbed
                     ? 10
                     : 5
                 : 2
 
-            this.ctx.drawImage(
+            ctx.shadowOffsetX = 0
+            ctx.shadowOffsetY = document.interaction
+                ? document.interaction.grabbed
+                    ? 5
+                    : 2
+                : 1
+
+            ctx.drawImage(
                 document.shape,
-                surface.position.x + document.position.x - w / 2,
-                surface.position.y + document.position.y - h / 2,
+                (surface?.position?.x ?? 0) + document.position.x - w / 2,
+                (surface?.position?.y ?? 0) + document.position.y - h / 2,
                 w,
                 h,
             )
         }
 
         this.surfaces.forEach(surface => {
-            const drawTrigger = (surface: Surface, trigger: Required<Surface>['trigger']) => {
-                this.ctx.fillStyle = trigger.hovered ? 'white' : '#bba726'
+            ctx.save()
 
-                this.ctx.fillRect(...rectToDetails({
-                    position: surface.position.add(trigger.position),
+            ctx.translate(surface.position.x, surface.position.y)
+
+            const drawTrigger = (trigger: Required<Surface>['trigger']) => {
+                ctx.fillStyle = trigger.hovered ? 'white' : '#bba726'
+
+                ctx.fillRect(...rectToDetails({
+                    position: trigger.position,
                     size: trigger.size,
                 }))
             }
 
-            this.ctx.shadowColor = 'rgba(0, 0, 0, 0.5)'
-            this.ctx.shadowBlur = 5
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)'
+            ctx.shadowBlur = 3
 
-            this.ctx.shadowOffsetX = 0
-            this.ctx.shadowOffsetY = 2
+            ctx.shadowOffsetX = 0
+            ctx.shadowOffsetY = 1
 
             if (surface.trigger && !surface.trigger.onSurface) {
-                drawTrigger(surface, surface.trigger)
+                drawTrigger(surface.trigger)
             }
 
-            this.ctx.fillStyle = '#ffc766'
-            this.ctx.fillRect(surface.position.x, surface.position.y, surface.size.x, surface.size.y)
+            ctx.fillStyle = '#ffc766'
+            ctx.fillRect(0, 0, surface.size.x, surface.size.y)
 
             if (surface.trigger && surface.trigger.onSurface) {
-                this.ctx.shadowColor = ''
-                this.ctx.shadowBlur = 0
-                this.ctx.shadowOffsetX = 0
-                this.ctx.shadowOffsetY = 0
+                ctx.shadowColor = ''
+                ctx.shadowBlur = 0
+                ctx.shadowOffsetX = 0
+                ctx.shadowOffsetY = 0
 
-                drawTrigger(surface, surface.trigger)
+                drawTrigger(surface.trigger)
             }
     
-            surface.documents.forEach(document => {
+            surface.documents?.forEach(document => {
                 if (document.interaction?.grabbed) {
                     anyGrabbed = true
                 } else if (document.interaction?.hovered) {
@@ -422,44 +456,49 @@ export class HerbsGame extends GameInstance {
                     return
                 }
 
-                drawDocument(surface, document)
+                drawDocument(document)
             })
+
+            ctx.restore()
         })
 
         this.surfaces.forEach(surface => {
-            surface.documents.filter(d => d.interaction?.grabbed).forEach(document => {
-                drawDocument(surface, document)
+            surface.documents?.filter(d => d.interaction?.grabbed).forEach(document => {
+                drawDocument(document, surface)
             })
         })
 
-        this.ctx.fillStyle = 'white'
-        this.ctx.strokeStyle = 'black'
+        ctx.fillStyle = 'white'
+        ctx.strokeStyle = 'black'
 
-        this.ctx.shadowColor = 'rgba(0, 0, 0, 0.5)'
-        this.ctx.shadowBlur = anyGrabbed
-            ? 3
-            : anyHovered ? 8 : 15
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)'
+        ctx.shadowBlur = anyGrabbed
+            ? 1
+            : anyHovered ? 4 : 7
 
-        this.ctx.shadowOffsetX = 0
-        this.ctx.shadowOffsetY = anyGrabbed
-            ? 2
-            : anyHovered ? 4 : 8
+        ctx.shadowOffsetX = 0
+        ctx.shadowOffsetY = anyGrabbed
+            ? 1
+            : anyHovered ? 2 : 4
 
-        if (this.mousePos) {
-            this.ctx.save()
-            this.ctx.translate(this.mousePos.x, this.mousePos.y)
-            this.ctx.beginPath()
+        const mousePos = this.getMousePos()
+        if (mousePos) {
+            ctx.save()
+            ctx.translate(mousePos.x, mousePos.y)
+            ctx.beginPath()
 
-            this.ctx.moveTo(0, 0)
-            this.ctx.lineTo(15, 15)
-            this.ctx.lineTo(7, 15)
-            this.ctx.lineTo(0, 20)
-            this.ctx.lineTo(0, 0)
+            ctx.moveTo(0, 0)
+            ctx.lineTo(15, 15)
+            ctx.lineTo(7, 15)
+            ctx.lineTo(0, 20)
+            ctx.lineTo(0, 0)
             
-            this.ctx.stroke()
-            this.ctx.fill()
+            ctx.stroke()
+            ctx.fill()
             
-            this.ctx.restore()
+            ctx.restore()
         }
+
+        this.ctx.drawImage(this.innerCanvas, 0, 0, this.canvas.width, this.canvas.height)
     }
 }

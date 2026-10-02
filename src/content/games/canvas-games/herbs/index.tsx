@@ -9,8 +9,8 @@ export const Game = () => {
         <div className="column-center gap-16px">
             <h1>Herbs game!</h1>
             <canvas
-                width="960"
-                height="540"
+                width="1440"
+                height="810"
                 ref={(canvas) => {
                     if (!canvas) {
                         return
@@ -20,6 +20,7 @@ export const Game = () => {
                     gameRef.current.start()
                 }}
                 style={{
+                    width: '1440px',
                     border: '1px solid orangered',
                     cursor: 'none',
                 }}

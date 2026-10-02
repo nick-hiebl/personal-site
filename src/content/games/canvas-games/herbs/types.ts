@@ -15,8 +15,9 @@ export type Animation = {
 export type Surface = Rect & {
     id: number
     animation?: Animation
-    documents: Document[]
+    documents?: Document[]
     inset: number
+    draw?: (surface: Surface) => void
     trigger?: Rect & {
         parentShift: Vector
         enabled: boolean
