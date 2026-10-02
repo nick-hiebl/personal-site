@@ -12,12 +12,14 @@ export type Animation = {
     progress: number
 }
 
-export type Surface = Rect & {
+export type SurfaceI = Rect & {
     id: number
+    name: string
+    containsSurfacePoint(point: Vector): boolean
+    draw(ctx: CanvasRenderingContext2D): void
     animation?: Animation
-    documents?: Document[]
+    documents?: DocumentI[]
     inset: number
-    draw?: (surface: Surface) => void
     trigger?: Rect & {
         parentShift: Vector
         enabled: boolean
@@ -27,7 +29,7 @@ export type Surface = Rect & {
     }
 }
 
-export type Document = {
+export type DocumentI = {
     position: Vector
     interaction?: {
         hovered: true
@@ -37,5 +39,11 @@ export type Document = {
     animation?: Animation
     shape: HTMLCanvasElement | HTMLImageElement
     size: Vector
-    surfaceId: number
+    surface: SurfaceI
 }
+
+export type CursorMode =
+    | 'cursor'
+    | 'can-grab'
+    | 'grabbing'
+    | 'point'

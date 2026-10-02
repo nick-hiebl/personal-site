@@ -1,6 +1,6 @@
 import { Vector } from '../core/Vector'
 
-import type { Document, Rect, Surface } from './types'
+import type { DocumentI, Rect, SurfaceI } from './types'
 
 let nextId = 0
 export const createId = () => nextId++
@@ -48,7 +48,7 @@ export const clamp = (value: number, low: number, high: number): number => {
     return Math.max(low, Math.min(value, high))
 }
 
-export const clampToSurface = (surface: Surface, position: Vector, size: Vector): Vector => {
+export const clampToSurface = (surface: SurfaceI, position: Vector, size: Vector): Vector => {
     const realPos = position.diff(surface.position)
     const insetX = surface.inset + size.x / 2
     const insetY = surface.inset + size.y / 2
@@ -70,7 +70,7 @@ export const lerpVector = (t: number, a: Vector, b: Vector): Vector => {
     return a.scale(1 - t).add(b.scale(t))
 }
 
-export const isSurface = (item: Surface | Document | undefined): item is Surface => {
+export const isSurface = (item: SurfaceI | DocumentI | undefined): item is SurfaceI => {
     return !!item && typeof item === 'object' && 'id' in item
 }
 
