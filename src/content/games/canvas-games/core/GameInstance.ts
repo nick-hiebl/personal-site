@@ -39,6 +39,7 @@ export class GameInstance {
 
         this.canvas.addEventListener('mouseleave', () => {
             this.mousePos = undefined
+            this.mouseDown = false
         })
 
         this.canvas.addEventListener('mousedown', () => {

@@ -14,6 +14,10 @@ export class Vector {
     diff(other: Vector): Vector {
         return new Vector(this.x - other.x, this.y - other.y)
     }
+
+    scale(factor: number): Vector {
+        return new Vector(this.x * factor, this.y * factor)
+    }
 }
 
 export const approach = (current: number, target: number, step: number): number => {
