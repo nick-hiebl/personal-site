@@ -1,0 +1,38 @@
+.ranked-list, .unranked-list {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ranking-option {
+    display: flex;
+    gap: 8px;
+    flex-direction: row;
+    background-color: light-dark(var(--B100), var(--B900));
+    border: 2px solid light-dark(var(--B200), var(--B800));
+    border-radius: 4px;
+    padding: 4px 8px;
+    align-items: center;
+    cursor: pointer;
+}
+
+.ranking-option:hover {
+    border-color: light-dark(var(--B300), var(--B700));
+}
+
+.scoring-number {
+    font-weight: bold;
+    border-radius: 50%;
+    aspect-ratio: 1;
+    background-color: light-dark(var(--B400), var(--B600));
+    width: 16px;
+    height: 16px;
+    padding: 4px;
+}
+
+.scoring-number.unranked {
+    background-color: light-dark(var(--P400), var(--P600));
+}

@@ -1,0 +1,34 @@
+#player-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+    margin-block: 4px;
+}
+
+.player-item {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 8px;
+    align-items: center;
+    padding: 4px 8px;
+    background-color: var(--player-background);
+}
+
+.player-tag-list {
+    flex-shrink: 0;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.player-name {
+    flex-shrink: 2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.player-name[data-self=true] {
+    font-weight: bold;
+}
