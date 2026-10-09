@@ -132,6 +132,7 @@ export const Game = () => {
                         >
                             Stop
                         </button>
+                        {isValid ? 'Valid' : 'Invalid'}
                     </div>
                     <Editor
                         onChange={(value) => {

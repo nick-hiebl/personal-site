@@ -14,6 +14,7 @@ type EvaluableFunction = {
 }
 
 export interface StackContext {
+    type: 'global' | 'loop' | 'function'
     variables: Map<string, CoreFunction | EvaluableFunction | number | boolean>
 }
 
@@ -25,6 +26,7 @@ const COMMANDS: MoveCommand[] = ['up', 'down', 'left', 'right']
 
 const createGlobalContext = (game: MonkeyGame, ctx: ProgramContext): StackContext => {
     return {
+        type: 'global',
         variables: new Map([
             ...COMMANDS.map<[string, CoreFunction]>(cmd => [cmd, { type: 'special', call: async () => {
                 await game.executeCommand(cmd)
@@ -100,6 +102,26 @@ export const executeStatement = async (statement: Statement, game: MonkeyGame, c
             ?? last(ctx.contexts)
 
         definitionRoot.variables.set(statement.identifier.value, computedResult)
+    } else if (statement.type === 'while-statement') {
+        while (true) {
+            if (!ctx.running()) {
+                throw Error('Cancelled')
+            }
+
+            const conditionResult = await evaluateExpr(statement.condition, game, ctx)
+
+            if (!conditionResult) {
+                break
+            }
+
+            await executeBlockStatement(statement.block, game, {
+                ...ctx,
+                contexts: [
+                    ...ctx.contexts,
+                    { type: 'loop', variables: new Map() },
+                ],
+            })
+        }
     } else if (statement.type === 'expression-statement') {
         await evaluateExpr(statement.expression, game, ctx)
     }
@@ -145,7 +167,7 @@ export const evaluateExpr = async (expr: Expression, game: MonkeyGame, ctx: Prog
                     contexts: [
                         ...func.closure,
                         // Will need to set up arguments here eventually
-                        { variables: new Map() },
+                        { type: 'function', variables: new Map() },
                     ],
                 },
             )

@@ -49,11 +49,17 @@ export type BlockStatement = {
     statements: Statement[]
 }
 
-export type Statement = ExprStatement | FuncDeclStatement
+export type Statement = FuncDeclStatement | WhileStatement | ExprStatement
 
 export type FuncDeclStatement = {
     type: 'func-decl'
     name: Identifier
+    block: BlockStatement
+}
+
+export type WhileStatement = {
+    type: 'while-statement'
+    condition: Expression
     block: BlockStatement
 }
 
@@ -156,7 +162,7 @@ const parseIdentifier = (lines: string[], token: MyToken): Identifier => {
 
 const SOME_TEXT_REGEX = /[^\s]+/
 
-const parseText = (lines: string[], token: MyToken, nextToken: MyToken | undefined): string | undefined => {
+export const parseText = (lines: string[], token: MyToken, nextToken: MyToken | undefined): string | undefined => {
     const endOffset = nextToken?.lineNumber === token.lineNumber
         ? nextToken.offset
         : undefined
@@ -173,10 +179,12 @@ const parseText = (lines: string[], token: MyToken, nextToken: MyToken | undefin
 
 const parseStatement = (lines: string[], tokens: MyToken[], indentation: number): [Statement | undefined, MyToken[]] => {
     if (tokens[0].type === 'keyword.python') {
-        const ident = parseIdentifier(lines, tokens[0])
+        const text = parseText(lines, tokens[0], tokens[1])
 
-        if (ident.value === 'def') {
+        if (text === 'def') {
             return parseFuncDecl(lines, tokens, indentation)
+        } else if (text === 'while') {
+            return parseWhileStmt(lines, tokens, indentation)
         }
     }
 
@@ -235,7 +243,7 @@ const parseStatement = (lines: string[], tokens: MyToken[], indentation: number)
 }
 
 const parseFuncDecl = (lines: string[], tokens: MyToken[], indentation: number): [FuncDeclStatement, MyToken[]] => {
-    if (tokens[0].type !== 'keyword.python') {
+    if (tokens[0]?.type !== 'keyword.python') {
         throw Error('Parsing function declaration not starting with def')
     }
 
@@ -269,6 +277,36 @@ const parseFuncDecl = (lines: string[], tokens: MyToken[], indentation: number):
         {
             type: 'func-decl',
             name: nameIdent,
+            block,
+        },
+        afterBlock,
+    ]
+}
+
+const parseWhileStmt = (lines: string[], tokens: MyToken[], indentation: number): [WhileStatement, MyToken[]] => {
+    if (tokens[0]?.type !== 'keyword.python') {
+        throw tokenError(`Expected 'while' at`, tokens[0])
+    }
+
+    const word = parseText(lines, tokens[0], tokens[1])
+
+    if (word !== 'while') {
+        throw tokenError(`Expected 'while' at`, tokens[0])
+    }
+
+    const [expression, rest] = parseExpression(lines, tokens.slice(1))
+
+    const colon = rest[0]
+    if (!colon || colon.type !== 'delimiter.python') {
+        throw tokenError('Expected colon in while statement at', colon)
+    }
+
+    const [block, afterBlock] = parseBlockStatement(lines, rest.slice(1), indentation + 4)
+
+    return [
+        {
+            type: 'while-statement',
+            condition: expression,
             block,
         },
         afterBlock,
