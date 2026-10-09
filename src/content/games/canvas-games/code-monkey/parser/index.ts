@@ -2,6 +2,7 @@ import type { Token } from 'monaco-editor'
 
 type MyToken = Token & {
     lineNumber: number
+    text: string
 }
 
 const IDENTIFIER_REGEX = /[a-zA-Z_][a-zA-Z0-9_]*/
@@ -179,11 +180,9 @@ export const parseText = (lines: string[], token: MyToken, nextToken: MyToken | 
 
 const parseStatement = (lines: string[], tokens: MyToken[], indentation: number): [Statement | undefined, MyToken[]] => {
     if (tokens[0].type === 'keyword.python') {
-        const text = parseText(lines, tokens[0], tokens[1])
-
-        if (text === 'def') {
+        if (tokens[0].text === 'def') {
             return parseFuncDecl(lines, tokens, indentation)
-        } else if (text === 'while') {
+        } else if (tokens[0].text === 'while') {
             return parseWhileStmt(lines, tokens, indentation)
         }
     }
@@ -202,9 +201,7 @@ const parseStatement = (lines: string[], tokens: MyToken[], indentation: number)
     if (firstToken.type === 'identifier.python') {
         const assignmentName = parseIdentifier(lines, firstToken)
         if (assignmentName && tokens[1]?.type === '') {
-            const follow = parseText(lines, tokens[1], tokens[2])
-
-            if (follow === '=') {
+            if (tokens[1]?.text === '=') {
                 const [childExpression, extraTokens] = parseExpression(lines, tokens.slice(2, postLineIndex === -1 ? undefined : postLineIndex))
 
                 if (extraTokens.length > 0) {
@@ -288,9 +285,7 @@ const parseWhileStmt = (lines: string[], tokens: MyToken[], indentation: number)
         throw tokenError(`Expected 'while' at`, tokens[0])
     }
 
-    const word = parseText(lines, tokens[0], tokens[1])
-
-    if (word !== 'while') {
+    if (tokens[0].text !== 'while') {
         throw tokenError(`Expected 'while' at`, tokens[0])
     }
 
@@ -326,8 +321,8 @@ const parseAdditiveExpr = (lines: string[], tokens: MyToken[]): [AdditiveExpr, M
     let rest: MyToken[]
 
     [multExpr, rest] = parseMultiplicativeExpr(lines, tokens)
-    while (rest[0]?.type === '' && isAdditiveOperand(parseText(lines, rest[0], rest[1]))) {
-        const operator = parseText(lines, rest[0], rest[1])!
+    while (rest[0]?.type === '' && isAdditiveOperand(rest[0].text)) {
+        const operator = rest[0].text
         let right: AdditiveExpr
         [right, rest] = parseAdditiveExpr(lines, rest.slice(1))
         multExpr = {
@@ -350,8 +345,8 @@ const parseMultiplicativeExpr = (lines: string[], tokens: MyToken[]): [Multiplic
     let rest: MyToken[]
 
     [unaryExpr, rest] = parseUnaryExpr(lines, tokens)
-    while (rest[0]?.type === '' && isMultiplicativeOperand(parseText(lines, rest[0], rest[1]))) {
-        const operator = parseText(lines, rest[0], rest[1])!
+    while (rest[0]?.type === '' && isMultiplicativeOperand(rest[0].text)) {
+        const operator = rest[0].text
         let right: MultiplicativeExpr
         [right, rest] = parseMultiplicativeExpr(lines, rest.slice(1))
         unaryExpr = {
@@ -368,7 +363,7 @@ const parseMultiplicativeExpr = (lines: string[], tokens: MyToken[]): [Multiplic
 const parseUnaryExpr = (lines: string[], tokens: MyToken[]): [UnaryExpr, MyToken[]] => {
     if (tokens[0].type === 'keyword.python') {
         // TODO: + and - unary expressions
-        if (parseText(lines, tokens[0], tokens[1]) === 'not') {
+        if (tokens[0].text === 'not') {
             const [child, rest] = parseUnaryExpr(lines, tokens.slice(1))
 
             return [
@@ -386,15 +381,13 @@ const parseUnaryExpr = (lines: string[], tokens: MyToken[]): [UnaryExpr, MyToken
 
 const parsePrimaryExpr = (lines: string[], tokens: MyToken[]): [PrimaryExpr, MyToken[]] => {
     if (tokens[0].type === 'delimiter.parenthesis.python') {
-        const t = parseText(lines, tokens[0], tokens[1])
-
-        if (t !== '(') {
+        if (tokens[0].text !== '(') {
             throw Error(`Undesired parenthesis ${tokens[0].lineNumber}:${tokens[0].offset}`)
         }
 
         const [child, rest] = parseExpression(lines, tokens.slice(1))
 
-        if (!rest[0] || rest[0].type !== 'delimiter.parenthesis.python' || parseText(lines, rest[0], rest[1]) !== ')') {
+        if (!rest[0] || rest[0].type !== 'delimiter.parenthesis.python' || rest[0]?.text !== ')') {
             throw tokenError('Expected matching close paren', rest[0])
         }
 
@@ -406,7 +399,7 @@ const parsePrimaryExpr = (lines: string[], tokens: MyToken[]): [PrimaryExpr, MyT
             rest.slice(1),
         ]
     } else if (tokens[0].type === 'number.python') {
-        const num = parseText(lines, tokens[0], tokens[1])
+        const num = tokens[0].text
 
         if (!num) {
             throw tokenError('Weird number token', tokens[0])
@@ -425,8 +418,8 @@ const parsePrimaryExpr = (lines: string[], tokens: MyToken[]): [PrimaryExpr, MyT
             },
             tokens.slice(1),
         ]
-    } else if (tokens[0].type === 'keyword.python' && ['True', 'False'].includes(parseText(lines, tokens[0], tokens[1]) ?? '')) {
-        const value = parseText(lines, tokens[0], tokens[1]) === 'True'
+    } else if (tokens[0].type === 'keyword.python' && ['True', 'False'].includes(tokens[0].text)) {
+        const value = tokens[0].text === 'True'
 
         return [
             {
@@ -439,9 +432,7 @@ const parsePrimaryExpr = (lines: string[], tokens: MyToken[]): [PrimaryExpr, MyT
         const name = parseIdentifier(lines, tokens[0])
 
         if (tokens[1]?.type === 'delimiter.parenthesis.python') {
-            const text = parseText(lines, tokens[1], tokens[2])
-
-            if (text !== '()') {
+            if (tokens[1].text !== '()') {
                 throw tokenError('Handling arg-list, not ready for that', tokens[1])
             }
 
@@ -461,12 +452,12 @@ const parsePrimaryExpr = (lines: string[], tokens: MyToken[]): [PrimaryExpr, MyT
         }
     }
 
-    console.log('ppp', parseText(lines, tokens[0], tokens[1]))
+    console.log('ppp', tokens[0].text)
 
     console.log('Confused by', tokens[0], lines, lines[tokens[0].lineNumber].slice(tokens[0].offset))
     throw tokenError('Wtf primary expression', tokens[0])
 }
 
 const tokenError = (message: string, token: MyToken) => {
-    return Error(`${message} ${token.lineNumber + 1}:${token.offset}`)
+    return Error(`${message} ${token.lineNumber + 1}:${token.offset} '${token.text}'`)
 }

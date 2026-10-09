@@ -5,7 +5,7 @@ import Editor, { useMonaco } from '@monaco-editor/react'
 import { ThemeSwitcher } from '../../../../components/ThemeSwitcher'
 
 import { MonkeyGame } from './game'
-import { parseProgram, type ProgramTree } from './parser'
+import { parseProgram, parseText, type ProgramTree } from './parser'
 import { executeProgram } from './parser/executor'
 
 const LS_KEY = 'code-monkey:code'
@@ -76,10 +76,17 @@ export const Game = () => {
 
                                     try {
                                         const linedTokens = tokens
-                                            .flatMap((tokenList, index) => tokenList.map(token => ({ ...token, lineNumber: index })))
+                                            .flatMap((tokenList, index) => tokenList.map(token => ({ ...token, lineNumber: index, text: '' })))
+
+                                        const textTokens = linedTokens
+                                            .map((token, index, arr) => ({ ...token, text: parseText(lines, token, arr[index + 1]) ?? '' }))
+
+                                        const filteredTokens = textTokens
                                             .filter(token => token.type !== 'white.python' && token.type !== 'comment.python')
 
-                                        const p1 = parseProgram(lines, linedTokens)
+                                        console.log('Annotated', filteredTokens)
+
+                                        const p1 = parseProgram(lines, filteredTokens)
 
                                         setProgram(p1)
                                     } catch (error) {
