@@ -77,7 +77,7 @@ export class GameInstance {
 
         const elapsedTime = currentTime - this.lastTime
 
-        this.lastTime  = currentTime
+        this.lastTime = currentTime
 
         this.update(elapsedTime)
         this.draw()
