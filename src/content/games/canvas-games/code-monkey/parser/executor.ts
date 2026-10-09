@@ -23,13 +23,21 @@ const last = <T>(list: T[]): T => {
 
 const COMMANDS: MoveCommand[] = ['up', 'down', 'left', 'right']
 
-const createGlobalContext = (game: MonkeyGame): StackContext => {
+const createGlobalContext = (game: MonkeyGame, ctx: ProgramContext): StackContext => {
     return {
         variables: new Map([
             ...COMMANDS.map<[string, CoreFunction]>(cmd => [cmd, { type: 'special', call: async () => {
                 await game.executeCommand(cmd)
                 return 0
             }}]),
+            ['dump_all', { type: 'special', call: async () => {
+                console.log(ctx.contexts)
+                return 0
+            }}],
+            ['stop', { type: 'special', call: async () => {
+                ctx.cancel()
+                return 1
+            }}]
         ])
     }
 }
@@ -37,6 +45,7 @@ const createGlobalContext = (game: MonkeyGame): StackContext => {
 type ProgramContext = {
     contexts: StackContext[]
     running: () => boolean
+    cancel: () => void
 }
 
 type ExternalProgramState = {
@@ -48,9 +57,12 @@ export const executeProgram = (program: ProgramTree, game: MonkeyGame): External
     let running = true
 
     const programContext: ProgramContext = {
-        contexts: [createGlobalContext(game)],
+        contexts: [],
         running: () => running,
+        cancel: () => { running = false },
     }
+
+    programContext.contexts.push(createGlobalContext(game, programContext))
 
     return {
         promise: executeBlockStatement(program.block, game, programContext),
@@ -82,7 +94,12 @@ export const executeStatement = async (statement: Statement, game: MonkeyGame, c
 
         last(ctx.contexts).variables.set(statement.name.value, evaluable)
     } else if (statement.type === 'assignment-statement') {
-        last(ctx.contexts).variables.set(statement.identifier.value, await evaluateExpr(statement.expression, game, ctx))
+        const computedResult = await evaluateExpr(statement.expression, game, ctx)
+
+        const definitionRoot = ctx.contexts.findLast(c => c.variables.has(statement.identifier.value))
+            ?? last(ctx.contexts)
+
+        definitionRoot.variables.set(statement.identifier.value, computedResult)
     } else if (statement.type === 'expression-statement') {
         await evaluateExpr(statement.expression, game, ctx)
     }
@@ -124,12 +141,12 @@ export const evaluateExpr = async (expr: Expression, game: MonkeyGame, ctx: Prog
                 func.declaration.block,
                 game,
                 {
-                    running: () => ctx.running(),
+                    ...ctx,
                     contexts: [
                         ...func.closure,
                         // Will need to set up arguments here eventually
                         { variables: new Map() },
-                    ]
+                    ],
                 },
             )
             // Gotta return actual value at some point

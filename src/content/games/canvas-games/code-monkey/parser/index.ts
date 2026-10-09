@@ -194,14 +194,10 @@ const parseStatement = (lines: string[], tokens: MyToken[], indentation: number)
     if (firstToken.type === 'identifier.python') {
         const assignmentName = parseIdentifier(lines, firstToken)
         if (assignmentName && tokens[1]?.type === '') {
-            let iden
-            try {
-                iden = parseIdentifier(lines, tokens[1])
-            } catch {
-                iden = undefined
-            }
-            if (iden && iden.value === '=') {
-                const [childExpression, extraTokens] = parseExpression(lines, tokens.slice(0, postLineIndex === -1 ? undefined : postLineIndex))
+            const follow = parseText(lines, tokens[1], tokens[2])
+
+            if (follow === '=') {
+                const [childExpression, extraTokens] = parseExpression(lines, tokens.slice(2, postLineIndex === -1 ? undefined : postLineIndex))
 
                 if (extraTokens.length > 0) {
                     throw tokenError('Extra tokens after assignment???', extraTokens[0])

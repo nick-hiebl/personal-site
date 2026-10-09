@@ -92,6 +92,7 @@ export const Game = () => {
                             Save
                         </button>
                         <button
+                            disabled={running}
                             onClick={async () => {
                                 if (cancelRef.current) {
                                     cancelRef.current()
