@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import Editor, { useMonaco } from '@monaco-editor/react'
 
@@ -13,6 +13,8 @@ const LS_KEY = 'code-monkey:code'
 export const Game = () => {
     const [game] = useState(() => new MonkeyGame())
     // const gameRef = useRef<HerbsGame>(null)
+    const cancelRef = useRef<() => void>(undefined)
+    const [running, setRunning] = useState(false)
 
     const monaco = useMonaco()
     const [codeState, setCodeState] = useState(() => {
@@ -79,8 +81,6 @@ export const Game = () => {
 
                                         const p1 = parseProgram(lines, linedTokens)
 
-                                        console.log('My program', p1)
-
                                         setProgram(p1)
                                     } catch (error) {
                                         console.error(error)
@@ -93,18 +93,44 @@ export const Game = () => {
                         </button>
                         <button
                             onClick={async () => {
+                                if (cancelRef.current) {
+                                    cancelRef.current()
+                                }
+
                                 if (program) {
                                     try {
-                                        await executeProgram(program, game)
-                                    } catch {
-                                        // Idk
+                                        setRunning(true)
+                                        const handle = executeProgram(program, game)
+
+                                        cancelRef.current = handle.cancel
+
+                                        await handle.promise
+                                        setRunning(false)
+                                    } catch (error) {
+                                        setRunning(false)
+                                        if (error instanceof Error && error.message === 'Cancelled') {
+                                            // Do nothing
+                                        } else {
+                                            console.log(error)
+                                            console.warn('Caught the following error from executing program', error)
+                                        }
                                     }
                                 }
                             }}
                         >
                             Run
                         </button>
-                        <button>Stop</button>
+                        <button
+                            disabled={!running}
+                            onClick={() => {
+                                if (cancelRef.current) {
+                                    cancelRef.current()
+                                    setRunning(false)
+                                }
+                            }}
+                        >
+                            Stop
+                        </button>
                     </div>
                     <Editor
                         onChange={(value) => {

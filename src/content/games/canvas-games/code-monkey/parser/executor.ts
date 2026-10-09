@@ -34,38 +34,68 @@ const createGlobalContext = (game: MonkeyGame): StackContext => {
     }
 }
 
-export const executeProgram = async (program: ProgramTree, game: MonkeyGame) => {
-    const contextList: StackContext[] = [createGlobalContext(game)]
-
-    await executeBlockStatement(program.block, game, contextList)
+type ProgramContext = {
+    contexts: StackContext[]
+    running: () => boolean
 }
 
-export const executeBlockStatement = async (blockStatement: BlockStatement, game: MonkeyGame, contexts: StackContext[]) => {
-    for (const statement of blockStatement.statements) {
-        await executeStatement(statement, game, contexts)
+type ExternalProgramState = {
+    promise: Promise<void>
+    cancel: () => void
+}
+
+export const executeProgram = (program: ProgramTree, game: MonkeyGame): ExternalProgramState => {
+    let running = true
+
+    const programContext: ProgramContext = {
+        contexts: [createGlobalContext(game)],
+        running: () => running,
+    }
+
+    return {
+        promise: executeBlockStatement(program.block, game, programContext),
+        cancel: () => { running = false },
     }
 }
 
-export const executeStatement = async (statement: Statement, game: MonkeyGame, contexts: StackContext[]) => {
+export const executeBlockStatement = async (blockStatement: BlockStatement, game: MonkeyGame, ctx: ProgramContext) => {
+    for (const statement of blockStatement.statements) {
+        if (!ctx.running()) {
+            throw Error('Cancelled')
+        }
+
+        await executeStatement(statement, game, ctx)
+    }
+}
+
+export const executeStatement = async (statement: Statement, game: MonkeyGame, ctx: ProgramContext) => {
+    if (!ctx.running()) {
+        throw Error('Cancelled')
+    }
+
     if (statement.type === 'func-decl') {
         const evaluable: EvaluableFunction = {
             type: 'function',
             declaration: statement,
-            closure: contexts,
+            closure: ctx.contexts,
         }
 
-        last(contexts).variables.set(statement.name.value, evaluable)
+        last(ctx.contexts).variables.set(statement.name.value, evaluable)
     } else if (statement.type === 'assignment-statement') {
-        last(contexts).variables.set(statement.identifier.value, await evaluateExpr(statement.expression, game, contexts))
+        last(ctx.contexts).variables.set(statement.identifier.value, await evaluateExpr(statement.expression, game, ctx))
     } else if (statement.type === 'expression-statement') {
-        await evaluateExpr(statement.expression, game, contexts)
+        await evaluateExpr(statement.expression, game, ctx)
     }
 }
 
-export const evaluateExpr = async (expr: Expression, game: MonkeyGame, contexts: StackContext[]): Promise<number | boolean> => {
+export const evaluateExpr = async (expr: Expression, game: MonkeyGame, ctx: ProgramContext): Promise<number | boolean> => {
+    if (!ctx.running()) {
+        throw Error('Cancelled')
+    }
+
     if (expr.type === 'additive-expr' || expr.type === 'multiplicative-expr') {
-        const leftValue = await evaluateExpr(expr.leftOperand, game, contexts)
-        const rightValue = await evaluateExpr(expr.rightOperand, game, contexts)
+        const leftValue = await evaluateExpr(expr.leftOperand, game, ctx)
+        const rightValue = await evaluateExpr(expr.rightOperand, game, ctx)
 
         if (typeof leftValue !== 'number' || typeof rightValue !== 'number') {
             throw Error('Adding non-numbers!')
@@ -81,9 +111,9 @@ export const evaluateExpr = async (expr: Expression, game: MonkeyGame, contexts:
             return leftValue / rightValue
         }
     } else if (expr.type === 'unary-expr') {
-        return !(await evaluateExpr(expr.expression, game, contexts))
+        return !(await evaluateExpr(expr.expression, game, ctx))
     } else if (expr.type === 'call-expr') {
-        const func = findInContexts(expr.identifier.value, contexts)
+        const func = findInContexts(expr.identifier.value, ctx)
 
         if (!func || typeof func !== 'object') {
             throw Error(`Calling a non-function with name: ${expr.identifier.value}`)
@@ -93,15 +123,17 @@ export const evaluateExpr = async (expr: Expression, game: MonkeyGame, contexts:
             await executeBlockStatement(
                 func.declaration.block,
                 game,
-                [
-                    ...func.closure,
-                    // Will need to set up arguments here eventually
-                    { variables: new Map() },
-                ],
+                {
+                    running: () => ctx.running(),
+                    contexts: [
+                        ...func.closure,
+                        // Will need to set up arguments here eventually
+                        { variables: new Map() },
+                    ]
+                },
             )
             // Gotta return actual value at some point
         } else {
-            console.log('About to call!', func.type, func.call)
             return await func.call()
         }
 
@@ -111,7 +143,7 @@ export const evaluateExpr = async (expr: Expression, game: MonkeyGame, contexts:
     } else if (expr.type === 'numberliteral') {
         return expr.value
     } else if (expr.type === 'identifier') {
-        const res = findInContexts(expr.value, contexts)
+        const res = findInContexts(expr.value, ctx)
 
         if (typeof res !== 'number' && typeof res !== 'boolean') {
             throw Error('Evaluating identifier-only expression which resolves to non-value')
@@ -119,15 +151,15 @@ export const evaluateExpr = async (expr: Expression, game: MonkeyGame, contexts:
 
         return res
     } else if (expr.type === 'primary-expr') {
-        return evaluateExpr(expr.expression, game, contexts)
+        return evaluateExpr(expr.expression, game, ctx)
     } else {
         console.error(expr)
         throw Error('Unexpected expression type!')
     }
 }
 
-const findInContexts = (name: string, contexts: StackContext[]): CoreFunction | EvaluableFunction | number | boolean => {
-    const relevantContext = contexts.findLast(c => c.variables.has(name))
+const findInContexts = (name: string, ctx: ProgramContext): CoreFunction | EvaluableFunction | number | boolean => {
+    const relevantContext = ctx.contexts.findLast(c => c.variables.has(name))
 
     if (!relevantContext) {
         throw Error(`NameError: could not find name: '${name}'`)
