@@ -73,14 +73,25 @@ export type ExprStatement = {
     expression: Expression
 }
 
-export type Expression = AdditiveExpr
+type BinaryExpr<T extends string, Child, Operators> = {
+    type: T
+    mode: Operators
+    leftOperand: Expression
+    rightOperand: Expression
+}
+
+export type Expression = CondOrExpr
+export type CondOrExpr = CondAndExpr
+    | BinaryExpr<'cond-or-expr', CondAndExpr, 'or'>
+export type CondAndExpr = EqualityExpr
+    | BinaryExpr<'cond-and-expr', EqualityExpr, 'and'>
+export type EqualityExpr = RelativeExpr
+    | BinaryExpr<'equality-expr', RelativeExpr, '==' | '!='>
+export type RelativeExpr = AdditiveExpr
+    | BinaryExpr<'relative-expr', AdditiveExpr, '<' | '>' | '<=' | '>='>
+
 export type AdditiveExpr = MultiplicativeExpr
-    | {
-        type: 'additive-expr'
-        mode: '+' | '-'
-        leftOperand: AdditiveExpr
-        rightOperand: AdditiveExpr
-    }
+    | BinaryExpr<'additive-expr', MultiplicativeExpr, '+' | '-'>
 export type MultiplicativeExpr = UnaryExpr
     | {
         type: 'multiplicative-expr'
@@ -309,7 +320,87 @@ const parseWhileStmt = (lines: string[], tokens: MyToken[], indentation: number)
 }
 
 const parseExpression = (lines: string[], tokens: MyToken[]): [Expression, MyToken[]] => {
-    return parseAdditiveExpr(lines, tokens)
+    return parseCondOrExpr(lines, tokens)
+}
+
+const parseCondOrExpr = (lines: string[], tokens: MyToken[]): [CondOrExpr, MyToken[]] => {
+    let andExpr: CondAndExpr | CondOrExpr, rest: MyToken[]
+
+    [andExpr, rest] = parseCondAndExpr(lines, tokens)
+    while (rest[0]?.type === 'keyword.python' && rest[0].text === 'or') {
+        let right: Expression
+        [right, rest] = parseCondAndExpr(lines, rest.slice(1))
+        andExpr = {
+            type: 'cond-or-expr',
+            mode: 'or',
+            leftOperand: andExpr,
+            rightOperand: right,
+        }
+    }
+
+    return [andExpr, rest]
+}
+
+const parseCondAndExpr = (lines: string[], tokens: MyToken[]): [CondAndExpr, MyToken[]] => {
+    let equalityExpr: EqualityExpr | CondAndExpr, rest: MyToken[]
+
+    [equalityExpr, rest] = parseEqualityExpr(lines, tokens)
+    while (rest[0]?.type === 'keyword.python' && rest[0].text === 'and') {
+        let right: Expression
+        [right, rest] = parseEqualityExpr(lines, rest.slice(1))
+        equalityExpr = {
+            type: 'cond-and-expr',
+            mode: 'and',
+            leftOperand: equalityExpr,
+            rightOperand: right,
+        }
+    }
+
+    return [equalityExpr, rest]
+}
+
+const parseEqualityExpr = (lines: string[], tokens: MyToken[]): [EqualityExpr, MyToken[]] => {
+    let andExpr: RelativeExpr | EqualityExpr, rest: MyToken[]
+
+    [andExpr, rest] = parseRelExpr(lines, tokens)
+    while (rest[0]?.type === '' && (rest[0].text === '==' || rest[0].text === '!=')) {
+        let right: Expression
+        [right, rest] = parseRelExpr(lines, rest.slice(1))
+        andExpr = {
+            type: 'equality-expr',
+            mode: rest[0].text as '==' | '!=',
+            leftOperand: andExpr,
+            rightOperand: right,
+        }
+    }
+
+    return [andExpr, rest]
+}
+
+const isRelativeOperand = (text: string | undefined): text is '<' | '>' | '<=' | '>=' => {
+    return text === '<' || text === '>' || text === '<=' || text === '>='
+}
+
+const parseRelExpr = (lines: string[], tokens: MyToken[]): [RelativeExpr, MyToken[]] => {
+    let additiveExpr: AdditiveExpr | RelativeExpr
+    let rest: MyToken[]
+
+    [additiveExpr, rest] = parseAdditiveExpr(lines, tokens)
+    while (rest[0]?.type === '' && isRelativeOperand(rest[0].text)) {
+        const operator = rest[0].text
+
+        let right: Expression
+        [right, rest] = parseAdditiveExpr(lines, rest.slice(1))
+        additiveExpr = {
+            type: 'relative-expr',
+            mode: operator as '<' | '>' | '<=' | '>=',
+            leftOperand: additiveExpr,
+            rightOperand: right,
+        }
+        console.log('GOING TO RETURN', additiveExpr)
+    }
+
+    return [additiveExpr, rest]
 }
 
 const isAdditiveOperand = (text: string | undefined): text is '+' | '-' => {
@@ -323,7 +414,7 @@ const parseAdditiveExpr = (lines: string[], tokens: MyToken[]): [AdditiveExpr, M
     [multExpr, rest] = parseMultiplicativeExpr(lines, tokens)
     while (rest[0]?.type === '' && isAdditiveOperand(rest[0].text)) {
         const operator = rest[0].text
-        let right: AdditiveExpr
+        let right: Expression
         [right, rest] = parseAdditiveExpr(lines, rest.slice(1))
         multExpr = {
             type: 'additive-expr',

@@ -127,12 +127,120 @@ export const executeStatement = async (statement: Statement, game: MonkeyGame, c
     }
 }
 
+type EvaluatedCondition = {
+    truthy: boolean
+    leftValue: number | boolean
+    rightValue: number | boolean
+}
+
+const compare = (left: number | boolean, right: number | boolean, mode: '==' | '!=' | '<' | '>' | '<=' | '>='): boolean => {
+    console.log(left, right, mode)
+    if (typeof left !== typeof right) {
+        throw Error('Comparing two unlike objects is not allowed')
+    }
+
+    if (mode === '==') {
+        return left === right
+    } else if (mode === '!=') {
+        return left !== right
+    }
+    
+    if (typeof left !== 'number' || typeof right !== 'number') {
+        throw Error(`Comparison operator: '${mode}' used on non-number values`)
+    }
+    
+    if (mode === '<') {
+        return left < right
+    } else if (mode === '>') {
+        return left > right
+    } else if (mode === '<=') {
+        return left <= right
+    } else if (mode === '>=') {
+        return left >= right
+    }
+
+    throw Error(`Left processing some some bizarre operation: '${mode}'`)
+}
+
+export const evaluateConditionExpressions = async (expr: Expression, game: MonkeyGame, ctx: ProgramContext): Promise<EvaluatedCondition | number | boolean> => {
+    if (expr.type === 'equality-expr' || expr.type === 'relative-expr') {
+        const left = await evaluateConditionExpressions(expr.leftOperand, game, ctx)
+
+        // Short-circuiting
+        if (typeof left === 'object' && !left.truthy) {
+            return false
+        }
+
+        const right = await evaluateConditionExpressions(expr.rightOperand, game, ctx)
+
+        if (typeof right === 'object' && !right.truthy) {
+            return false
+        }
+
+        if (typeof left === 'object') {
+            if (typeof right === 'object') {
+                return {
+                    truthy: compare(left.rightValue, right.leftValue, expr.mode),
+                    leftValue: left.leftValue,
+                    rightValue: right.rightValue,
+                }
+            } else {
+                return {
+                    truthy: compare(left.rightValue, right, expr.mode),
+                    leftValue: left.leftValue,
+                    rightValue: right,
+                }
+            }
+        } else {
+            if (typeof right === 'object') {
+                return {
+                    truthy: compare(left, right.leftValue, expr.mode),
+                    leftValue: left,
+                    rightValue: right.rightValue,
+                }
+            } else {
+                return {
+                    truthy: compare(left, right, expr.mode),
+                    leftValue: left,
+                    rightValue: right,
+                }
+            }
+        }
+    } else {
+        return await evaluateExpr(expr, game, ctx)
+    }
+}
+
 export const evaluateExpr = async (expr: Expression, game: MonkeyGame, ctx: ProgramContext): Promise<number | boolean> => {
     if (!ctx.running()) {
         throw Error('Cancelled')
     }
 
-    if (expr.type === 'additive-expr' || expr.type === 'multiplicative-expr') {
+    if (expr.type === 'cond-or-expr') {
+        const leftResult = await evaluateExpr(expr.leftOperand, game, ctx)
+
+        if (leftResult) {
+            return leftResult
+        }
+
+        return await evaluateExpr(expr.rightOperand, game, ctx)
+    } else if (expr.type === 'cond-and-expr') {
+        const leftResult = await evaluateExpr(expr.leftOperand, game, ctx)
+
+        if (!leftResult) {
+            return leftResult
+        }
+
+        return await evaluateExpr(expr.rightOperand, game, ctx)
+    } else if (expr.type === 'equality-expr' || expr.type === 'relative-expr') {
+        const result = await evaluateConditionExpressions(expr, game, ctx)
+
+        if (typeof result === 'object') {
+            return result.truthy
+        }
+
+        return result
+    } else if (expr.type === 'additive-expr' || expr.type === 'multiplicative-expr') {
         const leftValue = await evaluateExpr(expr.leftOperand, game, ctx)
         const rightValue = await evaluateExpr(expr.rightOperand, game, ctx)
 
