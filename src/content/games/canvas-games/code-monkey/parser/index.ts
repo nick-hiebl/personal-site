@@ -50,7 +50,13 @@ export type BlockStatement = {
     statements: Statement[]
 }
 
-export type Statement = FuncDeclStatement | WhileStatement | IfStatement | ExprStatement | BreakStatement | ReturnStatement
+export type Statement =
+    | FuncDeclStatement
+    | WhileStatement
+    | IfStatement
+    | ExprStatement
+    | BreakStatement
+    | ReturnStatement
 
 export type FuncDeclStatement = {
     type: 'func-decl'
@@ -110,12 +116,7 @@ export type RelativeExpr = AdditiveExpr
 export type AdditiveExpr = MultiplicativeExpr
     | BinaryExpr<'additive-expr', MultiplicativeExpr, '+' | '-'>
 export type MultiplicativeExpr = UnaryExpr
-    | {
-        type: 'multiplicative-expr'
-        mode: '*' | '/'
-        leftOperand: MultiplicativeExpr
-        rightOperand: MultiplicativeExpr
-    }
+    | BinaryExpr<'multiplicative-expr', UnaryExpr, '*' | '/' | '%'>
 
 export type UnaryExpr = PrimaryExpr
     | {
@@ -523,7 +524,7 @@ const parseAdditiveExpr = (tokens: MyToken[]): [AdditiveExpr, MyToken[]] => {
 }
 
 const isMultiplicativeOperand = (text: string | undefined): text is '*' | '/' => {
-    return text === '*' || text === '/'
+    return text === '*' || text === '/' || text === '%'
 }
 
 const parseMultiplicativeExpr = (tokens: MyToken[]): [MultiplicativeExpr, MyToken[]] => {
@@ -537,7 +538,7 @@ const parseMultiplicativeExpr = (tokens: MyToken[]): [MultiplicativeExpr, MyToke
         [right, rest] = parseMultiplicativeExpr(rest.slice(1))
         unaryExpr = {
             type: 'multiplicative-expr',
-            mode: operator as '*' | '/',
+            mode: operator,
             leftOperand: unaryExpr,
             rightOperand: right,
         }

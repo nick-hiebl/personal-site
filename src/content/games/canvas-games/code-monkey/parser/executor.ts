@@ -358,8 +358,10 @@ export const evaluateExpr = async (expr: Expression, game: MonkeyGame, ctx: Prog
             return leftValue - rightValue
         } else if (expr.mode === '*') {
             return leftValue * rightValue
-        } else {
+        } else if (expr.mode === '/') {
             return leftValue / rightValue
+        } else {
+            return leftValue % rightValue
         }
     } else if (expr.type === 'unary-expr') {
         return !(await evaluateExpr(expr.expression, game, ctx))
