@@ -12,7 +12,6 @@ const LS_KEY = 'code-monkey:code'
 
 export const Game = () => {
     const [game] = useState(() => new MonkeyGame())
-    // const gameRef = useRef<HerbsGame>(null)
     const cancelRef = useRef<() => void>(undefined)
     const [running, setRunning] = useState(false)
 
@@ -70,8 +69,6 @@ export const Game = () => {
                                 if (monaco) {
                                     const tokens = monaco.editor.tokenize(codeState, 'python')
 
-                                    console.log('TTT', tokens)
-
                                     const lines = (codeState).split('\n')
 
                                     try {
@@ -119,7 +116,6 @@ export const Game = () => {
                                         if (error instanceof Error && error.message === 'Cancelled') {
                                             // Do nothing
                                         } else {
-                                            console.log(error)
                                             console.warn('Caught the following error from executing program', error)
                                         }
                                     }

@@ -364,11 +364,12 @@ const parseEqualityExpr = (lines: string[], tokens: MyToken[]): [EqualityExpr, M
 
     [andExpr, rest] = parseRelExpr(lines, tokens)
     while (rest[0]?.type === '' && (rest[0].text === '==' || rest[0].text === '!=')) {
+        const operator: '==' | '!=' = rest[0].text
         let right: Expression
         [right, rest] = parseRelExpr(lines, rest.slice(1))
         andExpr = {
             type: 'equality-expr',
-            mode: rest[0].text as '==' | '!=',
+            mode: operator,
             leftOperand: andExpr,
             rightOperand: right,
         }
@@ -387,17 +388,16 @@ const parseRelExpr = (lines: string[], tokens: MyToken[]): [RelativeExpr, MyToke
 
     [additiveExpr, rest] = parseAdditiveExpr(lines, tokens)
     while (rest[0]?.type === '' && isRelativeOperand(rest[0].text)) {
-        const operator = rest[0].text
+        const operator: '<' | '>' | '<=' | '>=' = rest[0].text
 
         let right: Expression
         [right, rest] = parseAdditiveExpr(lines, rest.slice(1))
         additiveExpr = {
             type: 'relative-expr',
-            mode: operator as '<' | '>' | '<=' | '>=',
+            mode: operator,
             leftOperand: additiveExpr,
             rightOperand: right,
         }
-        console.log('GOING TO RETURN', additiveExpr)
     }
 
     return [additiveExpr, rest]
@@ -542,8 +542,6 @@ const parsePrimaryExpr = (lines: string[], tokens: MyToken[]): [PrimaryExpr, MyT
             ]
         }
     }
-
-    console.log('ppp', tokens[0].text)
 
     console.log('Confused by', tokens[0], lines, lines[tokens[0].lineNumber].slice(tokens[0].offset))
     throw tokenError('Wtf primary expression', tokens[0])

@@ -134,7 +134,6 @@ type EvaluatedCondition = {
 }
 
 const compare = (left: number | boolean, right: number | boolean, mode: '==' | '!=' | '<' | '>' | '<=' | '>='): boolean => {
-    console.log(left, right, mode)
     if (typeof left !== typeof right) {
         throw Error('Comparing two unlike objects is not allowed')
     }
