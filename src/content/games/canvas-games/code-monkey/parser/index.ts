@@ -55,6 +55,7 @@ export type Statement = FuncDeclStatement | WhileStatement | IfStatement | ExprS
 export type FuncDeclStatement = {
     type: 'func-decl'
     name: Identifier
+    parameterList: Identifier[]
     block: BlockStatement
 }
 
@@ -128,8 +129,8 @@ export type PrimaryExpr = Identifier
     | { type: 'primary-expr', expression: Expression }
     | { type: 'call-expr', identifier: Identifier, argList: Expression[] }
 
-export const parseProgram = (lines: string[], tokens: MyToken[]): ProgramTree => {
-    const [block, afterTokens] = parseBlockStatement(lines, tokens, 0)
+export const parseProgram = (tokens: MyToken[]): ProgramTree => {
+    const [block, afterTokens] = parseBlockStatement(tokens, 0)
 
     if (afterTokens.length > 0) {
         console.warn('Found leftover tokens after program block!', afterTokens)
@@ -141,7 +142,7 @@ export const parseProgram = (lines: string[], tokens: MyToken[]): ProgramTree =>
     }
 }
 
-const parseBlockStatement = (lines: string[], tokens: MyToken[], indentation: number): [BlockStatement, MyToken[]] => {
+const parseBlockStatement = (tokens: MyToken[], indentation: number): [BlockStatement, MyToken[]] => {
     const firstLefterTokenIndex = tokens.findIndex(token => {
         return token.type !== 'white.python' && token.offset < indentation
     })
@@ -151,13 +152,13 @@ const parseBlockStatement = (lines: string[], tokens: MyToken[], indentation: nu
     const statements: Statement[] = []
 
     if (blockTokens.length > 0) {
-        let [nextStatement, remaining] = parseStatement(lines, blockTokens, indentation)
+        let [nextStatement, remaining] = parseStatement(blockTokens, indentation)
         if (nextStatement) {
             statements.push(nextStatement)
         }
     
         while (remaining.length > 0) {
-            [nextStatement, remaining] = parseStatement(lines, remaining, indentation)
+            [nextStatement, remaining] = parseStatement(remaining, indentation)
             
             if (nextStatement) {
                 statements.push(nextStatement)
@@ -175,16 +176,14 @@ const parseBlockStatement = (lines: string[], tokens: MyToken[], indentation: nu
     ]
 }
 
-const parseIdentifier = (lines: string[], token: MyToken): Identifier => {
-    const match = IDENTIFIER_REGEX.exec(lines[token.lineNumber].slice(token.offset))
-
-    if (!match) {
+const parseIdentifier = (token: MyToken): Identifier => {
+    if (!token.text) {
         throw tokenError('Could not find identifier when parsing line:', token)
     }
 
     return {
         type: 'identifier',
-        value: match[0],
+        value: token.text,
     }
 }
 
@@ -205,14 +204,14 @@ export const parseText = (lines: string[], token: MyToken, nextToken: MyToken | 
     return match[0] || undefined
 }
 
-const parseStatement = (lines: string[], tokens: MyToken[], indentation: number): [Statement | undefined, MyToken[]] => {
+const parseStatement = (tokens: MyToken[], indentation: number): [Statement | undefined, MyToken[]] => {
     if (tokens[0].type === 'keyword.python') {
         if (tokens[0].text === 'def') {
-            return parseFuncDecl(lines, tokens, indentation)
+            return parseFuncDecl(tokens, indentation)
         } else if (tokens[0].text === 'while') {
-            return parseWhileStmt(lines, tokens, indentation)
+            return parseWhileStmt(tokens, indentation)
         } else if (tokens[0].text === 'if') {
-            return parseIfStmt(lines, tokens, indentation, 'if')
+            return parseIfStmt(tokens, indentation, 'if')
         } else if (tokens[0].text === 'break') {
             if (tokens.length > 1) {
                 throw tokenError('Expected break statement to be only part of statement', tokens[0])
@@ -221,7 +220,7 @@ const parseStatement = (lines: string[], tokens: MyToken[], indentation: number)
             return [{ type: 'break-statement' }, []]
         } else if (tokens[0].text === 'return') {
             if (tokens.length > 1) {
-                const [value, rest] = parseExpression(lines, tokens.slice(1))
+                const [value, rest] = parseExpression(tokens.slice(1))
 
                 if (rest.length > 0) {
                     throw tokenError('Expected nothing after expression in return statement', rest[0])
@@ -240,16 +239,17 @@ const parseStatement = (lines: string[], tokens: MyToken[], indentation: number)
     }
 
     if (firstToken.offset !== indentation) {
-        throw tokenError('Bad indentation at', firstToken)
+        console.log('First token', firstToken, tokens)
+        throw tokenError(`Bad indentation. Expected ${indentation}, got`, firstToken)
     }
 
     const postLineIndex = tokens.findIndex((token) => token.lineNumber > firstToken.lineNumber)
 
     if (firstToken.type === 'identifier.python') {
-        const assignmentName = parseIdentifier(lines, firstToken)
+        const assignmentName = parseIdentifier(firstToken)
         if (assignmentName && tokens[1]?.type === '') {
             if (tokens[1]?.text === '=') {
-                const [childExpression, extraTokens] = parseExpression(lines, tokens.slice(2, postLineIndex === -1 ? undefined : postLineIndex))
+                const [childExpression, extraTokens] = parseExpression(tokens.slice(2, postLineIndex === -1 ? undefined : postLineIndex))
 
                 if (extraTokens.length > 0) {
                     throw tokenError('Extra tokens after assignment???', extraTokens[0])
@@ -269,7 +269,7 @@ const parseStatement = (lines: string[], tokens: MyToken[], indentation: number)
         }
     }
 
-    const [childExpression, extraTokens] = parseExpression(lines, tokens.slice(0, postLineIndex === -1 ? undefined : postLineIndex))
+    const [childExpression, extraTokens] = parseExpression(tokens.slice(0, postLineIndex === -1 ? undefined : postLineIndex))
 
     if (extraTokens.length > 0) {
         throw tokenError('Extra tokens after statement???', extraTokens[0])
@@ -286,12 +286,12 @@ const parseStatement = (lines: string[], tokens: MyToken[], indentation: number)
     ]
 }
 
-const parseFuncDecl = (lines: string[], tokens: MyToken[], indentation: number): [FuncDeclStatement, MyToken[]] => {
+const parseFuncDecl = (tokens: MyToken[], indentation: number): [FuncDeclStatement, MyToken[]] => {
     if (tokens[0]?.type !== 'keyword.python') {
         throw Error('Parsing function declaration not starting with def')
     }
 
-    const ident = parseIdentifier(lines, tokens[0])
+    const ident = parseIdentifier(tokens[0])
 
     if (ident.value !== 'def') {
         throw Error('Keyword in function declaration not def??')
@@ -303,31 +303,29 @@ const parseFuncDecl = (lines: string[], tokens: MyToken[], indentation: number):
         throw Error('No name for this function declaration!')
     }
 
-    const nameIdent = parseIdentifier(lines, nameToken)
+    const nameIdent = parseIdentifier(nameToken)
 
-    const parens = tokens[2]
-    if (!parens || parens.type !== 'delimiter.parenthesis.python') {
-        throw Error('No parenthesis on function declaration')
-    }
+    const [parameterList, remaining] = parseIdentifierList(tokens.slice(2))
 
-    const colon = tokens[3]
+    const colon = remaining[0]
     if (!colon || colon.type !== 'delimiter.python') {
         throw Error('No colon on function declaration')
     }
 
-    const [block, afterBlock] = parseBlockStatement(lines, tokens.slice(4), indentation + 4)
+    const [block, afterBlock] = parseBlockStatement(remaining.slice(1), indentation + 4)
 
     return [
         {
             type: 'func-decl',
             name: nameIdent,
+            parameterList,
             block,
         },
         afterBlock,
     ]
 }
 
-const parseWhileStmt = (lines: string[], tokens: MyToken[], indentation: number): [WhileStatement, MyToken[]] => {
+const parseWhileStmt = (tokens: MyToken[], indentation: number): [WhileStatement, MyToken[]] => {
     if (tokens[0]?.type !== 'keyword.python') {
         throw tokenError(`Expected 'while' at`, tokens[0])
     }
@@ -336,14 +334,14 @@ const parseWhileStmt = (lines: string[], tokens: MyToken[], indentation: number)
         throw tokenError(`Expected 'while' at`, tokens[0])
     }
 
-    const [expression, rest] = parseExpression(lines, tokens.slice(1))
+    const [expression, rest] = parseExpression(tokens.slice(1))
 
     const colon = rest[0]
     if (!colon || colon.type !== 'delimiter.python') {
         throw tokenError('Expected colon in while statement at', colon)
     }
 
-    const [block, afterBlock] = parseBlockStatement(lines, rest.slice(1), indentation + 4)
+    const [block, afterBlock] = parseBlockStatement(rest.slice(1), indentation + 4)
 
     return [
         {
@@ -355,7 +353,7 @@ const parseWhileStmt = (lines: string[], tokens: MyToken[], indentation: number)
     ]
 }
 
-const parseIfStmt = (lines: string[], tokens: MyToken[], indentation: number, expecting: 'if' | 'elif'): [IfStatement, MyToken[]] => {
+const parseIfStmt = (tokens: MyToken[], indentation: number, expecting: 'if' | 'elif'): [IfStatement, MyToken[]] => {
     if (tokens[0]?.type !== 'keyword.python') {
         throw tokenError(`Expected '${expecting}' at`, tokens[0])
     }
@@ -364,14 +362,14 @@ const parseIfStmt = (lines: string[], tokens: MyToken[], indentation: number, ex
         throw tokenError(`Expected '${expecting}' at`, tokens[0])
     }
 
-    const [expression, rest] = parseExpression(lines, tokens.slice(1))
+    const [expression, rest] = parseExpression(tokens.slice(1))
 
     const colon = rest[0]
     if (!colon || colon.type !== 'delimiter.python') {
         throw tokenError('Expected colon in if statement at', colon)
     }
 
-    const [block, afterBlock] = parseBlockStatement(lines, rest.slice(1), indentation + 4)
+    const [block, afterBlock] = parseBlockStatement(rest.slice(1), indentation + 4)
 
     let elseBlock: IfStatement
 
@@ -380,7 +378,7 @@ const parseIfStmt = (lines: string[], tokens: MyToken[], indentation: number, ex
             if (afterBlock[1]?.type !== 'delimiter.python') {
                 throw tokenError('Expected colon in else statement at', afterBlock[1])
             }
-            const [elseBlock, postElse] = parseBlockStatement(lines, afterBlock.slice(2), indentation + 4)
+            const [elseBlock, postElse] = parseBlockStatement(afterBlock.slice(2), indentation + 4)
 
             return [
                 {
@@ -392,7 +390,7 @@ const parseIfStmt = (lines: string[], tokens: MyToken[], indentation: number, ex
                 postElse,
             ]
         } else if (afterBlock[0].text === 'elif') {
-            const [chain, postChain] = parseIfStmt(lines, afterBlock, indentation, 'elif')
+            const [chain, postChain] = parseIfStmt(afterBlock, indentation, 'elif')
 
             return [
                 {
@@ -416,17 +414,17 @@ const parseIfStmt = (lines: string[], tokens: MyToken[], indentation: number, ex
     ]
 }
 
-const parseExpression = (lines: string[], tokens: MyToken[]): [Expression, MyToken[]] => {
-    return parseCondOrExpr(lines, tokens)
+const parseExpression = (tokens: MyToken[]): [Expression, MyToken[]] => {
+    return parseCondOrExpr(tokens)
 }
 
-const parseCondOrExpr = (lines: string[], tokens: MyToken[]): [CondOrExpr, MyToken[]] => {
+const parseCondOrExpr = (tokens: MyToken[]): [CondOrExpr, MyToken[]] => {
     let andExpr: CondAndExpr | CondOrExpr, rest: MyToken[]
 
-    [andExpr, rest] = parseCondAndExpr(lines, tokens)
+    [andExpr, rest] = parseCondAndExpr(tokens)
     while (rest[0]?.type === 'keyword.python' && rest[0].text === 'or') {
         let right: Expression
-        [right, rest] = parseCondAndExpr(lines, rest.slice(1))
+        [right, rest] = parseCondAndExpr(rest.slice(1))
         andExpr = {
             type: 'cond-or-expr',
             mode: 'or',
@@ -438,13 +436,13 @@ const parseCondOrExpr = (lines: string[], tokens: MyToken[]): [CondOrExpr, MyTok
     return [andExpr, rest]
 }
 
-const parseCondAndExpr = (lines: string[], tokens: MyToken[]): [CondAndExpr, MyToken[]] => {
+const parseCondAndExpr = (tokens: MyToken[]): [CondAndExpr, MyToken[]] => {
     let equalityExpr: EqualityExpr | CondAndExpr, rest: MyToken[]
 
-    [equalityExpr, rest] = parseEqualityExpr(lines, tokens)
+    [equalityExpr, rest] = parseEqualityExpr(tokens)
     while (rest[0]?.type === 'keyword.python' && rest[0].text === 'and') {
         let right: Expression
-        [right, rest] = parseEqualityExpr(lines, rest.slice(1))
+        [right, rest] = parseEqualityExpr(rest.slice(1))
         equalityExpr = {
             type: 'cond-and-expr',
             mode: 'and',
@@ -456,14 +454,14 @@ const parseCondAndExpr = (lines: string[], tokens: MyToken[]): [CondAndExpr, MyT
     return [equalityExpr, rest]
 }
 
-const parseEqualityExpr = (lines: string[], tokens: MyToken[]): [EqualityExpr, MyToken[]] => {
+const parseEqualityExpr = (tokens: MyToken[]): [EqualityExpr, MyToken[]] => {
     let andExpr: RelativeExpr | EqualityExpr, rest: MyToken[]
 
-    [andExpr, rest] = parseRelExpr(lines, tokens)
+    [andExpr, rest] = parseRelExpr(tokens)
     while (rest[0]?.type === '' && (rest[0].text === '==' || rest[0].text === '!=')) {
         const operator: '==' | '!=' = rest[0].text
         let right: Expression
-        [right, rest] = parseRelExpr(lines, rest.slice(1))
+        [right, rest] = parseRelExpr(rest.slice(1))
         andExpr = {
             type: 'equality-expr',
             mode: operator,
@@ -479,16 +477,16 @@ const isRelativeOperand = (text: string | undefined): text is '<' | '>' | '<=' |
     return text === '<' || text === '>' || text === '<=' || text === '>='
 }
 
-const parseRelExpr = (lines: string[], tokens: MyToken[]): [RelativeExpr, MyToken[]] => {
+const parseRelExpr = (tokens: MyToken[]): [RelativeExpr, MyToken[]] => {
     let additiveExpr: AdditiveExpr | RelativeExpr
     let rest: MyToken[]
 
-    [additiveExpr, rest] = parseAdditiveExpr(lines, tokens)
+    [additiveExpr, rest] = parseAdditiveExpr(tokens)
     while (rest[0]?.type === '' && isRelativeOperand(rest[0].text)) {
         const operator: '<' | '>' | '<=' | '>=' = rest[0].text
 
         let right: Expression
-        [right, rest] = parseAdditiveExpr(lines, rest.slice(1))
+        [right, rest] = parseAdditiveExpr(rest.slice(1))
         additiveExpr = {
             type: 'relative-expr',
             mode: operator,
@@ -504,15 +502,15 @@ const isAdditiveOperand = (text: string | undefined): text is '+' | '-' => {
     return text === '+' || text === '-'
 }
 
-const parseAdditiveExpr = (lines: string[], tokens: MyToken[]): [AdditiveExpr, MyToken[]] => {
+const parseAdditiveExpr = (tokens: MyToken[]): [AdditiveExpr, MyToken[]] => {
     let multExpr: MultiplicativeExpr | AdditiveExpr
     let rest: MyToken[]
 
-    [multExpr, rest] = parseMultiplicativeExpr(lines, tokens)
+    [multExpr, rest] = parseMultiplicativeExpr(tokens)
     while (rest[0]?.type === '' && isAdditiveOperand(rest[0].text)) {
         const operator = rest[0].text
         let right: Expression
-        [right, rest] = parseAdditiveExpr(lines, rest.slice(1))
+        [right, rest] = parseAdditiveExpr(rest.slice(1))
         multExpr = {
             type: 'additive-expr',
             mode: operator as '+' | '-',
@@ -528,15 +526,15 @@ const isMultiplicativeOperand = (text: string | undefined): text is '*' | '/' =>
     return text === '*' || text === '/'
 }
 
-const parseMultiplicativeExpr = (lines: string[], tokens: MyToken[]): [MultiplicativeExpr, MyToken[]] => {
+const parseMultiplicativeExpr = (tokens: MyToken[]): [MultiplicativeExpr, MyToken[]] => {
     let unaryExpr: UnaryExpr | MultiplicativeExpr
     let rest: MyToken[]
 
-    [unaryExpr, rest] = parseUnaryExpr(lines, tokens)
+    [unaryExpr, rest] = parseUnaryExpr(tokens)
     while (rest[0]?.type === '' && isMultiplicativeOperand(rest[0].text)) {
         const operator = rest[0].text
         let right: MultiplicativeExpr
-        [right, rest] = parseMultiplicativeExpr(lines, rest.slice(1))
+        [right, rest] = parseMultiplicativeExpr(rest.slice(1))
         unaryExpr = {
             type: 'multiplicative-expr',
             mode: operator as '*' | '/',
@@ -548,11 +546,11 @@ const parseMultiplicativeExpr = (lines: string[], tokens: MyToken[]): [Multiplic
     return [unaryExpr, rest]
 }
 
-const parseUnaryExpr = (lines: string[], tokens: MyToken[]): [UnaryExpr, MyToken[]] => {
+const parseUnaryExpr = (tokens: MyToken[]): [UnaryExpr, MyToken[]] => {
     if (tokens[0].type === 'keyword.python') {
         // TODO: + and - unary expressions
         if (tokens[0].text === 'not') {
-            const [child, rest] = parseUnaryExpr(lines, tokens.slice(1))
+            const [child, rest] = parseUnaryExpr(tokens.slice(1))
 
             return [
                 {
@@ -564,16 +562,16 @@ const parseUnaryExpr = (lines: string[], tokens: MyToken[]): [UnaryExpr, MyToken
         }
     }
 
-    return parsePrimaryExpr(lines, tokens)
+    return parsePrimaryExpr(tokens)
 }
 
-const parsePrimaryExpr = (lines: string[], tokens: MyToken[]): [PrimaryExpr, MyToken[]] => {
+const parsePrimaryExpr = (tokens: MyToken[]): [PrimaryExpr, MyToken[]] => {
     if (tokens[0].type === 'delimiter.parenthesis.python') {
         if (tokens[0].text !== '(') {
             throw Error(`Undesired parenthesis ${tokens[0].lineNumber}:${tokens[0].offset}`)
         }
 
-        const [child, rest] = parseExpression(lines, tokens.slice(1))
+        const [child, rest] = parseExpression(tokens.slice(1))
 
         if (!rest[0] || rest[0].type !== 'delimiter.parenthesis.python' || rest[0]?.text !== ')') {
             throw tokenError('Expected matching close paren', rest[0])
@@ -617,21 +615,23 @@ const parsePrimaryExpr = (lines: string[], tokens: MyToken[]): [PrimaryExpr, MyT
             tokens.slice(1),
         ]
     } else if (tokens[0].type === 'identifier.python' || tokens[0].type === 'keyword.python') {
-        const name = parseIdentifier(lines, tokens[0])
+        const name = parseIdentifier(tokens[0])
 
-        if (tokens[1]?.type === 'delimiter.parenthesis.python') {
-            if (tokens[1].text !== '()') {
-                throw tokenError('Handling arg-list, not ready for that', tokens[1])
+        if (tokens[1]?.type === 'delimiter.parenthesis.python' && tokens[1].text !== ')') {
+            if (tokens[1].text === '(' || tokens[1].text === '()') {
+                const [argList, remainder] = parseArgList(tokens.slice(1))
+
+                return [
+                    {
+                        type: 'call-expr',
+                        identifier: name,
+                        argList,
+                    },
+                    remainder,
+                ]
+            } else {
+                throw tokenError('Got unexpected parenthesis pattern', tokens[1])
             }
-
-            return [
-                {
-                    type: 'call-expr',
-                    identifier: name,
-                    argList: [],
-                },
-                tokens.slice(2),
-            ]
         } else {
             return [
                 name,
@@ -640,10 +640,77 @@ const parsePrimaryExpr = (lines: string[], tokens: MyToken[]): [PrimaryExpr, MyT
         }
     }
 
-    console.log('Confused by', tokens[0], lines, lines[tokens[0].lineNumber].slice(tokens[0].offset))
+    console.log('Confused by', tokens[0])
     throw tokenError('Wtf primary expression', tokens[0])
 }
 
-const tokenError = (message: string, token: MyToken) => {
-    return Error(`${message} ${token.lineNumber + 1}:${token.offset} '${token.text}'`)
+const parseArgList = (tokens: MyToken[]): [Expression[], MyToken[]] => {
+    if (tokens[0]?.type !== 'delimiter.parenthesis.python') {
+        throw tokenError('Expected parenthesis on argList', tokens[0])
+    }
+
+    if (tokens[0].text === '()') {
+        return [[], tokens.slice(1)]
+    }
+
+    if (tokens[0].text !== '(') {
+        throw tokenError(`Expected '(' at start of arg-list`, tokens[0])
+    }
+
+    const argumentList = []
+
+    let remaining = tokens.slice(1)
+
+    while (remaining[0].text !== ')') {
+        const [newArgument, afterArgument] = parseExpression(remaining)
+
+        argumentList.push(newArgument)
+
+        if (afterArgument[0].text === ',') {
+            remaining = afterArgument.slice(1)
+        } else {
+            remaining = afterArgument
+        }
+    }
+
+    return [argumentList, remaining.slice(1)]
+}
+
+const parseIdentifierList = (tokens: MyToken[]): [Identifier[], MyToken[]] => {
+    if (tokens[0]?.type !== 'delimiter.parenthesis.python') {
+        throw tokenError('Expected parenthesis on identifierList', tokens[0])
+    }
+
+    if (tokens[0].text === '()') {
+        return [[], tokens.slice(1)]
+    }
+
+    if (tokens[0].text !== '(') {
+        throw tokenError(`Expected '(' at the start of identifierList`, tokens[0])
+    }
+
+    const identifiers: Identifier[] = []
+
+    let remaining = tokens.slice(1)
+
+    while (remaining[0].text !== ')') {
+        const iden = parseIdentifier(remaining[0])
+
+        identifiers.push(iden)
+
+        if (remaining[1].text === ',') {
+            remaining = remaining.slice(2)
+        } else {
+            remaining = remaining.slice(1)
+        }
+    }
+
+    return [
+        identifiers,
+        remaining.slice(1),
+    ]
+}
+
+const tokenError = (message: string, token: MyToken | undefined) => {
+    return Error(`${message} ${(token?.lineNumber ?? 0) + 1}:${token?.offset} '${token?.text}'`)
 }

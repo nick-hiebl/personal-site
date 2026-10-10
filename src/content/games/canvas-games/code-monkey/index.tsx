@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import Editor, { useMonaco } from '@monaco-editor/react'
 
-import { ThemeSwitcher } from '../../../../components/ThemeSwitcher'
+import { getLightOrDarkMode, ThemeSwitcher } from '../../../../components/ThemeSwitcher'
 
 import { MonkeyGame } from './game'
 import { parseProgram, parseText, type ProgramTree } from './parser'
@@ -35,7 +35,7 @@ export const Game = () => {
         <div className="column-center gap-16px">
             <h1>Code monkey!</h1>
             <div
-                className="row-center"
+                className="row-center gap-16px"
                 style={{
                     width: 'calc(100vw - 16px)',
                     boxSizing: 'border-box',
@@ -73,7 +73,7 @@ export const Game = () => {
 
                                     try {
                                         const linedTokens = tokens
-                                            .flatMap((tokenList, index) => tokenList.map(token => ({ ...token, lineNumber: index, text: '' })))
+                                            .flatMap((tokenList, index) => tokenList.map(token => ({ text: '', ...token, lineNumber: index })))
 
                                         const textTokens = linedTokens
                                             .map((token, index, arr) => ({ ...token, text: parseText(lines, token, arr[index + 1]) ?? '' }))
@@ -83,7 +83,7 @@ export const Game = () => {
 
                                         console.log('Annotated', filteredTokens)
 
-                                        const p1 = parseProgram(lines, filteredTokens)
+                                        const p1 = parseProgram(filteredTokens)
 
                                         setProgram(p1)
                                     } catch (error) {
@@ -141,6 +141,7 @@ export const Game = () => {
                         onChange={(value) => {
                             setCodeState(value ?? '')
                         }}
+                        theme={getLightOrDarkMode() === 'light' ? 'light' : 'vs-dark'}
                         height="70vh"
                         width="100%"
                         defaultLanguage="python"

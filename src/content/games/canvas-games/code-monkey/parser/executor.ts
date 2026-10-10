@@ -4,7 +4,7 @@ import type { BlockStatement, Expression, FuncDeclStatement, ProgramTree, Statem
 
 type CoreFunction = {
     type: 'special'
-    call: () => Promise<number | boolean>
+    call: (...args: any[]) => Promise<number | boolean>
 }
 
 type EvaluableFunction = {
@@ -39,11 +39,19 @@ const COMMANDS: MoveCommand[] = ['up', 'down', 'left', 'right']
 const createGlobalContext = (game: MonkeyGame, ctx: ProgramContext): StackContext => {
     return {
         type: 'global',
-        variables: new Map([
-            ...COMMANDS.map<[string, CoreFunction]>(cmd => [cmd, { type: 'special', call: async () => {
-                await game.executeCommand(cmd)
+        variables: new Map<string, Value>([
+            ['Up', 0],
+            ['Down', 1],
+            ['Left', 2],
+            ['Right', 3],
+            ['move', { type: 'special', call: async (drn: 0 | 1 | 2 | 3) => {
+                if (![0, 1, 2, 3].includes(drn)) {
+                    throw Error(`Tried calling 'move' with invalid value '${drn}'`)
+                }
+
+                await game.executeCommand(COMMANDS[drn])
                 return 0
-            }}]),
+            }}],
             ['dump_all', { type: 'special', call: async () => {
                 console.log(ctx.contexts)
                 return 0
@@ -366,6 +374,15 @@ export const evaluateExpr = async (expr: Expression, game: MonkeyGame, ctx: Prog
             let returned = false
             let returnValue = undefined
 
+            if (expr.argList.length !== func.declaration.parameterList.length) {
+                throw new Error(`Called function '${func.declaration.name.value}' with ${expr.argList.length} argument(s), expected ${func.declaration.parameterList.length}`)
+            }
+            const argumentList: Value[] = []
+
+            for (const argument of expr.argList) {
+                argumentList.push(await evaluateExpr(argument, game, ctx))
+            }
+
             const returnFromFunc = (value?: Value) => {
                 if (value && typeof value !== 'number' && typeof value !== 'boolean') {
                     throw Error('Returning non-number / non-boolean from function!')
@@ -382,10 +399,14 @@ export const evaluateExpr = async (expr: Expression, game: MonkeyGame, ctx: Prog
                     ...ctx,
                     contexts: [
                         ...func.closure,
-                        // Will need to set up arguments here eventually
                         {
                             type: 'function',
-                            variables: new Map(),
+                            variables: new Map([
+                                ...func.declaration.parameterList.map<[string, Value]>((parameter, index) => [
+                                    parameter.value,
+                                    argumentList[index],
+                                ])
+                            ]),
                             isReturned: () => returned,
                             returnFromFunc,
                         },
@@ -397,7 +418,17 @@ export const evaluateExpr = async (expr: Expression, game: MonkeyGame, ctx: Prog
                 return returnValue
             }
         } else {
-            return await func.call()
+            if (expr.argList.length !== func.call.length) {
+                throw new Error(`Calling built-in function '${expr.identifier.value}' with ${expr.argList.length} argument(s), expected ${func.call.length}`)
+            }
+
+            const argumentList: Value[] = []
+
+            for (const argument of expr.argList) {
+                argumentList.push(await evaluateExpr(argument, game, ctx))
+            }
+
+            return await func.call(...argumentList)
         }
 
         return 0
