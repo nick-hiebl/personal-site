@@ -153,10 +153,55 @@ export const executeStatement = async (statement: Statement, game: MonkeyGame, c
 
         const availableContexts = ctx.contexts.slice(ctx.contexts.findLastIndex(c => c.type === 'function' || c.type === 'global'))
 
-        const definitionRoot = availableContexts.findLast(c => c.variables.has(statement.identifier.value))
-            ?? last(availableContexts)
+        if (statement.assignmentType === '=') {
+            const definitionRoot = availableContexts.findLast(c => c.variables.has(statement.identifier.value))
+                ?? last(availableContexts)
 
-        definitionRoot.variables.set(statement.identifier.value, computedResult)
+            const currentValue = definitionRoot.variables.get(statement.identifier.value)
+
+            if (typeof currentValue === 'object') {
+                throw Error(`Assigning value to '${statement.identifier.value}' which is not an assign-able variable in this context`)
+            }
+    
+            definitionRoot.variables.set(statement.identifier.value, computedResult)
+        } else {
+            const definitionRoot = availableContexts.findLast(c => c.variables.has(statement.identifier.value))
+
+            if (!definitionRoot) {
+                throw Error(`Attempting '${statement.assignmentType}' operation on '${statement.identifier.value}' which is not defined or available in this scope`)
+            }
+
+            const currentValue = definitionRoot.variables.get(statement.identifier.value)
+
+            if (typeof currentValue === 'object') {
+                throw Error(`Attempting '${statement.assignmentType}' operation on '${statement.identifier.value}' which is not an assign-able variable in this context`)
+            }
+
+            if (['+=', '-=', '*=', '/=', '%='].includes(statement.assignmentType)) {
+                if (typeof computedResult !== 'number') {
+                    throw Error(`Attempting '${statement.assignmentType}' operation with non-numeric value`)
+                } else if (typeof currentValue !== 'number') {
+                    throw Error(`Attempting '${statement.assignmentType}' operation on non-numeric variable`)
+                }
+            }
+
+            let newValue = currentValue
+            if (statement.assignmentType === '+=') {
+                newValue = (currentValue as number) + (computedResult as number)
+            } else if (statement.assignmentType === '-=') {
+                newValue = (currentValue as number) - (computedResult as number)
+            } else if (statement.assignmentType === '*=') {
+                newValue = (currentValue as number) * (computedResult as number)
+            } else if (statement.assignmentType === '/=') {
+                newValue = (currentValue as number) / (computedResult as number)
+            } else if (statement.assignmentType === '%=') {
+                newValue = (currentValue as number) % (computedResult as number)
+            } else {
+                throw Error(`Unhandled assignment operation type: '${statement.assignmentType}'`)
+            }
+
+            definitionRoot.variables.set(statement.identifier.value, newValue)
+        }
     } else if (statement.type === 'while-statement') {
         let broken = false
 

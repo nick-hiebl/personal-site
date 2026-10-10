@@ -55,6 +55,7 @@ export type Statement =
     | WhileStatement
     | IfStatement
     | ExprStatement
+    | AssignmentStatement
     | BreakStatement
     | ReturnStatement
 
@@ -81,9 +82,11 @@ export type IfStatement = {
 export type ExprStatement = {
     type: 'expression-statement'
     expression: Expression
-} | {
+}
+export type AssignmentStatement = {
     type: 'assignment-statement'
     identifier: Identifier
+    assignmentType: '=' | '+=' | '-=' | '*=' | '/=' | '%='
     expression: Expression
 }
 
@@ -205,6 +208,10 @@ export const parseText = (lines: string[], token: MyToken, nextToken: MyToken | 
     return match[0] || undefined
 }
 
+const isAssignmentOperator = (text?: string): text is AssignmentStatement['assignmentType'] => {
+    return !!text && ['=', '+=', '-=', '*=', '/=', '%='].includes(text)
+}
+
 const parseStatement = (tokens: MyToken[], indentation: number): [Statement | undefined, MyToken[]] => {
     if (tokens[0].type === 'keyword.python') {
         if (tokens[0].text === 'def') {
@@ -249,7 +256,7 @@ const parseStatement = (tokens: MyToken[], indentation: number): [Statement | un
     if (firstToken.type === 'identifier.python') {
         const assignmentName = parseIdentifier(firstToken)
         if (assignmentName && tokens[1]?.type === '') {
-            if (tokens[1]?.text === '=') {
+            if (isAssignmentOperator(tokens[1]?.text)) {
                 const [childExpression, extraTokens] = parseExpression(tokens.slice(2, postLineIndex === -1 ? undefined : postLineIndex))
 
                 if (extraTokens.length > 0) {
@@ -260,6 +267,7 @@ const parseStatement = (tokens: MyToken[], indentation: number): [Statement | un
                     {
                         type: 'assignment-statement',
                         identifier: assignmentName,
+                        assignmentType: tokens[1].text,
                         expression: childExpression,
                     },
                     postLineIndex === -1
