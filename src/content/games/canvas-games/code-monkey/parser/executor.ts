@@ -13,9 +13,21 @@ type EvaluableFunction = {
     closure: StackContext[]
 }
 
-export interface StackContext {
-    type: 'global' | 'scope' | 'function'
-    variables: Map<string, CoreFunction | EvaluableFunction | number | boolean>
+type Value = CoreFunction | EvaluableFunction | number | boolean
+
+export type StackContext = {
+    type: 'global' | 'scope'
+    variables: Map<string, Value>
+} | {
+    type: 'function'
+    variables: Map<string, Value>
+    isReturned: () => boolean
+    returnFromFunc: (returnValue?: Value) => void
+} | {
+    type: 'loop'
+    variables: Map<string, Value>
+    isBroken: () => boolean
+    breakLoop: () => void
 }
 
 const last = <T>(list: T[]): T => {
@@ -39,6 +51,21 @@ const createGlobalContext = (game: MonkeyGame, ctx: ProgramContext): StackContex
             ['stop', { type: 'special', call: async () => {
                 ctx.cancel()
                 return 1
+            }}],
+            ['get_x', { type: 'special', call: async () => {
+                return game.x
+            }}],
+            ['get_y', { type: 'special', call: async () => {
+                return game.y
+            }}],
+            ['get_width', { type: 'special', call: async () => {
+                return game.width
+            }}],
+            ['get_height', { type: 'special', call: async () => {
+                return game.height
+            }}],
+            ['coin_flip', { type: 'special', call: async () => {
+                return Math.random() > 0.5
             }}],
         ])
     }
@@ -73,9 +100,16 @@ export const executeProgram = (program: ProgramTree, game: MonkeyGame): External
 }
 
 export const executeBlockStatement = async (blockStatement: BlockStatement, game: MonkeyGame, ctx: ProgramContext) => {
+    const currentFunc = ctx.contexts.findLast(c => c.type === 'function')
+    const currentLoop = ctx.contexts.findLast(c => c.type === 'loop')
+
     for (const statement of blockStatement.statements) {
         if (!ctx.running()) {
             throw Error('Cancelled')
+        }
+
+        if ((currentFunc && currentFunc.isReturned()) || (currentLoop && currentLoop.isBroken())) {
+            return
         }
 
         await executeStatement(statement, game, ctx)
@@ -85,6 +119,17 @@ export const executeBlockStatement = async (blockStatement: BlockStatement, game
 export const executeStatement = async (statement: Statement, game: MonkeyGame, ctx: ProgramContext) => {
     if (!ctx.running()) {
         throw Error('Cancelled')
+    }
+
+    const currentFunc = ctx.contexts.findLast(c => c.type === 'function')
+    const currentLoop = ctx.contexts.findLast(c => c.type === 'loop')
+
+    const isTerminatedAbove = () => {
+        return (currentFunc && currentFunc.isReturned()) || (currentLoop && currentLoop.isBroken())
+    }
+
+    if (isTerminatedAbove()) {
+        return
     }
 
     if (statement.type === 'func-decl') {
@@ -105,7 +150,11 @@ export const executeStatement = async (statement: Statement, game: MonkeyGame, c
 
         definitionRoot.variables.set(statement.identifier.value, computedResult)
     } else if (statement.type === 'while-statement') {
-        while (true) {
+        let broken = false
+
+        const breakLoop = () => { broken = true }
+
+        while (!broken && !isTerminatedAbove()) {
             if (!ctx.running()) {
                 throw Error('Cancelled')
             }
@@ -120,9 +169,31 @@ export const executeStatement = async (statement: Statement, game: MonkeyGame, c
                 ...ctx,
                 contexts: [
                     ...ctx.contexts,
-                    { type: 'scope', variables: new Map() },
+                    {
+                        type: 'loop',
+                        variables: new Map(),
+                        isBroken: () => broken,
+                        breakLoop,
+                    },
                 ],
             })
+        }
+    } else if (statement.type === 'break-statement') {
+        if (!currentLoop) {
+            throw Error('Break statement used outside of loop')
+        }
+
+        currentLoop.breakLoop()
+    } else if (statement.type === 'return-statement') {
+        if (!currentFunc) {
+            throw Error('Return statement used outside of function')
+        }
+
+        if (statement.value) {
+            const value = await evaluateExpr(statement.value, game, ctx)
+            currentFunc.returnFromFunc(value)
+        } else {
+            currentFunc.returnFromFunc()
         }
     } else if (statement.type === 'if-statement') {
         const conditionResult = await evaluateExpr(statement.condition, game, ctx)
@@ -292,6 +363,18 @@ export const evaluateExpr = async (expr: Expression, game: MonkeyGame, ctx: Prog
         }
 
         if (func.type === 'function') {
+            let returned = false
+            let returnValue = undefined
+
+            const returnFromFunc = (value?: Value) => {
+                if (value && typeof value !== 'number' && typeof value !== 'boolean') {
+                    throw Error('Returning non-number / non-boolean from function!')
+                }
+
+                returnValue = value ?? undefined
+                returned = true
+            }
+
             await executeBlockStatement(
                 func.declaration.block,
                 game,
@@ -300,11 +383,19 @@ export const evaluateExpr = async (expr: Expression, game: MonkeyGame, ctx: Prog
                     contexts: [
                         ...func.closure,
                         // Will need to set up arguments here eventually
-                        { type: 'function', variables: new Map() },
+                        {
+                            type: 'function',
+                            variables: new Map(),
+                            isReturned: () => returned,
+                            returnFromFunc,
+                        },
                     ],
                 },
             )
-            // Gotta return actual value at some point
+
+            if (returnValue !== undefined) {
+                return returnValue
+            }
         } else {
             return await func.call()
         }

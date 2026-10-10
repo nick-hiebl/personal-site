@@ -50,7 +50,7 @@ export type BlockStatement = {
     statements: Statement[]
 }
 
-export type Statement = FuncDeclStatement | WhileStatement | IfStatement | ExprStatement
+export type Statement = FuncDeclStatement | WhileStatement | IfStatement | ExprStatement | BreakStatement | ReturnStatement
 
 export type FuncDeclStatement = {
     type: 'func-decl'
@@ -78,6 +78,15 @@ export type ExprStatement = {
     type: 'assignment-statement'
     identifier: Identifier
     expression: Expression
+}
+
+export type BreakStatement = {
+    type: 'break-statement'
+}
+
+export type ReturnStatement = {
+    type: 'return-statement'
+    value?: Expression
 }
 
 type BinaryExpr<T extends string, Child, Operators> = {
@@ -204,6 +213,24 @@ const parseStatement = (lines: string[], tokens: MyToken[], indentation: number)
             return parseWhileStmt(lines, tokens, indentation)
         } else if (tokens[0].text === 'if') {
             return parseIfStmt(lines, tokens, indentation, 'if')
+        } else if (tokens[0].text === 'break') {
+            if (tokens.length > 1) {
+                throw tokenError('Expected break statement to be only part of statement', tokens[0])
+            }
+
+            return [{ type: 'break-statement' }, []]
+        } else if (tokens[0].text === 'return') {
+            if (tokens.length > 1) {
+                const [value, rest] = parseExpression(lines, tokens.slice(1))
+
+                if (rest.length > 0) {
+                    throw tokenError('Expected nothing after expression in return statement', rest[0])
+                }
+
+                return [{ type: 'return-statement', value }, []]
+            } else {
+                return [{ type: 'return-statement' }, []]
+            }
         }
     }
 
