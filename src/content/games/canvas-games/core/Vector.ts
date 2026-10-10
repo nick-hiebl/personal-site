@@ -18,6 +18,10 @@ export class Vector {
     scale(factor: number): Vector {
         return new Vector(this.x * factor, this.y * factor)
     }
+
+    copy(): Vector {
+        return new Vector(this.x, this.y)
+    }
 }
 
 export const approach = (current: number, target: number, step: number): number => {

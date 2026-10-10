@@ -16,7 +16,7 @@ type EvaluableFunction = {
 type Value = CoreFunction | EvaluableFunction | number | boolean
 
 export type StackContext = {
-    type: 'global' | 'scope'
+    type: 'root' | 'global' | 'scope'
     variables: Map<string, Value>
 } | {
     type: 'function'
@@ -36,9 +36,11 @@ const last = <T>(list: T[]): T => {
 
 const COMMANDS: MoveCommand[] = ['up', 'down', 'left', 'right']
 
-const createGlobalContext = (game: MonkeyGame, ctx: ProgramContext): StackContext => {
+const createGlobalContext = (game: MonkeyGame, ctx: ProgramContext, monkeyId: number): StackContext => {
+    const monkey = game.monkeys.get(monkeyId)
+
     return {
-        type: 'global',
+        type: 'root',
         variables: new Map<string, Value>([
             ['Up', 0],
             ['Down', 1],
@@ -49,7 +51,7 @@ const createGlobalContext = (game: MonkeyGame, ctx: ProgramContext): StackContex
                     throw Error(`Tried calling 'move' with invalid value '${drn}'`)
                 }
 
-                await game.executeCommand(COMMANDS[drn])
+                await game.executeCommand(monkeyId, COMMANDS[drn])
                 return 0
             }}],
             ['dump_all', { type: 'special', call: async () => {
@@ -61,10 +63,10 @@ const createGlobalContext = (game: MonkeyGame, ctx: ProgramContext): StackContex
                 return 1
             }}],
             ['get_x', { type: 'special', call: async () => {
-                return game.x
+                return monkey?.position.x ?? 0
             }}],
             ['get_y', { type: 'special', call: async () => {
-                return game.y
+                return monkey?.position.y ?? 0
             }}],
             ['get_width', { type: 'special', call: async () => {
                 return game.width
@@ -90,7 +92,7 @@ type ExternalProgramState = {
     cancel: () => void
 }
 
-export const executeProgram = (program: ProgramTree, game: MonkeyGame): ExternalProgramState => {
+export const executeProgram = (program: ProgramTree, game: MonkeyGame, monkeyId: number): ExternalProgramState => {
     let running = true
 
     const programContext: ProgramContext = {
@@ -99,7 +101,8 @@ export const executeProgram = (program: ProgramTree, game: MonkeyGame): External
         cancel: () => { running = false },
     }
 
-    programContext.contexts.push(createGlobalContext(game, programContext))
+    programContext.contexts.push(createGlobalContext(game, programContext, monkeyId))
+    programContext.contexts.push({ type: 'global', variables: new Map() })
 
     return {
         promise: executeBlockStatement(program.block, game, programContext),
@@ -151,11 +154,20 @@ export const executeStatement = async (statement: Statement, game: MonkeyGame, c
     } else if (statement.type === 'assignment-statement') {
         const computedResult = await evaluateExpr(statement.expression, game, ctx)
 
-        const availableContexts = ctx.contexts.slice(ctx.contexts.findLastIndex(c => c.type === 'function' || c.type === 'global'))
+        const availableContexts = [
+            ...ctx.contexts.filter(c => c.type === 'root'),
+            ...ctx.contexts.slice(ctx.contexts.findLastIndex(c => c.type === 'function' || c.type === 'global')),
+        ]
 
         if (statement.assignmentType === '=') {
             const definitionRoot = availableContexts.findLast(c => c.variables.has(statement.identifier.value))
                 ?? last(availableContexts)
+
+            if (definitionRoot.type === 'root') {
+                throw Error(`'${statement.identifier.value}' is a global constant name and cannot be overwritten`)
+            } else {
+                console.log('I can assign it', statement.identifier.value)
+            }
 
             const currentValue = definitionRoot.variables.get(statement.identifier.value)
 
@@ -169,6 +181,10 @@ export const executeStatement = async (statement: Statement, game: MonkeyGame, c
 
             if (!definitionRoot) {
                 throw Error(`Attempting '${statement.assignmentType}' operation on '${statement.identifier.value}' which is not defined or available in this scope`)
+            }
+
+            if (definitionRoot.type === 'root') {
+                throw Error(`Attempting to set or modify root constant: '${statement.identifier.value}'`)
             }
 
             const currentValue = definitionRoot.variables.get(statement.identifier.value)
@@ -517,7 +533,7 @@ export const evaluateExpr = async (expr: Expression, game: MonkeyGame, ctx: Prog
     }
 }
 
-const findInContexts = (name: string, ctx: ProgramContext): CoreFunction | EvaluableFunction | number | boolean => {
+const findInContexts = (name: string, ctx: ProgramContext): Value => {
     const relevantContextIndex = ctx.contexts.findLastIndex(c => c.variables.has(name))
 
     const mostRecentFunctionIndex = ctx.contexts.findLastIndex(c => c.type === 'function' || c.type === 'global')
@@ -529,7 +545,7 @@ const findInContexts = (name: string, ctx: ProgramContext): CoreFunction | Evalu
     const value = ctx.contexts[relevantContextIndex].variables.get(name)!
 
     if (typeof value === 'number' || typeof value === 'boolean') {
-        if (relevantContextIndex < mostRecentFunctionIndex) {
+        if (ctx.contexts[relevantContextIndex].type !== 'root' && relevantContextIndex < mostRecentFunctionIndex) {
             console.log(ctx)
             throw Error(`ScopeError: could not find name: '${name}' in current ${ctx.contexts[mostRecentFunctionIndex].type} scope`)
         }

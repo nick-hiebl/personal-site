@@ -81,8 +81,6 @@ export const Game = () => {
                                         const filteredTokens = textTokens
                                             .filter(token => token.type !== 'white.python' && token.type !== 'comment.python')
 
-                                        console.log('Annotated', filteredTokens)
-
                                         const p1 = parseProgram(filteredTokens)
 
                                         setProgram(p1)
@@ -103,9 +101,14 @@ export const Game = () => {
                                 }
 
                                 if (program) {
+                                    game.monkeys.clear()
+
+                                    let monkeyId
                                     try {
                                         setRunning(true)
-                                        const handle = executeProgram(program, game)
+                                        monkeyId = game.createMonkey()
+
+                                        const handle = executeProgram(program, game, monkeyId)
 
                                         cancelRef.current = handle.cancel
 
@@ -118,6 +121,10 @@ export const Game = () => {
                                         } else {
                                             console.warn('Caught the following error from executing program', error)
                                         }
+                                    } finally {
+                                        // if (monkeyId !== undefined) {
+                                        //     game.removeMonkey(monkeyId)
+                                        // }
                                     }
                                 }
                             }}

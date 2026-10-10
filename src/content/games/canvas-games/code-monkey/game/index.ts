@@ -1,4 +1,5 @@
-import { delay } from "./utils"
+import { Vector } from '../../core/Vector'
+import { Monkey } from './monkey'
 
 const WIDTH = 800
 const HEIGHT = 600
@@ -7,11 +8,7 @@ const SCALE = 40
 
 export type MoveCommand = 'left' | 'right' | 'up' | 'down'
 
-const MOVE_DELAY = 250
-
 export class MonkeyGame {
-    x: number
-    y: number
     width: number
     height: number
 
@@ -21,9 +18,9 @@ export class MonkeyGame {
     isLooping: boolean
     lastTime: number
 
+    monkeys: Map<number, Monkey>
+
     constructor() {
-        this.x = 0
-        this.y = 0
         this.width = WIDTH / SCALE
         this.height = HEIGHT / SCALE
 
@@ -32,35 +29,8 @@ export class MonkeyGame {
 
         this.isLooping = false
         this.lastTime = performance.now()
-    }
 
-    async executeCommand(command: MoveCommand): Promise<void> {
-        switch (command) {
-            case 'up':
-                if (this.y < this.height - 1) {
-                    this.y += 1
-                }
-                await delay(MOVE_DELAY)
-                break
-            case 'down':
-                if (this.y > 0) {
-                    this.y -= 1
-                }
-                await delay(MOVE_DELAY)
-                break
-            case 'left':
-                if (this.x > 0) {
-                    this.x -= 1
-                }
-                await delay(MOVE_DELAY)
-                break
-            case 'right':
-                if (this.x < this.width - 1) {
-                    this.x += 1
-                }
-                await delay(MOVE_DELAY)
-                break
-        }
+        this.monkeys = new Map()
     }
 
     setCanvas(canvas: HTMLCanvasElement) {
@@ -78,11 +48,26 @@ export class MonkeyGame {
             return
         }
 
-        this.ctx.fillStyle = 'black'
-        this.ctx.fillRect(0, 0, WIDTH, HEIGHT)
+        const ctx = this.ctx
 
-        this.ctx.fillStyle = 'brown'
-        this.ctx.fillRect(this.x * SCALE, (this.height - this.y - 1) * SCALE, SCALE, SCALE)
+        ctx.fillStyle = 'skyblue'
+        ctx.fillRect(0, 0, WIDTH, HEIGHT)
+
+        this.monkeys.values().forEach(monkey => {
+            monkey.draw(ctx, SCALE)
+        })
+
+        ctx.fillStyle = 'green'
+        ctx.beginPath()
+        ctx.moveTo(0, HEIGHT)
+        const LOW_GRASS = HEIGHT - 5
+        const HIGH_GRASS = HEIGHT - 10
+        for (let x = 0; x < WIDTH + 10; x += 8) {
+            ctx.lineTo(x, LOW_GRASS)
+            ctx.lineTo(x + 4, HIGH_GRASS)
+        }
+        ctx.lineTo(WIDTH, HEIGHT)
+        ctx.fill()
     }
 
     start() {
@@ -98,10 +83,34 @@ export class MonkeyGame {
         const elapsedTime = currentTime - this.lastTime
         this.lastTime = currentTime
 
+        this.update(elapsedTime)
         this.draw()
 
         if (this.isLooping) {
             requestAnimationFrame(() => this.mainTick())
         }
+    }
+
+    createMonkey(): number {
+        const monkey = new Monkey(new Vector(0, 0), this)
+        this.monkeys.set(monkey.id, monkey)
+
+        return monkey.id
+    }
+
+    removeMonkey(id: number) {
+        this.monkeys.delete(id)
+    }
+
+    async executeCommand(id: number, command: MoveCommand): Promise<void> {
+        const monkey = this.monkeys.get(id)
+
+        await monkey?.executeCommand(command)
+    }
+
+    update(elapsedTime: number) {
+        this.monkeys.values().forEach(monkey => {
+            monkey.update(elapsedTime)
+        })
     }
 }
