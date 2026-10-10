@@ -39,7 +39,7 @@ const createGlobalContext = (game: MonkeyGame, ctx: ProgramContext): StackContex
             ['stop', { type: 'special', call: async () => {
                 ctx.cancel()
                 return 1
-            }}]
+            }}],
         ])
     }
 }
@@ -123,6 +123,30 @@ export const executeStatement = async (statement: Statement, game: MonkeyGame, c
                     { type: 'scope', variables: new Map() },
                 ],
             })
+        }
+    } else if (statement.type === 'if-statement') {
+        const conditionResult = await evaluateExpr(statement.condition, game, ctx)
+
+        if (conditionResult) {
+            await executeBlockStatement(statement.block, game, {
+                ...ctx,
+                contexts: [
+                    ...ctx.contexts,
+                    { type: 'scope', variables: new Map() },
+                ],
+            })
+        } else if (statement.elseBlock) {
+            if (statement.elseBlock.type === 'block') {
+                await executeBlockStatement(statement.elseBlock, game, {
+                    ...ctx,
+                    contexts: [
+                        ...ctx.contexts,
+                        { type: 'scope', variables: new Map() },
+                    ],
+                })
+            } else {
+                await executeStatement(statement.elseBlock, game, ctx)
+            }
         }
     } else if (statement.type === 'expression-statement') {
         await evaluateExpr(statement.expression, game, ctx)

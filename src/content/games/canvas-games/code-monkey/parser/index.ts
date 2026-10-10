@@ -50,7 +50,7 @@ export type BlockStatement = {
     statements: Statement[]
 }
 
-export type Statement = FuncDeclStatement | WhileStatement | ExprStatement
+export type Statement = FuncDeclStatement | WhileStatement | IfStatement | ExprStatement
 
 export type FuncDeclStatement = {
     type: 'func-decl'
@@ -62,6 +62,13 @@ export type WhileStatement = {
     type: 'while-statement'
     condition: Expression
     block: BlockStatement
+}
+
+export type IfStatement = {
+    type: 'if-statement'
+    condition: Expression
+    block: BlockStatement
+    elseBlock?: BlockStatement | IfStatement
 }
 
 export type ExprStatement = {
@@ -195,6 +202,8 @@ const parseStatement = (lines: string[], tokens: MyToken[], indentation: number)
             return parseFuncDecl(lines, tokens, indentation)
         } else if (tokens[0].text === 'while') {
             return parseWhileStmt(lines, tokens, indentation)
+        } else if (tokens[0].text === 'if') {
+            return parseIfStmt(lines, tokens, indentation, 'if')
         }
     }
 
@@ -312,6 +321,67 @@ const parseWhileStmt = (lines: string[], tokens: MyToken[], indentation: number)
     return [
         {
             type: 'while-statement',
+            condition: expression,
+            block,
+        },
+        afterBlock,
+    ]
+}
+
+const parseIfStmt = (lines: string[], tokens: MyToken[], indentation: number, expecting: 'if' | 'elif'): [IfStatement, MyToken[]] => {
+    if (tokens[0]?.type !== 'keyword.python') {
+        throw tokenError(`Expected '${expecting}' at`, tokens[0])
+    }
+
+    if (tokens[0].text !== expecting) {
+        throw tokenError(`Expected '${expecting}' at`, tokens[0])
+    }
+
+    const [expression, rest] = parseExpression(lines, tokens.slice(1))
+
+    const colon = rest[0]
+    if (!colon || colon.type !== 'delimiter.python') {
+        throw tokenError('Expected colon in if statement at', colon)
+    }
+
+    const [block, afterBlock] = parseBlockStatement(lines, rest.slice(1), indentation + 4)
+
+    let elseBlock: IfStatement
+
+    if (afterBlock[0]?.type === 'keyword.python') {
+        if (afterBlock[0].text === 'else') {
+            if (afterBlock[1]?.type !== 'delimiter.python') {
+                throw tokenError('Expected colon in else statement at', afterBlock[1])
+            }
+            const [elseBlock, postElse] = parseBlockStatement(lines, afterBlock.slice(2), indentation + 4)
+
+            return [
+                {
+                    type: 'if-statement',
+                    condition: expression,
+                    block,
+                    elseBlock,
+                },
+                postElse,
+            ]
+        } else if (afterBlock[0].text === 'elif') {
+            const [chain, postChain] = parseIfStmt(lines, afterBlock, indentation, 'elif')
+
+            return [
+                {
+                    type: 'if-statement',
+                    condition: expression,
+                    block,
+                    elseBlock: chain,
+                },
+                postChain,
+            ]
+        }
+    }
+
+    return [
+        {
+            type: 'if-statement',
             condition: expression,
             block,
         },
