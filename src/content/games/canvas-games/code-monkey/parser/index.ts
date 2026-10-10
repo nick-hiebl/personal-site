@@ -124,6 +124,7 @@ export type MultiplicativeExpr = UnaryExpr
 export type UnaryExpr = PrimaryExpr
     | {
         type: 'unary-expr'
+        unaryOperation: '-' | '+' | 'not'
         expression: UnaryExpr
     }
 export type PrimaryExpr = Identifier
@@ -564,11 +565,23 @@ const parseUnaryExpr = (tokens: MyToken[]): [UnaryExpr, MyToken[]] => {
             return [
                 {
                     type: 'unary-expr',
+                    unaryOperation: 'not',
                     expression: child,
                 },
                 rest,
             ]
         }
+    } else if (tokens[0].type === '' && (tokens[0].text === '+' || tokens[0].text === '-')) {
+        const [child, rest] = parseUnaryExpr(tokens.slice(1))
+
+        return [
+            {
+                type: 'unary-expr',
+                unaryOperation: tokens[0].text,
+                expression: child,
+            },
+            rest,
+        ]
     }
 
     return parsePrimaryExpr(tokens)

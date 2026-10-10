@@ -285,7 +285,7 @@ type EvaluatedCondition = {
 
 const compare = (left: number | boolean, right: number | boolean, mode: '==' | '!=' | '<' | '>' | '<=' | '>='): boolean => {
     if (typeof left !== typeof right) {
-        throw Error('Comparing two unlike objects is not allowed')
+        throw Error(`Comparing two unlike objects is not allowed: ${typeof left}, ${typeof right}`)
     }
 
     if (mode === '==') {
@@ -409,7 +409,25 @@ export const evaluateExpr = async (expr: Expression, game: MonkeyGame, ctx: Prog
             return leftValue % rightValue
         }
     } else if (expr.type === 'unary-expr') {
-        return !(await evaluateExpr(expr.expression, game, ctx))
+        if (expr.unaryOperation === 'not') {
+            const value = await evaluateExpr(expr.expression, game, ctx)
+
+            return !value
+        } else if (expr.unaryOperation === '+' || expr.unaryOperation === '-') {
+            const value = await evaluateExpr(expr.expression, game, ctx)
+
+            if (typeof value !== 'number') {
+                throw Error(`Trying to use '${expr.unaryOperation}' unary operator on non-numeric value`)
+            }
+
+            if (expr.unaryOperation === '+') {
+                return +value
+            } else {
+                return -value
+            }
+        } else {
+            throw Error(`Un-managed unary operator: ${expr.unaryOperation}`)
+        }
     } else if (expr.type === 'call-expr') {
         const func = findInContexts(expr.identifier.value, ctx)
 
