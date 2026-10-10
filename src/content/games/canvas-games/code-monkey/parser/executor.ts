@@ -14,7 +14,7 @@ type EvaluableFunction = {
 }
 
 export interface StackContext {
-    type: 'global' | 'loop' | 'function'
+    type: 'global' | 'scope' | 'function'
     variables: Map<string, CoreFunction | EvaluableFunction | number | boolean>
 }
 
@@ -98,8 +98,10 @@ export const executeStatement = async (statement: Statement, game: MonkeyGame, c
     } else if (statement.type === 'assignment-statement') {
         const computedResult = await evaluateExpr(statement.expression, game, ctx)
 
-        const definitionRoot = ctx.contexts.findLast(c => c.variables.has(statement.identifier.value))
-            ?? last(ctx.contexts)
+        const availableContexts = ctx.contexts.slice(ctx.contexts.findLastIndex(c => c.type === 'function' || c.type === 'global'))
+
+        const definitionRoot = availableContexts.findLast(c => c.variables.has(statement.identifier.value))
+            ?? last(availableContexts)
 
         definitionRoot.variables.set(statement.identifier.value, computedResult)
     } else if (statement.type === 'while-statement') {
@@ -118,7 +120,7 @@ export const executeStatement = async (statement: Statement, game: MonkeyGame, c
                 ...ctx,
                 contexts: [
                     ...ctx.contexts,
-                    { type: 'loop', variables: new Map() },
+                    { type: 'scope', variables: new Map() },
                 ],
             })
         }
@@ -305,11 +307,22 @@ export const evaluateExpr = async (expr: Expression, game: MonkeyGame, ctx: Prog
 }
 
 const findInContexts = (name: string, ctx: ProgramContext): CoreFunction | EvaluableFunction | number | boolean => {
-    const relevantContext = ctx.contexts.findLast(c => c.variables.has(name))
+    const relevantContextIndex = ctx.contexts.findLastIndex(c => c.variables.has(name))
 
-    if (!relevantContext) {
+    const mostRecentFunctionIndex = ctx.contexts.findLastIndex(c => c.type === 'function' || c.type === 'global')
+
+    if (relevantContextIndex === -1) {
         throw Error(`NameError: could not find name: '${name}'`)
     }
 
-    return relevantContext.variables.get(name)!
+    const value = ctx.contexts[relevantContextIndex].variables.get(name)!
+
+    if (typeof value === 'number' || typeof value === 'boolean') {
+        if (relevantContextIndex < mostRecentFunctionIndex) {
+            console.log(ctx)
+            throw Error(`ScopeError: could not find name: '${name}' in current ${ctx.contexts[mostRecentFunctionIndex].type} scope`)
+        }
+    }
+
+    return ctx.contexts[relevantContextIndex].variables.get(name)!
 }
