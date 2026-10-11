@@ -1,4 +1,4 @@
-import type { MonkeyGame, MoveCommand } from '../game'
+import type { MonkeyCommand, MonkeyGame } from '../game'
 
 import type { BlockStatement, Expression, FuncDeclStatement, ProgramTree, Statement } from '.'
 
@@ -34,10 +34,14 @@ const last = <T>(list: T[]): T => {
     return list[list.length - 1]
 }
 
-const COMMANDS: MoveCommand[] = ['up', 'down', 'left', 'right']
+const COMMANDS: MonkeyCommand[] = ['up', 'down', 'left', 'right']
 
 const createGlobalContext = (game: MonkeyGame, ctx: ProgramContext, monkeyId: number): StackContext => {
     const monkey = game.monkeys.get(monkeyId)
+
+    if (!monkey) {
+        throw Error(`Cannot find mind with id: ${monkeyId}`)
+    }
 
     return {
         type: 'root',
@@ -53,6 +57,26 @@ const createGlobalContext = (game: MonkeyGame, ctx: ProgramContext, monkeyId: nu
 
                 await game.executeCommand(monkeyId, COMMANDS[drn])
                 return 0
+            }}],
+            ['can_move', { type: 'special', call: async (drn: 0 | 1 | 2 | 3) => {
+                if (![0, 1, 2, 3].includes(drn)) {
+                    throw Error(`Tried calling 'move' with invalid value '${drn}'`)
+                }
+
+                return monkey.canMove(COMMANDS[drn] as 'up' | 'down' | 'left' | 'right')
+            }}],
+            ['can_harvest', { type: 'special', call: async () => {
+                return !!monkey.canHarvest()
+            }}],
+            ['harvest', { type: 'special', call: async () => {
+                return await monkey.harvest()
+            }}],
+            ['plant', { type: 'special', call: async () => {
+                await game.executeCommand(monkeyId, 'plant')
+                return 0
+            }}],
+            ['report', { type: 'special', call: async (n: number) => {
+                return await monkey.report(n)
             }}],
             ['dump_all', { type: 'special', call: async () => {
                 console.log(ctx.contexts)
@@ -165,8 +189,6 @@ export const executeStatement = async (statement: Statement, game: MonkeyGame, c
 
             if (definitionRoot.type === 'root') {
                 throw Error(`'${statement.identifier.value}' is a global constant name and cannot be overwritten`)
-            } else {
-                console.log('I can assign it', statement.identifier.value)
             }
 
             const currentValue = definitionRoot.variables.get(statement.identifier.value)
