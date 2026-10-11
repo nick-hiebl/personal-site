@@ -5,8 +5,6 @@ type MyToken = Token & {
     text: string
 }
 
-const IDENTIFIER_REGEX = /[a-zA-Z_][a-zA-Z0-9_]*/
-
 /**
  * program                  -> block-statement
  * identifier               -> ID

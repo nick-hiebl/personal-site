@@ -1,7 +1,7 @@
-import type { MonkeyGame, MoveCommand } from '.'
+import type { MonkeyGame, MonkeyCommand } from '.'
 
 import { Vector } from '../../core/Vector'
-import { delay } from './utils'
+import { type Animation, lerp, smoothStep } from './utils'
 
 const idGenerator = () => {
     let nextId = 0
@@ -14,20 +14,8 @@ const idGenerator = () => {
 const monkeyIdGenerator = idGenerator()
 
 const MOVE_DELAY = 250
-
-type Animation<T> = {
-    progress: number
-    duration: number
-    from: T
-    to: T
-}
-
-export const smoothStep = (t: number): number => 3 * t * t - 2 * t * t * t
-export const fastStep = (t: number): number => t * (2 - t)
-
-export const lerp = (t: number, a: number, b: number): number => {
-    return (1 - t) * a + t * b
-}
+const PLANT_DELAY = 500
+const HARVEST_DURATION = 300
 
 export class Monkey {
     id: number
@@ -44,53 +32,141 @@ export class Monkey {
         this.game = game
     }
 
-    async executeCommand(command: MoveCommand): Promise<void> {
-        const beforePos = this.position.copy()
-        let moved = false
-
+    async executeCommand(command: MonkeyCommand): Promise<void> {
         switch (command) {
+            case 'up':
+            case 'left':
+            case 'down':
+            case 'right':
+                if (this.canMove(command)) {
+                    await this.move(command)
+                } else {
+                    await this.game.delay(MOVE_DELAY)
+                }
+                return
+            case 'plant':
+                if (this.position.y === 0) {
+                    this.game.plantTree(this.position.x)
+                    console.log('Planted!')
+                } else {
+                    console.log('No plant', this.position.y)
+                }
+                await this.game.delay(PLANT_DELAY)
+                return
+        }
+    }
+
+    canMove(moveCommand: 'up' | 'down' | 'left' | 'right') {
+        if (moveCommand === 'up') {
+            if (this.position.y + 1 >= this.game.height) {
+                return false
+            }
+
+            const tree = this.game.trees[this.position.x]
+
+            if (!tree) {
+                return false
+            }
+
+            return tree.height > this.position.y + 1
+        } else if (moveCommand === 'down') {
+            return this.position.y >= 0
+        } else if (moveCommand === 'left') {
+            if (this.position.x === 0) {
+                return false
+            }
+
+            return this.position.y === 0 ||
+                (this.game.trees[this.position.x - 1]?.height ?? 0) > this.position.y
+        } else if (moveCommand === 'right') {
+            if (this.position.x === this.game.width - 1) {
+                return false
+            }
+
+            return this.position.y === 0 ||
+                (this.game.trees[this.position.x + 1]?.height ?? 0) > this.position.y
+        } else {
+            throw Error(`Unexpected canMove query: '${moveCommand}'`)
+        }
+    }
+
+    canHarvest() {
+        const tree = this.game.trees[this.position.x]
+
+        return tree && tree.hasBanana && tree.height === this.position.y + 1
+    }
+
+    async harvest() {
+        if (!this.canHarvest()) {
+            await this.game.delay(HARVEST_DURATION)
+            return false
+        }
+
+        const tree = this.game.trees[this.position.x]
+
+        if (!tree || !tree.hasBanana) {
+            throw Error('canHarvest returned true but there is no tree here!')
+        }
+
+        await this.game.delay(HARVEST_DURATION)
+        if (tree.hasBanana) {
+            tree.hasBanana = false
+            this.game.addBanana()
+            return true
+        }
+        return false
+    }
+
+    async report(n: number) {
+        return await this.game.report(n)
+    }
+
+    async move(moveCommand: 'up' | 'down' | 'left' | 'right') {
+        if (!this.canMove(moveCommand)) {
+            await this.game.delay(MOVE_DELAY)
+        }
+
+        const beforePos = this.position.copy()
+
+        switch (moveCommand) {
             case 'up':
                 if (this.position.y < this.game.height - 1) {
                     this.position.y += 1
                 }
-                moved = true
                 break
             case 'down':
                 if (this.position.y > 0) {
                     this.position.y -= 1
                 }
-                moved = true
                 break
             case 'left':
                 if (this.position.x > 0) {
                     this.position.x -= 1
                 }
-                moved = true
                 break
             case 'right':
                 if (this.position.x < this.game.width - 1) {
                     this.position.x += 1
                 }
-                moved = true
                 break
         }
-        if (moved) {
-            if (this.position.x !== beforePos.x || this.position.y !== beforePos.y) {
-                this.animation = {
-                    progress: 0,
-                    duration: MOVE_DELAY * 0.8,
-                    from: beforePos,
-                    to: this.position.copy(),
-                }
+        if (this.position.x !== beforePos.x || this.position.y !== beforePos.y) {
+            this.animation = {
+                progress: 0,
+                duration: MOVE_DELAY * 0.8,
+                from: beforePos,
+                to: this.position.copy(),
             }
-            await delay(MOVE_DELAY)
         }
+        await this.game.delay(MOVE_DELAY)
     }
 
     update(elapsedTime: number) {
         if (this.animation) {
             this.animation.progress += elapsedTime
             if (this.animation.progress >= this.animation.duration) {
+                this.position.x = this.animation.to.x
+                this.position.y = this.animation.to.y
                 this.animation = undefined
             }
         }
@@ -106,7 +182,15 @@ export class Monkey {
 
         ctx.fillStyle = 'brown'
         ctx.beginPath()
-        ctx.ellipse((myX + 0.5) * scale, (this.game.height - (myY - 0.5) - 1) * scale, scale / 2, scale / 2, 0, 0, 2 * Math.PI)
+        ctx.ellipse(
+            (myX + 0.5) * scale,
+            (this.game.height - (myY - 0.5) - 1) * scale,
+            scale * 0.45,
+            scale * 0.45,
+            0,
+            0,
+            2 * Math.PI,
+        )
         ctx.fill()
     }
 }

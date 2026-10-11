@@ -1,0 +1,15 @@
+.tab-list {
+    border-bottom: 1px solid var(--color-border);
+}
+
+.tab {
+    background: none;
+    border: 1px solid var(--color-border);
+    padding: 4px 12px;
+    margin-bottom: -0.5px;
+    color: white;
+}
+
+.tab:disabled {
+    border-bottom-color: var(--background);
+}
