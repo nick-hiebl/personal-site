@@ -47,7 +47,6 @@ export class Monkey {
             case 'plant':
                 if (this.position.y === 0) {
                     this.game.plantTree(this.position.x)
-                    console.log('Planted!')
                 } else {
                     console.log('No plant', this.position.y)
                 }
