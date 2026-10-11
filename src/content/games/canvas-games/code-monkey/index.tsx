@@ -18,7 +18,6 @@ export const Game = () => {
     const [game] = useState(() => new MonkeyGame())
     const cancelRef = useRef<() => void>(undefined)
     const [running, setRunning] = useState(false)
-    const bananaCount = useSyncExternalStore(game.bananaStore.subscribe, game.bananaStore.getSnapshot)
 
     const monaco = useMonaco()
     const [codeState, setCodeState] = useState(() => {
@@ -29,7 +28,6 @@ export const Game = () => {
 
         return '# Comment'
     })
-    const [isValid, setIsValid] = useState(true)
     const [program, setProgram] = useState<ProgramTree | undefined>(undefined)
 
     useEffect(() => {
@@ -133,7 +131,7 @@ export const Game = () => {
                             Stop
                         </button>
                         <span>Speed:</span>
-                        {[1, 2, 5, 10].map((speedMulti) => (
+                        {[1, 2, 5, 10, 25, 100].map((speedMulti) => (
                             <button
                                 key={speedMulti}
                                 disabled={speed === speedMulti}
@@ -155,9 +153,6 @@ export const Game = () => {
                         width="100%"
                         defaultLanguage="python"
                         defaultValue={codeState}
-                        onValidate={(markers) => {
-                            setIsValid(markers.length === 0)
-                        }}
                     />
                 </div>
             </div>
