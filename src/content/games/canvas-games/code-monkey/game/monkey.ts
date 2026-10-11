@@ -70,7 +70,7 @@ export class Monkey {
 
             return tree.height > this.position.y + 1
         } else if (moveCommand === 'down') {
-            return this.position.y >= 0
+            return this.position.y > 0
         } else if (moveCommand === 'left') {
             if (this.position.x === 0) {
                 return false
