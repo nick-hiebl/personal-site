@@ -7,6 +7,7 @@ export const delay = (ms: number) => {
 export type Animation<T> = {
     progress: number
     duration: number
+    step?: (t: number) => number
     from: T
     to: T
 }

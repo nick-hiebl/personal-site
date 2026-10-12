@@ -1,7 +1,7 @@
 import type { MonkeyGame, MonkeyCommand } from '.'
 
 import { Vector } from '../../core/Vector'
-import { type Animation, lerp, smoothStep } from './utils'
+import { type Animation, fastStep, lerp, smoothStep } from './utils'
 
 const idGenerator = () => {
     let nextId = 0
@@ -15,7 +15,7 @@ const monkeyIdGenerator = idGenerator()
 
 const MOVE_DELAY = 250
 const CLIMB_DELAY = 500
-const FALL_DELAY = 150
+const FALL_DELAY = 125
 const BONK_DELAY = 400
 const PLANT_DELAY = 500
 const HARVEST_DURATION = 300
@@ -162,7 +162,12 @@ export class Monkey {
         if (this.position.x !== beforePos.x || this.position.y !== beforePos.y) {
             this.animation = {
                 progress: 0,
-                duration: moveCommand === 'down' ? moveTiming * 0.9 : moveTiming * 0.5,
+                duration: moveCommand === 'down' ? moveTiming : moveTiming * 0.5,
+                step: moveCommand === 'down'
+                    ? (t: number) => t
+                    : moveCommand === 'up'
+                        ? fastStep
+                        : undefined,
                 from: beforePos,
                 to: this.position.copy(),
             }
@@ -183,10 +188,10 @@ export class Monkey {
 
     draw(ctx: CanvasRenderingContext2D, scale: number) {
         const myX = this.animation
-            ? lerp(smoothStep(this.animation.progress / this.animation.duration), this.animation.from.x, this.animation.to.x)
+            ? lerp((this.animation.step ?? smoothStep)(this.animation.progress / this.animation.duration), this.animation.from.x, this.animation.to.x)
             : this.position.x
         const myY = this.animation
-            ? lerp(smoothStep(this.animation.progress / this.animation.duration), this.animation.from.y, this.animation.to.y)
+            ? lerp((this.animation.step ?? smoothStep)(this.animation.progress / this.animation.duration), this.animation.from.y, this.animation.to.y)
             : this.position.y
 
         ctx.fillStyle = 'brown'
