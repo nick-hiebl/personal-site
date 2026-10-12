@@ -14,6 +14,9 @@ const idGenerator = () => {
 const monkeyIdGenerator = idGenerator()
 
 const MOVE_DELAY = 250
+const CLIMB_DELAY = 500
+const FALL_DELAY = 150
+const BONK_DELAY = 400
 const PLANT_DELAY = 500
 const HARVEST_DURATION = 300
 
@@ -41,7 +44,7 @@ export class Monkey {
                 if (this.canMove(command)) {
                     await this.move(command)
                 } else {
-                    await this.game.delay(MOVE_DELAY)
+                    await this.game.delay(BONK_DELAY)
                 }
                 return
             case 'plant':
@@ -122,7 +125,7 @@ export class Monkey {
 
     async move(moveCommand: 'up' | 'down' | 'left' | 'right') {
         if (!this.canMove(moveCommand)) {
-            await this.game.delay(MOVE_DELAY)
+            await this.game.delay(BONK_DELAY)
         }
 
         const beforePos = this.position.copy()
@@ -149,15 +152,22 @@ export class Monkey {
                 }
                 break
         }
+
+        const moveTiming = moveCommand === 'up'
+            ? CLIMB_DELAY
+            : moveCommand === 'down'
+                ? FALL_DELAY
+                : MOVE_DELAY
+
         if (this.position.x !== beforePos.x || this.position.y !== beforePos.y) {
             this.animation = {
                 progress: 0,
-                duration: MOVE_DELAY * 0.8,
+                duration: moveCommand === 'down' ? moveTiming * 0.9 : moveTiming * 0.5,
                 from: beforePos,
                 to: this.position.copy(),
             }
         }
-        await this.game.delay(MOVE_DELAY)
+        await this.game.delay(moveTiming)
     }
 
     update(elapsedTime: number) {
