@@ -16,6 +16,8 @@ export const Documentation = () => (
             <li>Boolean operators: or not and</li>
             <li>Function definitions (def), return</li>
             <li>While loops, break</li>
+            <li>Limited for loops, only possible with the range function</li>
+            <li>print(), but with no string support</li>
             <li>If statements, elif, else</li>
         </ul>
 

@@ -51,6 +51,7 @@ export type BlockStatement = {
 export type Statement =
     | FuncDeclStatement
     | WhileStatement
+    | ForStatement
     | IfStatement
     | ExprStatement
     | AssignmentStatement
@@ -67,6 +68,13 @@ export type FuncDeclStatement = {
 export type WhileStatement = {
     type: 'while-statement'
     condition: Expression
+    block: BlockStatement
+}
+
+export type ForStatement = {
+    type: 'for-statement'
+    identifier: Identifier
+    generator: Expression
     block: BlockStatement
 }
 
@@ -97,7 +105,7 @@ export type ReturnStatement = {
     value?: Expression
 }
 
-type BinaryExpr<T extends string, Child, Operators> = {
+export type BinaryExpr<T extends string, Operators> = {
     type: T
     mode: Operators
     leftOperand: Expression
@@ -106,18 +114,18 @@ type BinaryExpr<T extends string, Child, Operators> = {
 
 export type Expression = CondOrExpr
 export type CondOrExpr = CondAndExpr
-    | BinaryExpr<'cond-or-expr', CondAndExpr, 'or'>
+    | BinaryExpr<'cond-or-expr', 'or'>
 export type CondAndExpr = EqualityExpr
-    | BinaryExpr<'cond-and-expr', EqualityExpr, 'and'>
+    | BinaryExpr<'cond-and-expr', 'and'>
 export type EqualityExpr = RelativeExpr
-    | BinaryExpr<'equality-expr', RelativeExpr, '==' | '!='>
+    | BinaryExpr<'equality-expr', '==' | '!='>
 export type RelativeExpr = AdditiveExpr
-    | BinaryExpr<'relative-expr', AdditiveExpr, '<' | '>' | '<=' | '>='>
+    | BinaryExpr<'relative-expr', '<' | '>' | '<=' | '>='>
 
 export type AdditiveExpr = MultiplicativeExpr
-    | BinaryExpr<'additive-expr', MultiplicativeExpr, '+' | '-'>
+    | BinaryExpr<'additive-expr', '+' | '-'>
 export type MultiplicativeExpr = UnaryExpr
-    | BinaryExpr<'multiplicative-expr', UnaryExpr, '*' | '/' | '%'>
+    | BinaryExpr<'multiplicative-expr', '*' | '/' | '%'>
 
 export type UnaryExpr = PrimaryExpr
     | {
@@ -197,6 +205,10 @@ export const parseText = (lines: string[], token: MyToken, nextToken: MyToken | 
         ? nextToken.offset
         : undefined
 
+    if (token.type === 'string.python') {
+        return lines[token.lineNumber].slice(token.offset, endOffset)
+    }
+
     const textToSearch = lines[token.lineNumber].slice(token.offset, endOffset)
     const match = SOME_TEXT_REGEX.exec(textToSearch)
 
@@ -217,6 +229,8 @@ const parseStatement = (tokens: MyToken[], indentation: number): [Statement | un
             return parseFuncDecl(tokens, indentation)
         } else if (tokens[0].text === 'while') {
             return parseWhileStmt(tokens, indentation)
+        } else if (tokens[0].text === 'for') {
+            return parseForStmt(tokens, indentation)
         } else if (tokens[0].text === 'if') {
             return parseIfStmt(tokens, indentation, 'if')
         } else if (tokens[0].text === 'break') {
@@ -334,11 +348,7 @@ const parseFuncDecl = (tokens: MyToken[], indentation: number): [FuncDeclStateme
 }
 
 const parseWhileStmt = (tokens: MyToken[], indentation: number): [WhileStatement, MyToken[]] => {
-    if (tokens[0]?.type !== 'keyword.python') {
-        throw tokenError(`Expected 'while' at`, tokens[0])
-    }
-
-    if (tokens[0].text !== 'while') {
+    if (tokens[0]?.type !== 'keyword.python' || tokens[0].text !== 'while') {
         throw tokenError(`Expected 'while' at`, tokens[0])
     }
 
@@ -355,6 +365,38 @@ const parseWhileStmt = (tokens: MyToken[], indentation: number): [WhileStatement
         {
             type: 'while-statement',
             condition: expression,
+            block,
+        },
+        afterBlock,
+    ]
+}
+
+const parseForStmt = (tokens: MyToken[], indentation: number): [ForStatement, MyToken[]] => {
+    if (tokens[0]?.type !== 'keyword.python' || tokens[0].text !== 'for') {
+        throw tokenError(`Expected 'for' at`, tokens[0])
+    }
+
+    const identifier = parseIdentifier(tokens[1])
+
+    const inWord = tokens[2]
+    if (!inWord || inWord.type !== 'keyword.python' || inWord.text !== 'in') {
+        throw tokenError(`Expected 'in' as part of for loop`, tokens[2])
+    }
+
+    const [generator, afterGenerator] = parseExpression(tokens.slice(3))
+
+    const colon = afterGenerator[0]
+    if (!colon || colon.type !== 'delimiter.python') {
+        throw tokenError('Expected colon as part of for loop', colon)
+    }
+
+    const [block, afterBlock] = parseBlockStatement(afterGenerator.slice(1), indentation + 4)
+
+    return [
+        {
+            type: 'for-statement',
+            identifier,
+            generator,
             block,
         },
         afterBlock,

@@ -1,10 +1,11 @@
 import type { MonkeyCommand, MonkeyGame } from '../game'
 
-import type { BlockStatement, Expression, FuncDeclStatement, ProgramTree, Statement } from '.'
+import type { BlockStatement, Expression, FuncDeclStatement, ProgramTree, RelativeExpr, Statement } from '.'
 
 type CoreFunction = {
     type: 'special'
-    call: (...args: any[]) => Promise<number | boolean>
+    rejectsArgs?: (...args: any[]) => Error | null
+    call: (...args: any[]) => Promise<BaseValue>
 }
 
 type EvaluableFunction = {
@@ -13,7 +14,9 @@ type EvaluableFunction = {
     closure: StackContext[]
 }
 
-type Value = CoreFunction | EvaluableFunction | number | boolean
+type BaseValue = number | boolean | number[] | boolean[]
+
+type Value = CoreFunction | EvaluableFunction | BaseValue
 
 export type StackContext = {
     type: 'root' | 'global' | 'scope'
@@ -100,6 +103,59 @@ const createGlobalContext = (game: MonkeyGame, ctx: ProgramContext, monkeyId: nu
             }}],
             ['coin_flip', { type: 'special', call: async () => {
                 return Math.random() > 0.5
+            }}],
+            [
+                'range',
+                {
+                    type: 'special',
+                    rejectsArgs: (...argList: any[]) => {
+                        if (argList.length === 0 || argList.length > 3) {
+                            return Error(`range() received ${argList.length} arguments, but expected 1, 2, or 3`)
+                        }
+
+                        if (argList.some(argument => typeof argument !== 'number' || Number.isNaN(argument))) {
+                            return Error('range() expected all arguments to be numbers')
+                        }
+
+                        if (argList.length === 3) {
+                            const [start, end, step] = argList
+
+                            if (Math.sign(end - start) !== Math.sign(step)) {
+                                return Error('range() called with start, end, step where step is in wrong direction to start')
+                            }
+                        }
+
+                        return null
+                    },
+                    call: async (...argList: [number] | [number, number] | [number, number, number]) => {
+                        if (argList.length === 1) {
+                            const [max] = argList
+
+                            return new Array(max).fill(0).map((_, index) => index)
+                        } else if (argList.length === 2) {
+                            const [min, max] = argList
+
+                            return new Array(max - min).fill(0).map((_, index) => index + min)
+                        } else if (argList.length === 3) {
+                            const [min, max, step] = argList
+
+                            const arr = []
+
+                            for (let i = min; i < max; i += step) {
+                                arr.push(i)
+                            }
+
+                            return arr
+                        }
+
+                        throw Error('Unhandled range() call')
+                    },
+                },
+            ],
+            ['print', { type: 'special', rejectsArgs: () => null, call: async (...args: any[]) => {
+                console.log(...args)
+
+                return 0
             }}],
         ])
     }
@@ -269,6 +325,35 @@ export const executeStatement = async (statement: Statement, game: MonkeyGame, c
                 ],
             })
         }
+    } else if (statement.type === 'for-statement') {
+        const inputList = await evaluateExpr(statement.generator, game, ctx)
+
+        if (!Array.isArray(inputList)) {
+            throw Error('Expected for loop to be given iterable')
+        }
+
+        let broken = false
+
+        const breakLoop = () => { broken = true }
+
+        for (const item of inputList) {
+            if (broken || isTerminatedAbove()) {
+                break
+            }
+
+            await executeBlockStatement(statement.block, game, {
+                ...ctx,
+                contexts: [
+                    ...ctx.contexts,
+                    {
+                        type: 'loop',
+                        variables: new Map([[statement.identifier.value, item]]),
+                        isBroken: () => broken,
+                        breakLoop,
+                    },
+                ],
+            })
+        }
     } else if (statement.type === 'break-statement') {
         if (!currentLoop) {
             throw Error('Break statement used outside of loop')
@@ -349,29 +434,37 @@ const compare = (left: number | boolean, right: number | boolean, mode: '==' | '
     throw Error(`Left processing some some bizarre operation: '${mode}'`)
 }
 
-export const evaluateConditionExpressions = async (expr: Expression, game: MonkeyGame, ctx: ProgramContext): Promise<EvaluatedCondition | number | boolean> => {
+const isCondition = (value: EvaluatedCondition | BaseValue): value is EvaluatedCondition => {
+    return typeof value === 'object' && !Array.isArray(value)
+}
+
+export const evaluateConditionExpressions = async (expr: Expression, game: MonkeyGame, ctx: ProgramContext): Promise<EvaluatedCondition | BaseValue> => {
     if (expr.type === 'equality-expr' || expr.type === 'relative-expr') {
         const left = await evaluateConditionExpressions(expr.leftOperand, game, ctx)
 
         // Short-circuiting
-        if (typeof left === 'object' && !left.truthy) {
+        if (isCondition(left) && !left.truthy) {
             return false
         }
 
         const right = await evaluateConditionExpressions(expr.rightOperand, game, ctx)
 
-        if (typeof right === 'object' && !right.truthy) {
+        if (isCondition(right) && !right.truthy) {
             return false
         }
 
-        if (typeof left === 'object') {
-            if (typeof right === 'object') {
+        if (isCondition(left)) {
+            if (isCondition(right)) {
                 return {
                     truthy: compare(left.rightValue, right.leftValue, expr.mode),
                     leftValue: left.leftValue,
                     rightValue: right.rightValue,
                 }
             } else {
+                if (Array.isArray(right)) {
+                    throw Error(`Unexpected use of '${expr.mode}' operator on array value`)
+                }
+
                 return {
                     truthy: compare(left.rightValue, right, expr.mode),
                     leftValue: left.leftValue,
@@ -379,13 +472,21 @@ export const evaluateConditionExpressions = async (expr: Expression, game: Monke
                 }
             }
         } else {
-            if (typeof right === 'object') {
+            if (isCondition(right)) {
+                if (Array.isArray(left)) {
+                    throw Error(`Unexpected use of '${expr.mode}' operator on array value`)
+                }
+
                 return {
                     truthy: compare(left, right.leftValue, expr.mode),
                     leftValue: left,
                     rightValue: right.rightValue,
                 }
             } else {
+                if (Array.isArray(left) || Array.isArray(right)) {
+                    throw Error(`Unexpected use of '${expr.mode}' operator on array value`)
+                }
+
                 return {
                     truthy: compare(left, right, expr.mode),
                     leftValue: left,
@@ -398,7 +499,7 @@ export const evaluateConditionExpressions = async (expr: Expression, game: Monke
     }
 }
 
-export const evaluateExpr = async (expr: Expression, game: MonkeyGame, ctx: ProgramContext): Promise<number | boolean> => {
+export const evaluateExpr = async (expr: Expression, game: MonkeyGame, ctx: ProgramContext): Promise<number | boolean | number[] | boolean[]> => {
     if (!ctx.running()) {
         throw Error('Cancelled')
     }
@@ -422,7 +523,7 @@ export const evaluateExpr = async (expr: Expression, game: MonkeyGame, ctx: Prog
     } else if (expr.type === 'equality-expr' || expr.type === 'relative-expr') {
         const result = await evaluateConditionExpressions(expr, game, ctx)
 
-        if (typeof result === 'object') {
+        if (isCondition(result)) {
             return result.truthy
         }
 
@@ -469,7 +570,7 @@ export const evaluateExpr = async (expr: Expression, game: MonkeyGame, ctx: Prog
     } else if (expr.type === 'call-expr') {
         const func = findInContexts(expr.identifier.value, ctx)
 
-        if (!func || typeof func !== 'object') {
+        if (!func || typeof func !== 'object' || Array.isArray(func)) {
             throw Error(`Calling a non-function with name: ${expr.identifier.value}`)
         }
 
@@ -521,14 +622,20 @@ export const evaluateExpr = async (expr: Expression, game: MonkeyGame, ctx: Prog
                 return returnValue
             }
         } else {
-            if (expr.argList.length !== func.call.length) {
-                throw new Error(`Calling built-in function '${expr.identifier.value}' with ${expr.argList.length} argument(s), expected ${func.call.length}`)
-            }
-
             const argumentList: Value[] = []
 
             for (const argument of expr.argList) {
                 argumentList.push(await evaluateExpr(argument, game, ctx))
+            }
+
+            if (func.rejectsArgs) {
+                const argumentsError = func.rejectsArgs(...argumentList)
+
+                if (argumentsError) {
+                    throw argumentsError
+                }
+            } else if (expr.argList.length !== func.call.length) {
+                throw new Error(`Calling built-in function '${expr.identifier.value}' with ${expr.argList.length} argument(s), expected ${func.call.length}`)
             }
 
             return await func.call(...argumentList)

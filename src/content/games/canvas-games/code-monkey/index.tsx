@@ -49,8 +49,24 @@ export const Game = () => {
                 const textTokens = linedTokens
                     .map((token, index, arr) => ({ ...token, text: parseText(lines, token, arr[index + 1]) ?? '' }))
 
-                const filteredTokens = textTokens
-                    .filter(token => token.type !== 'white.python' && token.type !== 'comment.python')
+                // Splitting parenthesis otherwise they can be grouped in bizarre ways according to spacing, e.g.
+                // '())' which is difficult to process later on
+                const splitTokens = textTokens
+                    .flatMap(token =>
+                        token.type === 'delimiter.parenthesis.python'
+                            ? Array.from(token.text).map((char, index) => ({
+                                ...token,
+                                text: char,
+                                offset: token.offset + index,
+                            }))
+                            : token,
+                    )
+
+                const filteredTokens = splitTokens
+                    .filter(token => token.type !== 'white.python' && token.type !== 'comment.python');
+
+                (window as any).__RAW_TOKENS__ = textTokens;
+                (window as any).__TOKENS__ = filteredTokens
 
                 const p1 = parseProgram(filteredTokens)
 
