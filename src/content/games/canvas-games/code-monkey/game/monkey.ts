@@ -204,17 +204,61 @@ export class Monkey {
             ? lerp((this.animation.step ?? smoothStep)(this.animation.progress / this.animation.duration), this.animation.from.y, this.animation.to.y)
             : this.position.y
 
+        const x = (myX + 0.5) * scale
+        const y = (this.game.height - (myY - 0.5) - 1) * scale
+
         ctx.fillStyle = 'brown'
+        ctx.save()
+        ctx.translate(x, y)
+
+        // Arms and legs
+        ctx.strokeStyle = 'brown'
+        ctx.lineWidth = scale * 0.1
         ctx.beginPath()
-        ctx.ellipse(
-            (myX + 0.5) * scale,
-            (this.game.height - (myY - 0.5) - 1) * scale,
-            scale * 0.45,
-            scale * 0.45,
-            0,
-            0,
-            2 * Math.PI,
-        )
+        ctx.arc(scale * 0.1, scale * 0.3, scale * 0.2, -Math.PI * 0.5, Math.PI * 0.3)
+        ctx.moveTo(0, 0)
+        ctx.arc(-scale * 0.1, scale * 0.3, scale * 0.2, -Math.PI * 0.5, -Math.PI * 1.3, true)
+        ctx.stroke()
+
+        // Core body shape
+        ctx.beginPath()
+        ctx.ellipse(0, 0, scale * 0.3, scale * 0.3, 0, 0, 2 * Math.PI)
+        ctx.ellipse(0, -scale * 0.36, scale * 0.18, scale * 0.18, 0, 0, 2 * Math.PI)
+        ctx.moveTo(scale * 0.23, scale * 0.5)
+        ctx.ellipse(scale * 0.23, scale * 0.5, scale * 0.12, scale * 0.08, 0.1, 0, 2 * Math.PI)
+        ctx.moveTo(-scale * 0.23, scale * 0.5)
+        ctx.ellipse(-scale * 0.23, scale * 0.5, scale * 0.12, scale * 0.08, -0.1, 0, 2 * Math.PI)
         ctx.fill()
+
+        // Light colored parts
+        ctx.fillStyle = '#f5ca7a'
+        ctx.beginPath()
+        ctx.ellipse(0, -0.03 * scale, scale * 0.18, scale * 0.18, 0, 0, 2 * Math.PI)
+        ctx.ellipse(0, -0.29 * scale, scale * 0.1, scale * 0.13, 0, 0, 2 * Math.PI)
+        ctx.ellipse(0, -0.21 * scale, scale * 0.12, scale * 0.08, 0, 0, 2 * Math.PI)
+        ctx.fill()
+
+        // Face
+        ctx.fillStyle = 'white'
+        ctx.beginPath()
+        ctx.ellipse(0.08 * scale, -0.36 * scale, scale * 0.06, scale * 0.06, 0, 0, 2 * Math.PI)
+        ctx.ellipse(-0.08 * scale, -0.36 * scale, scale * 0.06, scale * 0.06, 0, 0, 2 * Math.PI)
+        ctx.fill()
+
+        // Face
+        ctx.fillStyle = 'black'
+        ctx.beginPath()
+        ctx.ellipse(0.08 * scale, -0.36 * scale, scale * 0.02, scale * 0.02, 0, 0, 2 * Math.PI)
+        ctx.ellipse(-0.08 * scale, -0.36 * scale, scale * 0.02, scale * 0.02, 0, 0, 2 * Math.PI)
+        ctx.fill()
+
+        // Smile
+        ctx.strokeStyle = 'black'
+        ctx.lineWidth = scale * 0.02
+        ctx.beginPath()
+        ctx.ellipse(0, -0.30 * scale, scale * 0.1, scale * 0.08, 0, Math.PI / 4, Math.PI * 3 / 4)
+        ctx.stroke()
+
+        ctx.restore()
     }
 }
