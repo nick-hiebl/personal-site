@@ -23,6 +23,7 @@ type Tree = {
     growAnimation?: Animation<number>
     bananaAnimation?: Animation<number>
     hasBanana: boolean
+    isGrown: boolean
 }
 
 export class MonkeyGame {
@@ -239,6 +240,7 @@ export class MonkeyGame {
                 if (tree.bananaAnimation.progress >= tree.bananaAnimation.duration) {
                     tree.hasBanana = true
                     tree.bananaAnimation = undefined
+                    tree.isGrown = true
                 }
             }
         })
@@ -293,6 +295,7 @@ export class MonkeyGame {
                 from: 0,
                 to: targetHeight,
             },
+            isGrown: false,
         }
     }
 }

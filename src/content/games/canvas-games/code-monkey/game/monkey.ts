@@ -58,6 +58,16 @@ export class Monkey {
         }
     }
 
+    isGrown() {
+        const plant = this.game.trees[this.position.x]
+
+        if (!plant) {
+            return false
+        }
+
+        return plant.isGrown
+    }
+
     canMove(moveCommand: 'up' | 'down' | 'left' | 'right') {
         if (moveCommand === 'up') {
             if (this.position.y + 1 >= this.game.height) {

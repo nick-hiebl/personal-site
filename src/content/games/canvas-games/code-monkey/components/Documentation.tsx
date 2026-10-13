@@ -53,6 +53,11 @@ export const Documentation = () => (
                 height, and then grow a banana once.
             </dd>
 
+            <dt>is_grown()</dt>
+            <dd>
+                Indicates whether the plant at your x-position is fully grown or not.
+            </dd>
+
             <dt>can_harvest()</dt>
             <dd>If the monkey is in a space that contains a banana they can harvest.</dd>
 
