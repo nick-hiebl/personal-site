@@ -5,6 +5,8 @@ import type { StackContext } from './executor'
 
 const COMMANDS: MonkeyCommand[] = ['up', 'down', 'left', 'right']
 
+const PLANT_TYPES: ('Banana' | 'Orange')[] = ['Banana', 'Orange']
+
 export const createGlobalContext = (game: MonkeyGame, ctx: ProgramContext, monkeyId: number): StackContext => {
     const monkey = game.monkeys.get(monkeyId)
 
@@ -19,6 +21,8 @@ export const createGlobalContext = (game: MonkeyGame, ctx: ProgramContext, monke
             ['Down', 1],
             ['Left', 2],
             ['Right', 3],
+            ['Banana', 0],
+            ['Orange', 1],
             ['move', { type: 'special', call: async (drn: 0 | 1 | 2 | 3) => {
                 if (![0, 1, 2, 3].includes(drn)) {
                     throw Error(`Tried calling 'move' with invalid value '${drn}'`)
@@ -40,8 +44,12 @@ export const createGlobalContext = (game: MonkeyGame, ctx: ProgramContext, monke
             ['harvest', { type: 'special', call: async () => {
                 return await monkey.harvest()
             }}],
-            ['plant', { type: 'special', call: async () => {
-                await game.executeCommand(monkeyId, 'plant')
+            ['plant', { type: 'special', call: async (plantType: 0 | 1) => {
+                if (![0, 1].includes(plantType)) {
+                    throw Error(`Tried calling 'plant' with invalid value '${plantType}'`)
+                }
+
+                await monkey.plant(PLANT_TYPES[plantType])
                 return 0
             }}],
             ['is_grown', { type: 'special', call: async () => {

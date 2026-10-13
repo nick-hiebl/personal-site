@@ -47,10 +47,10 @@ export const Documentation = () => (
             <dt>coin_flip()</dt>
             <dd>Returns true or false with 50% probability.</dd>
 
-            <dt>plant()</dt>
+            <dt>plant(plantType)</dt>
             <dd>
-                From the ground in an empty space, the monkey will plant a tree which will gradually grow to a random
-                height, and then grow a banana once.
+                Can be called from the ground in an empty space with Banana or Orange. The monkey will plant a tree
+                which will grow according to the details of that tree.
             </dd>
 
             <dt>is_grown()</dt>

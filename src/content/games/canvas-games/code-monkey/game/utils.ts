@@ -54,3 +54,7 @@ export const createExternalStore = <T>(getSnapshot: () => T): ExternalStore<T> =
         triggerUpdate,
     }
 }
+
+export const randInt = (low: number, high: number): number => {
+    return Math.floor((high - low) * Math.random() + low)
+}

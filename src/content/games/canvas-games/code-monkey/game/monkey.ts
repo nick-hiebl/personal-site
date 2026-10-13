@@ -47,15 +47,15 @@ export class Monkey {
                     await this.game.delay(BONK_DELAY)
                 }
                 return
-            case 'plant':
-                if (this.position.y === 0) {
-                    this.game.plantTree(this.position.x)
-                } else {
-                    console.log('No plant', this.position.y)
-                }
-                await this.game.delay(PLANT_DELAY)
-                return
         }
+    }
+
+    async plant(plantType: 'Banana' | 'Orange'): Promise<void> {
+        if (this.position.y === 0) {
+            this.game.plantTree(this.position.x, plantType)
+        }
+        await this.game.delay(PLANT_DELAY)
+        return
     }
 
     isGrown() {
@@ -103,34 +103,20 @@ export class Monkey {
     }
 
     canHarvest() {
-        const tree = this.game.trees[this.position.x]
-
-        return tree && tree.hasBanana && tree.height === this.position.y + 1
+        return this.game.canHarvest(this.position.x, this.position.y)
     }
 
     async harvest() {
-        if (!this.canHarvest()) {
-            await this.game.delay(HARVEST_DURATION)
-            return false
-        }
-
-        const tree = this.game.trees[this.position.x]
-
-        if (!tree || !tree.hasBanana) {
-            throw Error('canHarvest returned true but there is no tree here!')
-        }
-
-        await this.game.delay(HARVEST_DURATION)
-        if (tree.hasBanana) {
-            tree.hasBanana = false
-            this.game.addBanana()
-            return true
-        }
-        return false
+        return this.game.harvest(this.position.x, this.position.y)
     }
 
     async report(n: number) {
-        return await this.game.report(n)
+        if (this.position.x === 0 && this.position.y === 0) {
+            return await this.game.report(n)
+        }
+
+        await this.game.delay(CLIMB_DELAY)
+        return false
     }
 
     async move(moveCommand: 'up' | 'down' | 'left' | 'right') {

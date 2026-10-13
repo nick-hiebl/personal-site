@@ -10,6 +10,7 @@ import { parseProgram, parseText, type ProgramTree } from './parser'
 import { executeProgram } from './parser/executor'
 import { Tabs } from './components/Tabs'
 import { Documentation } from './components/Documentation'
+import { GameObjectives } from './components/GameObjectives'
 
 const LS_KEY = 'code-monkey:code'
 
@@ -128,6 +129,7 @@ export const Game = () => {
                         tabs={[
                             { id: 'game', label: 'Game', content: <GamePanel game={game} /> },
                             { id: 'docs', label: 'Documentation', content: <Documentation /> },
+                            { id: 'objectives', label: 'Game objectives', content: <GameObjectives /> },
                         ]}
                     />
                 </div>

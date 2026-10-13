@@ -6,11 +6,14 @@ type Props = {
 }
 
 export const GamePanel = ({ game }: Props) => {
-    const bananaCount = useSyncExternalStore(game.bananaStore.subscribe, game.bananaStore.getSnapshot)
+    const { bananas, oranges } = useSyncExternalStore(game.fruitsStore.subscribe, game.fruitsStore.getSnapshot)
 
     return (
         <div className="column gap-16px">
-            <div>Bananas: {bananaCount}</div>
+            <div className="row-center gap-16px">
+                <div>Bananas: {bananas}</div>
+                <div>Oranges: {oranges}</div>
+            </div>
             <canvas
                 width="800"
                 height="600"
