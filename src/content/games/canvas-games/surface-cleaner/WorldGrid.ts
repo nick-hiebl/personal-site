@@ -142,7 +142,6 @@ class Bundle {
                 this.canvas = document.createElement('canvas')
                 this.canvas.width = CELL_SIZE * BUNDLE_SIZE
                 this.canvas.height = CELL_SIZE * BUNDLE_SIZE
-                document.body.appendChild(this.canvas)
 
                 this.ctx = this.canvas.getContext('2d')!
             }
@@ -175,6 +174,8 @@ class Bundle {
         if (this.remaining === 0 || this.full) {
             ctx.fillStyle = this.full ? 'white' : 'black'
             ctx.fillRect(myLeftX - topLeft.x, myTopY - topLeft.y, CELL_SIZE * BUNDLE_SIZE, CELL_SIZE * BUNDLE_SIZE)
+
+            this.drawFrame(ctx, topLeft)
             return
         }
 
@@ -184,6 +185,28 @@ class Bundle {
         }
 
         ctx.drawImage(this.canvas, myLeftX - topLeft.x, myTopY - topLeft.y, CELL_SIZE * BUNDLE_SIZE, CELL_SIZE * BUNDLE_SIZE)
+        this.drawFrame(ctx, topLeft)
+    }
+
+    drawFrame(ctx: CanvasRenderingContext2D, topLeft: Vector): void {
+        const myLeftX = this.x * CELL_SIZE * BUNDLE_SIZE
+        const myTopY = this.y * CELL_SIZE * BUNDLE_SIZE
+
+        const SHORT = 2
+        const LONG = 8
+
+        ctx.fillStyle = '#0088ff44'
+        ctx.fillRect(myLeftX - topLeft.x, myTopY - topLeft.y, LONG, SHORT)
+        ctx.fillRect(myLeftX - topLeft.x, myTopY - topLeft.y + SHORT, SHORT, LONG - SHORT)
+
+        ctx.fillRect(myLeftX - topLeft.x + CELL_SIZE * BUNDLE_SIZE - LONG, myTopY - topLeft.y, LONG, SHORT)
+        ctx.fillRect(myLeftX - topLeft.x + CELL_SIZE * BUNDLE_SIZE - SHORT, myTopY - topLeft.y + SHORT, SHORT, LONG - SHORT)
+
+        ctx.fillRect(myLeftX - topLeft.x, myTopY - topLeft.y + CELL_SIZE * BUNDLE_SIZE - SHORT, LONG, SHORT)
+        ctx.fillRect(myLeftX - topLeft.x, myTopY - topLeft.y + CELL_SIZE * BUNDLE_SIZE - LONG, SHORT, LONG - SHORT)
+
+        ctx.fillRect(myLeftX - topLeft.x + CELL_SIZE * BUNDLE_SIZE - LONG, myTopY - topLeft.y + CELL_SIZE * BUNDLE_SIZE - SHORT, LONG, SHORT)
+        ctx.fillRect(myLeftX - topLeft.x + CELL_SIZE * BUNDLE_SIZE - SHORT, myTopY - topLeft.y + CELL_SIZE * BUNDLE_SIZE - LONG, 3, LONG - SHORT)
     }
 
     /**
