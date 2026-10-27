@@ -4,6 +4,7 @@ export class Player {
     position: Vector
 
     radius: number
+    speed: number
 
     store: number
     storeCap: number
@@ -12,13 +13,14 @@ export class Player {
         this.position = position
 
         this.radius = 12
+        this.speed = 0.12
 
         this.store = 0
         this.storeCap = 10_000
     }
 
     update(elapsedTime: number, movementInput: Vector) {
-        this.position = this.position.add(movementInput.scale(elapsedTime / 5))
+        this.position = this.position.add(movementInput.scale(elapsedTime * this.speed))
     }
 
     getBoundingBox(): [Vector, Vector] {

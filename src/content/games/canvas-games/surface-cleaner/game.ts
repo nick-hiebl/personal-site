@@ -12,6 +12,9 @@ const HEIGHT = 810
 
 const EDGE_BUFFER = 40
 
+// 1 cell per millisecond
+const SELL_RATE = 3
+
 export class SurfaceCleanerGame extends GameInstance {
     innerCanvas: HTMLCanvasElement
     innerCtx: CanvasRenderingContext2D
@@ -22,6 +25,9 @@ export class SurfaceCleanerGame extends GameInstance {
 
     players: Player[]
     entities: Seller[]
+
+    sellRate: number
+    conversionRate: number
 
     clearedCells: number
     money: number
@@ -51,6 +57,9 @@ export class SurfaceCleanerGame extends GameInstance {
         this.entities = [
             new Seller(origin),
         ]
+
+        this.sellRate = SELL_RATE
+        this.conversionRate = 1
 
         this.clearedCells = 0
         this.money = 0

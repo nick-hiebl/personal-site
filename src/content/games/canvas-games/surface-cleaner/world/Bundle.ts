@@ -128,7 +128,7 @@ export class Bundle {
         const SHORT = 2
         const LONG = 8
 
-        ctx.fillStyle = '#0088ff44'
+        ctx.fillStyle = this.remaining === 0 ? '#00ff0044' : '#0088ff44'
         ctx.fillRect(myLeftX - topLeft.x, myTopY - topLeft.y, LONG, SHORT)
         ctx.fillRect(myLeftX - topLeft.x, myTopY - topLeft.y + SHORT, SHORT, LONG - SHORT)
 

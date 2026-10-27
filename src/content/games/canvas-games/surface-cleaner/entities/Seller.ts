@@ -2,8 +2,6 @@ import { Vector } from '../../core/Vector'
 import type { SurfaceCleanerGame } from '../game'
 
 const SELL_DISTANCE = 32
-// 1 cell per millisecond
-const SELL_RATE = 3
 
 let TEXT_SIZE: { width: number; height: number } | null = null
 
@@ -22,10 +20,10 @@ export class Seller {
         game.players.forEach((player) => {
             if (this.position.diff(player.position).magnitude() < SELL_DISTANCE) {
                 if (player.store > 0) {
-                    const sellAmount = Math.min(elapsedTime * SELL_RATE, player.store)
+                    const sellAmount = Math.min(elapsedTime * game.sellRate, player.store)
     
                     player.store -= sellAmount
-                    game.money += sellAmount / 1000
+                    game.money += sellAmount * game.conversionRate / 1000
                 }
 
                 this.active = true

@@ -60,7 +60,7 @@ const ShopPanel = ({ game }: { game: SurfaceCleanerGame }) => {
                             }}
                         >
                             <span>
-                                {upgrade.name}: ${upgrade.costs[upgrade.stage] ?? upgrade.costs[upgrade.stages - 1]}
+                                {upgrade.name}: ${(upgrade.steps[upgrade.stage] ?? upgrade.steps[upgrade.steps.length - 1])[0]}
                             </span>
                             <UpgradeProgress stage={upgrade.stage} numStages={upgrade.stages} />
                         </button>

@@ -7,37 +7,53 @@ export type StoreType = {
     upgrades: Upgrade[]
 }
 
+type Cost = number
+
 type UpgradeCore = {
     id: string
     name: string
-    costs: number[]
-    buy: (game: SurfaceCleanerGame, stage: number) => void
-    stages: number
+    steps: [Cost, number][]
+    buy: (game: SurfaceCleanerGame, value: number) => void
 }
 
 type Upgrade = UpgradeCore & {
     available: boolean
     stage: number
+    stages: number
 }
 
 const ALL_UPGRADES: UpgradeCore[] = [
     {
         id: 'big-radius',
         name: 'Big radius',
-        costs: [1, 2, 3],
-        buy: (game, index) => {
-            game.players.forEach((player) => { player.radius = [20, 50, 90][index] })
+        steps: [[10, 14], [50, 16], [100, 18], [150, 20], [250, 22], [400, 24], [400, 26], [1000, 28], [3000, 30]],
+        buy: (game, value) => {
+            game.players.forEach((player) => { player.radius = value })
         },
-        stages: 3,
     },
     {
         id: 'more-space',
         name: 'More storage',
-        costs: [2, 4],
-        buy: (game, index) => {
-            game.players.forEach((player) => { player.storeCap = [30_000, 50_000][index] })
+        steps: [[20, 25_000], [50, 50_000], [100, 100_000], [250, 150_000], [500, 200_000], [1000, 300_000]],
+        buy: (game, value) => {
+            game.players.forEach((player) => { player.storeCap = value })
         },
-        stages: 2,
+    },
+    {
+        id: 'sell-speed',
+        name: 'Sell speed',
+        steps: [[40, 5], [100, 10], [300, 20], [500, 50], [2000, 100], [5000, 200], [20_000, 1000]],
+        buy: (game, value) => {
+            game.sellRate = value
+        },
+    },
+    {
+        id: 'move-speed',
+        name: 'Move speed',
+        steps: [[50, 0.15], [100, 0.2], [250, 0.25], [1000, 0.32]],
+        buy: (game, value) => {
+            game.players.forEach((player) => { player.speed = value })
+        },
     },
 ]
 
@@ -54,6 +70,7 @@ export class SurfaceCleanerStore {
                 ...upgrade,
                 available: false,
                 stage: 0,
+                stages: upgrade.steps.length,
             })),
             open: false,
         }
@@ -77,7 +94,7 @@ export class SurfaceCleanerStore {
         let upgradesDirty = false
 
         this.state.upgrades.forEach((upgrade) => {
-            const canAfford = upgrade.costs[upgrade.stage] <= money && upgrade.stage < upgrade.stages
+            const canAfford = upgrade.steps[upgrade.stage][0] <= money && upgrade.stage < upgrade.stages
 
             if (canAfford !== upgrade.available) {
                 upgradesDirty = true
@@ -88,7 +105,7 @@ export class SurfaceCleanerStore {
             this.state = {
                 ...this.state,
                 upgrades: this.state.upgrades.map((upgrade) => {
-                    const canAfford = upgrade.costs[upgrade.stage] <= money && upgrade.stage < upgrade.stages
+                    const canAfford = upgrade.steps[upgrade.stage][0] <= money && upgrade.stage < upgrade.stages
     
                     if (canAfford !== upgrade.available) {
                         return {
@@ -114,8 +131,8 @@ export class SurfaceCleanerStore {
             return
         }
 
-        game.money -= upgrade.costs[upgrade.stage]
-        upgrade.buy(game, upgrade.stage)
+        game.money -= upgrade.steps[upgrade.stage][0]
+        upgrade.buy(game, upgrade.steps[upgrade.stage][1])
         upgrade.stage += 1
 
         const updated = this.onUpdateMoney(game)
