@@ -3,7 +3,7 @@ import { Vector } from '../core/Vector'
 const WORLD_WIDTH = 8
 const WORLD_HEIGHT = 6
 
-const BUNDLE_SIZE = 10
+const BUNDLE_SIZE = 6
 
 const CELL_SIZE = 40
 
@@ -42,7 +42,7 @@ class Cell {
     }
 
     draw(ctx: CanvasRenderingContext2D, offset: Vector): void {
-        ctx.fillStyle = 'grey'
+        ctx.fillStyle = 'white'
         for (let x = 0; x < CELL_SIZE; x++) {
             for (let y = 0; y < CELL_SIZE; y++) {
                 if (!this.data[y][x]) {
@@ -92,7 +92,6 @@ class Bundle {
 
     full: boolean = true
     remaining: number
-    emptyChildren: number = 0
 
     private canvas: HTMLCanvasElement | null = null
     private ctx: CanvasRenderingContext2D | null = null
@@ -159,11 +158,10 @@ class Bundle {
                     const cell = this.cells[y][x]
 
                     if (typeof cell === 'boolean') {
-                        this.ctx.fillStyle = cell ? 'purple' : 'white'
+                        this.ctx.fillStyle = cell ? 'black' : 'white'
                         this.ctx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
                     } else {
                         cell.draw(this.ctx, new Vector(x * CELL_SIZE, y * CELL_SIZE))
-                        // cell.draw(this.ctx, new Vector(0, 0))
                     }
                 }
             }
@@ -257,7 +255,14 @@ class Bundle {
 
             if (this.remaining < 0) {
                 throw Error('Cleared more than 100%')
-            } else if (this.remaining === 0) {
+            }
+
+            if (this.remaining < CELL_SIZE * BUNDLE_SIZE * CELL_SIZE * BUNDLE_SIZE * 0.01) {
+                sumCleared += this.remaining
+                this.remaining = 0
+            }
+
+            if (this.remaining === 0) {
                 this.canvas = null
                 this.ctx = null
                 this.cells = []

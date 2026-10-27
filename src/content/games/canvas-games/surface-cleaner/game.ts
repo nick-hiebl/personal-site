@@ -55,7 +55,12 @@ export class SurfaceCleanerGame extends GameInstance {
                 : new Vector(0, 0)
             player.update(elapsedTime, directionalInput)
 
-            this.clearedCells += this.worldGrid.clearCells(...player.getBoundingBox())
+            if (player.store < player.storeCap) {
+                const clearedCells = this.worldGrid.clearCells(...player.getBoundingBox())
+                player.store += clearedCells
+
+                this.clearedCells += clearedCells
+            }
         })
     }
 
@@ -82,8 +87,20 @@ export class SurfaceCleanerGame extends GameInstance {
             this.ctx.fillRect(player.position.x - 5 - cameraTopLeft.x, player.position.y - 5 - cameraTopLeft.y, 10, 10)
         })
 
-        this.ctx.fillStyle = 'green'
-        this.ctx.font = '24px sans-serif'
-        this.ctx.fillText(`${this.clearedCells}`, 10, HEIGHT - 8)
+        // this.ctx.fillStyle = 'green'
+        // this.ctx.font = '24px sans-serif'
+        // this.ctx.fillText(`${this.clearedCells}`, 10, HEIGHT - 8)
+
+        const mainPlayer = this.players[0]
+
+        if (mainPlayer) {
+            this.ctx.strokeStyle = 'green'
+            this.ctx.lineWidth = 4
+            this.ctx.strokeRect(16, HEIGHT - 16 - 100 - 12, 32, 100 + 12)
+            const capacity = Math.min(1, mainPlayer.store / mainPlayer.storeCap) * 100
+
+            this.ctx.fillStyle = 'green'
+            this.ctx.fillRect(22, HEIGHT - 16 - 6, 20, -capacity)
+        }
     }
 }

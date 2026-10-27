@@ -5,10 +5,16 @@ export class Player {
 
     radius: number
 
+    store: number
+    storeCap: number
+
     constructor(position: Vector) {
         this.position = position
 
         this.radius = 12
+
+        this.store = 0
+        this.storeCap = 10_000
     }
 
     update(elapsedTime: number, movementInput: Vector) {
