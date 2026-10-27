@@ -8,7 +8,7 @@ export class Player {
     constructor(position: Vector) {
         this.position = position
 
-        this.radius = 8
+        this.radius = 12
     }
 
     update(elapsedTime: number, movementInput: Vector) {

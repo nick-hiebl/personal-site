@@ -24,6 +24,9 @@ class Cell {
     x: number
     y: number
 
+    remaining: number
+    empty: boolean
+
     data: Cleared[][]
 
     constructor(x: number, y: number) {
@@ -33,6 +36,9 @@ class Cell {
         this.data = new Array(CELL_SIZE)
             .fill(0)
             .map(() => new Array(CELL_SIZE).fill(false))
+
+        this.remaining = CELL_SIZE * CELL_SIZE
+        this.empty = false
     }
 
     draw(ctx: CanvasRenderingContext2D, offset: Vector): void {
@@ -46,12 +52,30 @@ class Cell {
         }
     }
 
-    clear(topLeft: Vector, bottomRight: Vector): void {
+    /**
+     * Returns the number of spaces cleared
+     */
+    clear(topLeft: Vector, bottomRight: Vector): number {
+        let cleared = 0
+
         for (let x = Math.max(topLeft.x, 0); x < Math.min(CELL_SIZE, bottomRight.x); x++) {
             for (let y = Math.max(topLeft.y, 0); y < Math.min(CELL_SIZE, bottomRight.y); y++) {
-                this.data[y][x] = true
+                if (!this.data[y][x]) {
+                    cleared++
+                    this.data[y][x] = true
+                }
             }
         }
+
+        this.remaining -= cleared
+
+        if (this.remaining < 0) {
+            throw Error('Cleared more than 100%')
+        } else if (this.remaining === 0) {
+            this.empty = true
+        }
+
+        return cleared
     }
 }
 
@@ -61,6 +85,18 @@ class Bundle {
 
     cells: (Cleared | Cell)[][]
 
+    /**
+     * Indicates that the private canvas needs updating
+     */
+    private dirty: boolean = false
+
+    full: boolean = true
+    remaining: number
+    emptyChildren: number = 0
+
+    private canvas: HTMLCanvasElement | null = null
+    private ctx: CanvasRenderingContext2D | null = null
+
     constructor(x: number, y: number) {
         this.x = x
         this.y = y
@@ -68,6 +104,8 @@ class Bundle {
         this.cells = new Array(BUNDLE_SIZE)
             .fill(0)
             .map(() => new Array(BUNDLE_SIZE).fill(false))
+
+        this.remaining = BUNDLE_SIZE * BUNDLE_SIZE * CELL_SIZE * CELL_SIZE
     }
 
     forEachCell(topLeft: Vector, bottomRight: Vector, callback: (cell: Cleared | Cell, x: number, y: number) => void): void {
@@ -99,32 +137,67 @@ class Bundle {
         const myLeftX = this.x * CELL_SIZE * BUNDLE_SIZE
         const myTopY = this.y * CELL_SIZE * BUNDLE_SIZE
 
-        this.forEachCell(topLeft, bottomRight, (cell, cellX, cellY) => {
-            const currentX = myLeftX + cellX * CELL_SIZE
-            const currentY = myTopY + cellY * CELL_SIZE
+        if (this.dirty) {
+            if (this.canvas === null) {
+                this.canvas = document.createElement('canvas')
+                this.canvas.width = CELL_SIZE * BUNDLE_SIZE
+                this.canvas.height = CELL_SIZE * BUNDLE_SIZE
+                document.body.appendChild(this.canvas)
 
-            const dX = currentX - topLeft.x
-            const dY = currentY - topLeft.y
-            
-            if (cell === false) {
-                ctx.fillStyle = 'white'
-                ctx.fillRect(dX, dY, CELL_SIZE, CELL_SIZE)
-            } else if (cell === true) {
-                ctx.fillStyle = 'red'
-                ctx.fillRect(dX, dY, CELL_SIZE, CELL_SIZE)
-            } else {
-                cell.draw(ctx, new Vector(dX, dY))
+                this.ctx = this.canvas.getContext('2d')!
             }
-        })
 
-        ctx.strokeStyle = 'green'
-        ctx.strokeRect(myLeftX - topLeft.x, myTopY - topLeft.y, CELL_SIZE * BUNDLE_SIZE, CELL_SIZE * BUNDLE_SIZE)
-        ctx.lineWidth = 3
+            if (!this.ctx) {
+                console.warn('No CanvasRenderingContext2D in Bundle')
+                return
+            }
+
+            this.ctx.fillStyle = 'black'
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+
+            for (let x = 0; x < BUNDLE_SIZE; x++) {
+                for (let y = 0; y < BUNDLE_SIZE; y++) {
+                    const cell = this.cells[y][x]
+
+                    if (typeof cell === 'boolean') {
+                        this.ctx.fillStyle = cell ? 'purple' : 'white'
+                        this.ctx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+                    } else {
+                        cell.draw(this.ctx, new Vector(x * CELL_SIZE, y * CELL_SIZE))
+                        // cell.draw(this.ctx, new Vector(0, 0))
+                    }
+                }
+            }
+
+            this.dirty = false
+        }
+
+        if (this.remaining === 0 || this.full) {
+            ctx.fillStyle = this.full ? 'white' : 'black'
+            ctx.fillRect(myLeftX - topLeft.x, myTopY - topLeft.y, CELL_SIZE * BUNDLE_SIZE, CELL_SIZE * BUNDLE_SIZE)
+            return
+        }
+
+        if (!this.canvas) {
+            console.warn('No canvas present?')
+            return
+        }
+
+        ctx.drawImage(this.canvas, myLeftX - topLeft.x, myTopY - topLeft.y, CELL_SIZE * BUNDLE_SIZE, CELL_SIZE * BUNDLE_SIZE)
     }
 
-    clear(topLeft: Vector, bottomRight: Vector): void {
+    /**
+     * Returns the total number of spaces cleared
+     */
+    clear(topLeft: Vector, bottomRight: Vector): number {
+        if (this.remaining === 0) {
+            return 0
+        }
+
         const myLeftX = this.x * CELL_SIZE * BUNDLE_SIZE
         const myTopY = this.y * CELL_SIZE * BUNDLE_SIZE
+
+        let sumCleared = 0
 
         this.forEachCell(topLeft, bottomRight, (cell, cellX, cellY) => {
             if (cell === true) {
@@ -138,12 +211,38 @@ class Bundle {
             if (cell === false) {
                 const c = new Cell(cellX, cellY)
                 this.cells[cellY][cellX] = c
+            }
+            
+            const currentCell = this.cells[cellY][cellX]
 
-                c.clear(myTopLeft, myBottomRight)
-            } else {
-                cell.clear(myTopLeft, myBottomRight)
+            if (!currentCell || currentCell === true) {
+                throw new Error('Current cell does not exist??')
+            }
+
+            sumCleared += currentCell.clear(myTopLeft, myBottomRight)
+
+            if (currentCell.empty) {
+                this.cells[cellY][cellX] = true
             }
         })
+
+        if (sumCleared > 0) {
+            this.full = false
+            this.dirty = true
+
+            this.remaining -= sumCleared
+
+            if (this.remaining < 0) {
+                throw Error('Cleared more than 100%')
+            } else if (this.remaining === 0) {
+                this.canvas = null
+                this.ctx = null
+                this.cells = []
+                this.dirty = false
+            }
+        }
+
+        return sumCleared
     }
 }
 
@@ -191,9 +290,13 @@ export class WorldGrid {
         })
     }
 
-    clearCells(topLeft: Vector, bottomRight: Vector): void {
+    clearCells(topLeft: Vector, bottomRight: Vector): number {
+        let sumCleared = 0
+
         this.forEachBundle(topLeft, bottomRight, (bundle) => {
-            bundle.clear(topLeft, bottomRight)
+            sumCleared += bundle.clear(topLeft, bottomRight)
         })
+
+        return sumCleared
     }
 }

@@ -18,6 +18,8 @@ export class SurfaceCleanerGame extends GameInstance {
 
     players: Player[]
 
+    clearedCells: number
+
     constructor(canvas: HTMLCanvasElement) {
         super(canvas)
 
@@ -35,6 +37,8 @@ export class SurfaceCleanerGame extends GameInstance {
         this.players = [
             new Player(new Vector(FULL_WORLD_WIDTH / 2, FULL_WORLD_HEIGHT / 2)),
         ]
+
+        this.clearedCells = 0
     }
 
     update(elapsedTime: number) {
@@ -51,7 +55,7 @@ export class SurfaceCleanerGame extends GameInstance {
                 : new Vector(0, 0)
             player.update(elapsedTime, directionalInput)
 
-            this.worldGrid.clearCells(...player.getBoundingBox())
+            this.clearedCells += this.worldGrid.clearCells(...player.getBoundingBox())
         })
     }
 
@@ -77,5 +81,9 @@ export class SurfaceCleanerGame extends GameInstance {
             this.ctx.fillStyle = 'blue'
             this.ctx.fillRect(player.position.x - 5 - cameraTopLeft.x, player.position.y - 5 - cameraTopLeft.y, 10, 10)
         })
+
+        this.ctx.fillStyle = 'green'
+        this.ctx.font = '24px sans-serif'
+        this.ctx.fillText(`${this.clearedCells}`, 10, HEIGHT - 8)
     }
 }
