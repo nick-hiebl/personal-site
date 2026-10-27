@@ -1,85 +1,10 @@
-import { Vector } from '../core/Vector'
+import { Vector } from '../../core/Vector'
 
-const WORLD_WIDTH = 8
-const WORLD_HEIGHT = 6
+import { Cell } from './Cell'
+import { BUNDLE_SIZE, CELL_SIZE } from './constants'
+import type { Cleared } from './types'
 
-const BUNDLE_SIZE = 6
-
-const CELL_SIZE = 40
-
-export const FULL_WORLD_WIDTH = WORLD_WIDTH * BUNDLE_SIZE * CELL_SIZE
-export const FULL_WORLD_HEIGHT = WORLD_HEIGHT * BUNDLE_SIZE * CELL_SIZE
-
-type Cleared =
-    /**
-     * NOT cleared
-     */
-    | false
-    /**
-     * YES cleared
-     */
-    | true
-
-class Cell {
-    x: number
-    y: number
-
-    remaining: number
-    empty: boolean
-
-    data: Cleared[][]
-
-    constructor(x: number, y: number) {
-        this.x = x
-        this.y = y
-
-        this.data = new Array(CELL_SIZE)
-            .fill(0)
-            .map(() => new Array(CELL_SIZE).fill(false))
-
-        this.remaining = CELL_SIZE * CELL_SIZE
-        this.empty = false
-    }
-
-    draw(ctx: CanvasRenderingContext2D, offset: Vector): void {
-        ctx.fillStyle = 'white'
-        for (let x = 0; x < CELL_SIZE; x++) {
-            for (let y = 0; y < CELL_SIZE; y++) {
-                if (!this.data[y][x]) {
-                    ctx.fillRect(offset.x + x, offset.y + y, 1, 1)
-                }
-            }
-        }
-    }
-
-    /**
-     * Returns the number of spaces cleared
-     */
-    clear(topLeft: Vector, bottomRight: Vector): number {
-        let cleared = 0
-
-        for (let x = Math.max(topLeft.x, 0); x < Math.min(CELL_SIZE, bottomRight.x); x++) {
-            for (let y = Math.max(topLeft.y, 0); y < Math.min(CELL_SIZE, bottomRight.y); y++) {
-                if (!this.data[y][x]) {
-                    cleared++
-                    this.data[y][x] = true
-                }
-            }
-        }
-
-        this.remaining -= cleared
-
-        if (this.remaining < 0) {
-            throw Error('Cleared more than 100%')
-        } else if (this.remaining === 0) {
-            this.empty = true
-        }
-
-        return cleared
-    }
-}
-
-class Bundle {
+export class Bundle {
     x: number
     y: number
 
@@ -269,61 +194,6 @@ class Bundle {
                 this.dirty = false
             }
         }
-
-        return sumCleared
-    }
-}
-
-export class WorldGrid {
-    bundles: Bundle[][]
-
-    constructor() {
-        this.bundles = new Array(WORLD_HEIGHT)
-            .fill(0)
-            .map((_, rowIndex) => (
-                new Array(WORLD_WIDTH)
-                    .fill(0)
-                    .map((_, colIndex) => new Bundle(colIndex, rowIndex))
-            ))
-    }
-
-    private forEachBundle(topLeft: Vector, bottomRight: Vector, callback: (bundle: Bundle) => void): void {
-        const leftX = Math.floor(topLeft.x / BUNDLE_SIZE / CELL_SIZE)
-        const topY = Math.floor(topLeft.y / BUNDLE_SIZE / CELL_SIZE)
-        const rightX = Math.ceil(bottomRight.x / BUNDLE_SIZE / CELL_SIZE)
-        const bottomY = Math.ceil(bottomRight.y / BUNDLE_SIZE / CELL_SIZE)
-
-        const startX = Math.max(0, leftX)
-        const startY = Math.max(0, topY)
-
-        const endX = Math.min(WORLD_WIDTH, rightX)
-        const endY = Math.min(WORLD_HEIGHT, bottomY)
-
-        for (let x = startX; x < endX; x++) {
-            for (let y = startY; y < endY; y++) {
-                const bundle = this.bundles[y][x]
-
-                if (!bundle) {
-                    console.log(`(${x}, ${y})`, { leftX, topY, rightX, bottomY })
-                }
-
-                callback(bundle)
-            }
-        }
-    }
-
-    drawWorldGrid(ctx: CanvasRenderingContext2D, topLeft: Vector, bottomRight: Vector): void {
-        this.forEachBundle(topLeft, bottomRight, (bundle) => {
-            bundle.draw(ctx, topLeft, bottomRight)
-        })
-    }
-
-    clearCells(topLeft: Vector, bottomRight: Vector): number {
-        let sumCleared = 0
-
-        this.forEachBundle(topLeft, bottomRight, (bundle) => {
-            sumCleared += bundle.clear(topLeft, bottomRight)
-        })
 
         return sumCleared
     }

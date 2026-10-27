@@ -1,7 +1,9 @@
 import { GameInstance } from '../core/GameInstance'
 import { Vector } from '../core/Vector'
+
 import { Player } from './entities/Player'
-import { FULL_WORLD_HEIGHT, FULL_WORLD_WIDTH, WorldGrid } from './WorldGrid'
+import { FULL_WORLD_HEIGHT, FULL_WORLD_WIDTH } from './world/constants'
+import { WorldGrid } from './world/WorldGrid'
 
 const WIDTH = 1440
 const HEIGHT = 810
