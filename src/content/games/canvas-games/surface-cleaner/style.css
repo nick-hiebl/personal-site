@@ -5,18 +5,21 @@
     overflow: hidden;
 }
 
-#shop-interface {
+.menu-interface {
     background-color: #222;
     position: absolute;
+    padding: 12px;
+    box-sizing: border-box;
+    display: flex;
+}
+
+#shop-interface {
     right: -400px;
     top: 8px;
-    padding: 12px;
     width: 360px;
     height: calc(100% - 16px);
-    box-sizing: border-box;
     transition: right 0.5s ease-in-out;
 
-    display: flex;
     flex-direction: column;
     gap: 16px;
 }
@@ -59,4 +62,41 @@
     width: 8px;
     height: 8px;
     background-color: greenyellow;
+}
+
+#build-menu-interface {
+    bottom: -200px;
+    width: auto;
+    height: 132px;
+    border-radius: 8px;
+
+    left: 200px;
+
+    transition: bottom 0.25s ease;
+}
+
+.build-menu-list {
+    display: flex;
+    flex-direction: row;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    gap: 16px;
+}
+
+.build-menu-list-item {
+    width: 108px;
+    height: 108px;
+    border: 2px solid white;
+    border-radius: 4px;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.build-menu-list-item:hover {
+    background-color: #aaa3;
+}
+
+.build-menu-list-item[data-selected=true] {
+    background-color: #aaa;
 }

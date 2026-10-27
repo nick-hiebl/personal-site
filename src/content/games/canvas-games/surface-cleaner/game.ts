@@ -1,8 +1,12 @@
 import { GameInstance } from '../core/GameInstance'
+import { inputBuffer, type InputBuffer } from '../core/input-buffer'
 import { Vector } from '../core/Vector'
 
+import { BuildMenu } from './BuildMenu'
 import { Player } from './entities/Player'
+import { Robot } from './entities/Robot'
 import { Seller } from './entities/Seller'
+import { RobotSettings } from './settings/Robot'
 import { SurfaceCleanerStore } from './Store'
 import { BUNDLE_SIZE, CELL_SIZE, FULL_WORLD_HEIGHT, FULL_WORLD_WIDTH } from './world/constants'
 import { WorldGrid } from './world/WorldGrid'
@@ -15,6 +19,8 @@ const EDGE_BUFFER = 40
 // 1 cell per millisecond
 const SELL_RATE = 3
 
+const CAMERA_OFFSET = new Vector(-WIDTH / 2, -HEIGHT / 2)
+
 export class SurfaceCleanerGame extends GameInstance {
     innerCanvas: HTMLCanvasElement
     innerCtx: CanvasRenderingContext2D
@@ -24,7 +30,8 @@ export class SurfaceCleanerGame extends GameInstance {
     camera: Vector
 
     players: Player[]
-    entities: Seller[]
+    stores: Seller[]
+    robots: Robot[]
 
     sellRate: number
     conversionRate: number
@@ -33,6 +40,10 @@ export class SurfaceCleanerGame extends GameInstance {
     money: number
 
     store: SurfaceCleanerStore
+    buildMenu: BuildMenu
+
+    buildMenuInput: InputBuffer
+    escapeInput: InputBuffer
 
     constructor(canvas: HTMLCanvasElement) {
         super(canvas)
@@ -54,9 +65,11 @@ export class SurfaceCleanerGame extends GameInstance {
             new Player(origin),
         ]
 
-        this.entities = [
+        this.stores = [
             new Seller(origin),
         ]
+
+        this.robots = []
 
         this.sellRate = SELL_RATE
         this.conversionRate = 1
@@ -65,9 +78,41 @@ export class SurfaceCleanerGame extends GameInstance {
         this.money = 0
 
         this.store = new SurfaceCleanerStore()
+        this.buildMenu = new BuildMenu()
+
+        this.buildMenuInput = inputBuffer(() => this.onBuildPressed())
+        this.escapeInput = inputBuffer(() => this.onEscPressed())
+    }
+
+    onBuildPressed() {
+        this.buildMenu.setOpen((c) => !c)
+    }
+
+    onEscPressed() {
+        this.buildMenu.setOpen(false)
+    }
+
+    onClick(mousePos: Vector) {
+        if (!this.mousePos || isNaN(mousePos.x) || isNaN(mousePos.y)) {
+            return
+        }
+
+        if (!this.buildMenu.state.open || !this.buildMenu.state.selected) {
+            return
+        }
+
+        const worldPosition = this.camera.add(mousePos).add(CAMERA_OFFSET)
+
+        if (this.buildMenu.state.selected === 'robot') {
+            this.robots.push(new Robot(worldPosition))
+            console.log('NEW ROBOT', this.robots)
+        }
     }
 
     update(elapsedTime: number) {
+        this.buildMenuInput(this.keys.get('KeyB') ?? false)
+        this.escapeInput(this.keys.get('Escape') ?? false)
+
         if (this.players[0]) {
             this.camera = this.players[0].position
         }
@@ -91,11 +136,11 @@ export class SurfaceCleanerGame extends GameInstance {
             }
         })
 
-        this.entities.forEach((entity) => {
+        this.stores.forEach((entity) => {
             entity.update(elapsedTime, this)
         })
 
-        const someShopActive = this.entities.some((entity) => entity instanceof Seller && entity.active)
+        const someShopActive = this.stores.some((entity) => entity instanceof Seller && entity.active)
 
         if (this.money !== lastMoney) {
             this.store.onUpdateMoney(this)
@@ -108,7 +153,7 @@ export class SurfaceCleanerGame extends GameInstance {
         this.innerCtx.fillStyle = 'black'
         this.innerCtx.fillRect(0, 0, this.innerCanvas.width, this.innerCanvas.height)
 
-        const cameraTopLeft = this.camera.add(new Vector(-WIDTH / 2, -HEIGHT / 2))
+        const cameraTopLeft = this.camera.add(CAMERA_OFFSET)
 
         {
             const innerLeft = Math.floor(cameraTopLeft.x - EDGE_BUFFER)
@@ -122,8 +167,23 @@ export class SurfaceCleanerGame extends GameInstance {
             this.ctx.drawImage(this.innerCanvas, innerLeft - cameraTopLeft.x, innerTop - cameraTopLeft.y, WIDTH + 2 * EDGE_BUFFER, HEIGHT + 2 * EDGE_BUFFER)
         }
 
-        this.entities.forEach((entity) => {
+        this.stores.forEach((entity) => {
             entity.draw(this.ctx, cameraTopLeft)
+        })
+
+        this.robots.forEach((robot) => {
+            this.ctx.fillStyle = 'green'
+            this.ctx.beginPath()
+            this.ctx.ellipse(
+                robot.position.x - cameraTopLeft.x,
+                robot.position.y - cameraTopLeft.y,
+                4,
+                4,
+                0,
+                0,
+                2 * Math.PI,
+            )
+            this.ctx.fill()
         })
 
         this.players.forEach((player) => {
@@ -146,5 +206,20 @@ export class SurfaceCleanerGame extends GameInstance {
         this.ctx.fillStyle = 'green'
         this.ctx.font = '24px sans-serif'
         this.ctx.fillText(`$${this.money.toFixed(2)}`, 16, 34)
+
+        if (this.mousePos && this.buildMenu.state.open && this.buildMenu.state.selected) {
+            this.ctx.fillStyle = this.money >= RobotSettings.cost ? 'blue' : 'red'
+            this.ctx.beginPath()
+            this.ctx.ellipse(
+                this.mousePos.x,
+                this.mousePos.y,
+                3,
+                3,
+                0,
+                0,
+                2 * Math.PI,
+            )
+            this.ctx.fill()
+        }
     }
 }

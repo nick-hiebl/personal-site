@@ -52,6 +52,17 @@ export class GameInstance {
             this.mouseDown = false
         })
 
+        this.canvas.addEventListener('click', e => {
+            const box = this.canvas.getBoundingClientRect()
+
+            this.mousePos = new Vector(
+                (e.clientX - box.x) / box.width * canvas.width,
+                (e.clientY - box.y) / box.height * canvas.height,
+            )
+
+            this.onClick(this.mousePos)
+        })
+
         this.canvas.addEventListener('contextmenu', e => {
             e.preventDefault()
         })
@@ -70,6 +81,10 @@ export class GameInstance {
         this.lastTime = performance.now()
 
         this.mainTick()
+    }
+
+    onClick(_mousePos: Vector) {
+        // Do nothing here
     }
 
     mainTick() {
