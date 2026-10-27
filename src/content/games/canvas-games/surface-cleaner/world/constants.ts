@@ -1,5 +1,5 @@
-export const WORLD_WIDTH = 8
-export const WORLD_HEIGHT = 6
+export const WORLD_WIDTH = 800
+export const WORLD_HEIGHT = 600
 
 export const BUNDLE_SIZE = 6
 export const CELL_SIZE = 40

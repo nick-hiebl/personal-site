@@ -103,16 +103,18 @@ const BuildMenu = ({ game }: { game: SurfaceCleanerGame }) => {
             }}
         >
             <ul className="build-menu-list">
-                {options.map((optionKey) => (
-                    <li key={optionKey}>
+                {options.map((option) => (
+                    <li key={option.id}>
                         <button
                             className="build-menu-list-item"
-                            data-selected={selected === optionKey}
+                            data-selected={selected === option.id}
                             onClick={() => {
-                                game.buildMenu.select(optionKey)
+                                game.buildMenu.select(option.id)
                             }}
+                            disabled={!option.canAfford}
                         >
-                            {optionKey}
+                            <span>{option.id}</span>
+                            <span>${option.cost.toFixed(2)}</span>
                         </button>
                     </li>
                 ))}

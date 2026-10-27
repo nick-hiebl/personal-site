@@ -8,10 +8,10 @@ class RobotSettingsC extends Settings {
 
     constructor() {
         super('Robot')
-        this.cost = 0.1
-        this.radius = 18 // 8
-        this.storeCap = 1_000_000
-        this.speed = 300 // 150
+        this.cost = 1
+        this.radius = 8
+        this.storeCap = 50_000
+        this.speed = 150
     }
 }
 

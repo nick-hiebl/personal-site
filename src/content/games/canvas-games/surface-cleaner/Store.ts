@@ -96,9 +96,7 @@ export class SurfaceCleanerStore {
         this.store.triggerUpdate()
     }
 
-    onUpdateMoney(game: SurfaceCleanerGame): boolean {
-        const money = game.money
-
+    onUpdateMoney(money: number): boolean {
         let upgradesDirty = false
 
         this.state.upgrades.forEach((upgrade) => {
@@ -143,7 +141,7 @@ export class SurfaceCleanerStore {
         upgrade.buy(game, upgrade.steps[upgrade.stage][1])
         upgrade.stage += 1
 
-        const updated = this.onUpdateMoney(game)
+        const updated = this.onUpdateMoney(game.money)
 
         if (!updated) {
             this.state = {

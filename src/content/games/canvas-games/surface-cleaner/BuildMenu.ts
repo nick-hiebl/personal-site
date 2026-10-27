@@ -1,16 +1,17 @@
 import { createExternalStore, type ExternalStore } from '../core/external-store'
 
 import type { SurfaceCleanerGame } from './game'
+import { RobotSettings } from './settings/Robot'
 
 type BuildMenuOption = 'robot'
 
 export type BuildMenuType = {
     open: boolean
-    options: BuildMenuOption[]
+    options: { id: BuildMenuOption; cost: number; canAfford: boolean }[]
     selected?: BuildMenuOption
 }
 
-const OPTIONS: BuildMenuOption[] = ['robot']
+const OPTIONS: [BuildMenuOption, number][] = [['robot', RobotSettings.cost]]
 
 export class BuildMenu {
     state: BuildMenuType
@@ -22,7 +23,11 @@ export class BuildMenu {
 
         this.state = {
             open: false,
-            options: OPTIONS,
+            options: OPTIONS.map(([id, cost]) => ({
+                id,
+                cost,
+                canAfford: false,
+            })),
         }
     }
 
@@ -48,6 +53,33 @@ export class BuildMenu {
         }
     }
 
+    onUpdateMoney(money: number) {
+        const dirty = this.state.options.some((option) => {
+            const canAfford = option.cost <= money
+
+            return canAfford !== option.canAfford
+        })
+
+        if (dirty) {
+            this.state = {
+                ...this.state,
+                options: this.state.options.map((option) => {
+                    const canAfford = option.cost <= money
+
+                    if (canAfford !== option.canAfford) {
+                        return {
+                            ...option,
+                            canAfford,
+                        }
+                    }
+
+                    return option
+                })
+            }
+            this.store.triggerUpdate()
+        }
+    }
+
     select(option: BuildMenuOption | undefined) {
         if (this.state.selected === option) {
             return
@@ -59,7 +91,7 @@ export class BuildMenu {
                 selected: undefined,
             }
             this.store.triggerUpdate()
-        } else if (this.state.options.includes(option)) {
+        } else if (this.state.options.some(o => o.id === option)) {
             this.state = {
                 ...this.state,
                 selected: option,

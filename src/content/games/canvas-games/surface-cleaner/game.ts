@@ -37,6 +37,7 @@ export class SurfaceCleanerGame extends GameInstance {
     conversionRate: number
 
     clearedCells: number
+    lastMoney: number
     money: number
 
     store: SurfaceCleanerStore
@@ -75,6 +76,7 @@ export class SurfaceCleanerGame extends GameInstance {
         this.conversionRate = 1
 
         this.clearedCells = 0
+        this.lastMoney = 0
         this.money = 0
 
         this.store = new SurfaceCleanerStore()
@@ -104,7 +106,10 @@ export class SurfaceCleanerGame extends GameInstance {
         const worldPosition = this.camera.add(mousePos).add(CAMERA_OFFSET)
 
         if (this.buildMenu.state.selected === 'robot') {
-            this.robots.push(new Robot(worldPosition))
+            if (this.money >= RobotSettings.cost) {
+                this.money -= RobotSettings.cost
+                this.robots.push(new Robot(worldPosition))
+            }
         }
     }
 
@@ -115,8 +120,6 @@ export class SurfaceCleanerGame extends GameInstance {
         if (this.players[0]) {
             this.camera = this.players[0].position
         }
-
-        let lastMoney = this.money
 
         this.robots.forEach((robot) => {
             robot.update(elapsedTime, this.worldGrid)
@@ -152,9 +155,11 @@ export class SurfaceCleanerGame extends GameInstance {
 
         const someShopActive = this.stores.some((entity) => entity instanceof Seller && entity.active)
 
-        if (this.money !== lastMoney) {
-            this.store.onUpdateMoney(this)
+        if (this.money !== this.lastMoney) {
+            this.store.onUpdateMoney(this.money)
+            this.buildMenu.onUpdateMoney(this.money)
         }
+        this.lastMoney = this.money
 
         this.store.setOpen(someShopActive)
     }

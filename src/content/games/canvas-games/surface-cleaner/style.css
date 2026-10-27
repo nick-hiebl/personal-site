@@ -91,12 +91,21 @@
     border-radius: 4px;
     box-sizing: border-box;
     cursor: pointer;
+
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    justify-content: center;
 }
 
 .build-menu-list-item:hover {
     background-color: #aaa3;
 }
 
-.build-menu-list-item[data-selected=true] {
+.build-menu-list-item[data-selected=true]:not:disabled {
     background-color: #aaa;
+}
+
+.build-menu-list-item:disabled {
+    border-color: black;
 }
