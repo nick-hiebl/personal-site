@@ -1,0 +1,13 @@
+---
+import { getCollection } from 'astro:content'
+
+import { Game } from '../../content/games/canvas-games/surface-cleaner'
+import GameLayout from '../../layouts/Game.astro'
+
+const games = await getCollection('games')
+
+const game = games.find(game => game.data.gameId === 'surface-cleaner')!
+---
+<GameLayout {...game.data}>
+    <Game client:only />
+</GameLayout>
