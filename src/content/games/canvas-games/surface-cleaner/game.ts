@@ -105,7 +105,6 @@ export class SurfaceCleanerGame extends GameInstance {
 
         if (this.buildMenu.state.selected === 'robot') {
             this.robots.push(new Robot(worldPosition))
-            console.log('NEW ROBOT', this.robots)
         }
     }
 
@@ -118,6 +117,17 @@ export class SurfaceCleanerGame extends GameInstance {
         }
 
         let lastMoney = this.money
+
+        this.robots.forEach((robot) => {
+            robot.update(elapsedTime, this.worldGrid)
+
+            if (robot.store < RobotSettings.storeCap) {
+                const clearedCells = this.worldGrid.clearCells(...robot.getBoundingBox())
+                robot.store += clearedCells
+
+                this.clearedCells += clearedCells
+            }
+        })
 
         this.players.forEach((player, playerIndex) => {
             const directionalInput = playerIndex === 0
@@ -172,18 +182,7 @@ export class SurfaceCleanerGame extends GameInstance {
         })
 
         this.robots.forEach((robot) => {
-            this.ctx.fillStyle = 'green'
-            this.ctx.beginPath()
-            this.ctx.ellipse(
-                robot.position.x - cameraTopLeft.x,
-                robot.position.y - cameraTopLeft.y,
-                4,
-                4,
-                0,
-                0,
-                2 * Math.PI,
-            )
-            this.ctx.fill()
+            robot.draw(this.ctx, cameraTopLeft)
         })
 
         this.players.forEach((player) => {

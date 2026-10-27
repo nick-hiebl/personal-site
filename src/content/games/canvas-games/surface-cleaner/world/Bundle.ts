@@ -88,7 +88,7 @@ export class Bundle {
         }
     }
 
-    draw(ctx: CanvasRenderingContext2D, topLeft: Vector, bottomRight: Vector): void {
+    draw(ctx: CanvasRenderingContext2D, topLeft: Vector, _bottomRight: Vector): void {
         const myLeftX = this.x * CELL_SIZE * BUNDLE_SIZE
         const myTopY = this.y * CELL_SIZE * BUNDLE_SIZE
 
