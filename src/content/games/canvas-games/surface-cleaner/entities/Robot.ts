@@ -66,14 +66,6 @@ export class Robot {
             2 * Math.PI
         )
         ctx.stroke()
-
-        if (this.assignment) {
-            ctx.strokeStyle = '#00aaff60'
-            ctx.beginPath()
-            ctx.moveTo(this.position.x - topLeft.x, this.position.y - topLeft.y)
-            ctx.lineTo(this.assignment.x - topLeft.x, this.assignment.y - topLeft.y)
-            ctx.stroke()
-        }
     }
 
     update(elapsedTime: number, grid: WorldGrid) {
