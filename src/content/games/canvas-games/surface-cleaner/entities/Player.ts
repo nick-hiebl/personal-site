@@ -12,7 +12,7 @@ export class Player {
     constructor(position: Vector) {
         this.position = position
 
-        this.radius = 12
+        this.radius = 8
         this.speed = 0.12
 
         this.store = 0

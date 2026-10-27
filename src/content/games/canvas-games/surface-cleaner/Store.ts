@@ -42,7 +42,7 @@ const ALL_UPGRADES: UpgradeCore[] = [
     {
         id: 'sell-speed',
         name: 'Sell speed',
-        steps: [[40, 5], [100, 10], [300, 20], [500, 50], [2000, 100], [5000, 200], [20_000, 1000]],
+        steps: [[40, 5], [100, 15], [300, 30], [500, 70], [2000, 120], [5000, 250], [20_000, 1000]],
         buy: (game, value) => {
             game.sellRate = value
         },
@@ -53,6 +53,14 @@ const ALL_UPGRADES: UpgradeCore[] = [
         steps: [[50, 0.15], [100, 0.2], [250, 0.25], [1000, 0.32]],
         buy: (game, value) => {
             game.players.forEach((player) => { player.speed = value })
+        },
+    },
+    {
+        id: 'conversation-rate',
+        name: 'Efficient refinement',
+        steps: [[100, 1.1], [2000, 1.2], [25_000, 1.3]],
+        buy: (game, value) => {
+            game.conversionRate = value
         },
     },
 ]

@@ -85,17 +85,16 @@ export class Bundle {
                 return
             }
 
-            this.ctx.fillStyle = 'black'
-            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
             for (let x = 0; x < BUNDLE_SIZE; x++) {
                 for (let y = 0; y < BUNDLE_SIZE; y++) {
                     const cell = this.cells[y][x]
 
-                    if (typeof cell === 'boolean') {
-                        this.ctx.fillStyle = cell ? 'black' : 'white'
+                    if (cell === false) {
+                        this.ctx.fillStyle = 'white'
                         this.ctx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-                    } else {
+                    } else if (cell instanceof Cell) {
                         cell.draw(this.ctx, new Vector(x * CELL_SIZE, y * CELL_SIZE))
                     }
                 }
@@ -104,8 +103,13 @@ export class Bundle {
             this.dirty = false
         }
 
-        if (this.remaining === 0 || this.full) {
-            ctx.fillStyle = this.full ? 'white' : 'black'
+        if (this.remaining === 0) {
+            this.drawFrame(ctx, topLeft)
+            return
+        }
+
+        if (this.full) {
+            ctx.fillStyle = 'white'
             ctx.fillRect(myLeftX - topLeft.x, myTopY - topLeft.y, CELL_SIZE * BUNDLE_SIZE, CELL_SIZE * BUNDLE_SIZE)
 
             this.drawFrame(ctx, topLeft)
