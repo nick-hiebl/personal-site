@@ -37,6 +37,7 @@ export class Bundle {
 
         b.remaining = 0
         b.full = false
+        b.cells = []
 
         return b
     }

@@ -22,6 +22,10 @@ export class Vector {
     copy(): Vector {
         return new Vector(this.x, this.y)
     }
+
+    magnitude(): number {
+        return Math.hypot(this.x, this.y)
+    }
 }
 
 export const approach = (current: number, target: number, step: number): number => {

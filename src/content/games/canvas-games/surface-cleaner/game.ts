@@ -2,6 +2,8 @@ import { GameInstance } from '../core/GameInstance'
 import { Vector } from '../core/Vector'
 
 import { Player } from './entities/Player'
+import { Seller } from './entities/Seller'
+import { SurfaceCleanerStore } from './Store'
 import { BUNDLE_SIZE, CELL_SIZE, FULL_WORLD_HEIGHT, FULL_WORLD_WIDTH } from './world/constants'
 import { WorldGrid } from './world/WorldGrid'
 
@@ -19,8 +21,12 @@ export class SurfaceCleanerGame extends GameInstance {
     camera: Vector
 
     players: Player[]
+    entities: Seller[]
 
     clearedCells: number
+    money: number
+
+    store: SurfaceCleanerStore
 
     constructor(canvas: HTMLCanvasElement) {
         super(canvas)
@@ -35,18 +41,29 @@ export class SurfaceCleanerGame extends GameInstance {
         this.camera = new Vector(0, 0)
 
         this.worldGrid = new WorldGrid(FULL_WORLD_WIDTH / 2, FULL_WORLD_HEIGHT / 2)
-        
+
+        const origin = new Vector((FULL_WORLD_WIDTH + BUNDLE_SIZE * CELL_SIZE) / 2, (FULL_WORLD_HEIGHT + BUNDLE_SIZE * CELL_SIZE) / 2)
+
         this.players = [
-            new Player(new Vector((FULL_WORLD_WIDTH + BUNDLE_SIZE * CELL_SIZE) / 2, (FULL_WORLD_HEIGHT + BUNDLE_SIZE * CELL_SIZE) / 2)),
+            new Player(origin),
+        ]
+
+        this.entities = [
+            new Seller(origin),
         ]
 
         this.clearedCells = 0
+        this.money = 0
+
+        this.store = new SurfaceCleanerStore()
     }
 
     update(elapsedTime: number) {
         if (this.players[0]) {
             this.camera = this.players[0].position
         }
+
+        let lastMoney = this.money
 
         this.players.forEach((player, playerIndex) => {
             const directionalInput = playerIndex === 0
@@ -64,6 +81,18 @@ export class SurfaceCleanerGame extends GameInstance {
                 this.clearedCells += clearedCells
             }
         })
+
+        this.entities.forEach((entity) => {
+            entity.update(elapsedTime, this)
+        })
+
+        const someShopActive = this.entities.some((entity) => entity instanceof Seller && entity.active)
+
+        if (this.money !== lastMoney) {
+            this.store.onUpdateMoney(this)
+        }
+
+        this.store.setOpen(someShopActive)
     }
 
     draw() {
@@ -84,14 +113,14 @@ export class SurfaceCleanerGame extends GameInstance {
             this.ctx.drawImage(this.innerCanvas, innerLeft - cameraTopLeft.x, innerTop - cameraTopLeft.y, WIDTH + 2 * EDGE_BUFFER, HEIGHT + 2 * EDGE_BUFFER)
         }
 
-        this.players.forEach(player => {
-            this.ctx.fillStyle = 'blue'
-            this.ctx.fillRect(player.position.x - 5 - cameraTopLeft.x, player.position.y - 5 - cameraTopLeft.y, 10, 10)
+        this.entities.forEach((entity) => {
+            entity.draw(this.ctx, cameraTopLeft)
         })
 
-        // this.ctx.fillStyle = 'green'
-        // this.ctx.font = '24px sans-serif'
-        // this.ctx.fillText(`${this.clearedCells}`, 10, HEIGHT - 8)
+        this.players.forEach((player) => {
+            this.ctx.fillStyle = '#0088ff'
+            this.ctx.fillRect(player.position.x - 5 - cameraTopLeft.x, player.position.y - 5 - cameraTopLeft.y, 10, 10)
+        })
 
         const mainPlayer = this.players[0]
 
@@ -104,5 +133,9 @@ export class SurfaceCleanerGame extends GameInstance {
             this.ctx.fillStyle = 'green'
             this.ctx.fillRect(22, HEIGHT - 16 - 6, 20, -capacity)
         }
+
+        this.ctx.fillStyle = 'green'
+        this.ctx.font = '24px sans-serif'
+        this.ctx.fillText(`$${this.money.toFixed(2)}`, 16, 34)
     }
 }

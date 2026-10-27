@@ -19,6 +19,7 @@ export const lerp = (t: number, a: number, b: number): number => {
     return (1 - t) * a + t * b
 }
 
+// TODO: Replace with core/external-store
 export type ExternalStore<T> = {
     getSnapshot(): T
     subscribe(listener: () => void): () => void

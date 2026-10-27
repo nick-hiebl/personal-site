@@ -1,0 +1,62 @@
+#main-container {
+    position: relative;
+    width: 1440px;
+    height: 810px;
+    overflow: hidden;
+}
+
+#shop-interface {
+    background-color: black;
+    position: absolute;
+    right: -400px;
+    top: 8px;
+    padding: 12px;
+    width: 360px;
+    height: calc(100% - 16px);
+    box-sizing: border-box;
+    transition: right 0.5s ease-in-out;
+
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.shop-list {
+    margin: 0px;
+    padding: 0px;
+    list-style-type: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.upgrade-list-item {
+    line-height: 0;
+}
+
+.shop-button {
+    width: 100%;
+    text-align: start;
+    padding: 4px 8px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.upgrade-progress {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.upgrade-progress-item {
+    width: 8px;
+    height: 8px;
+    background-color: black;
+}
+
+.upgrade-progress-item[data-complete=true] {
+    width: 8px;
+    height: 8px;
+    background-color: greenyellow;
+}
