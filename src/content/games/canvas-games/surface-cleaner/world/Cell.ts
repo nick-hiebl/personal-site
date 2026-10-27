@@ -1,6 +1,6 @@
 import type { Vector } from '../../core/Vector'
 
-import { CELL_SIZE } from './constants'
+import { CELL_SIZE, FILL_COLOR } from './constants'
 import type { Cleared } from './types'
 
 export class Cell {
@@ -25,7 +25,7 @@ export class Cell {
     }
 
     draw(ctx: CanvasRenderingContext2D, offset: Vector): void {
-        ctx.fillStyle = 'white'
+        ctx.fillStyle = FILL_COLOR
         for (let x = 0; x < CELL_SIZE; x++) {
             for (let y = 0; y < CELL_SIZE; y++) {
                 if (!this.data[y][x]) {

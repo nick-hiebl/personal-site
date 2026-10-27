@@ -1,8 +1,29 @@
 import { Vector } from '../../core/Vector'
 
 import { Cell } from './Cell'
-import { BUNDLE_SIZE, CELL_SIZE } from './constants'
+import { BUNDLE_SIZE, CELL_SIZE, FILL_COLOR } from './constants'
 import type { Cleared } from './types'
+
+export const drawFrame = (ctx: CanvasRenderingContext2D, topLeft: Vector, x: number, y: number, clear: boolean): void => {
+    const myLeftX = x * CELL_SIZE * BUNDLE_SIZE
+    const myTopY = y * CELL_SIZE * BUNDLE_SIZE
+
+    const SHORT = 2
+    const LONG = 8
+
+    ctx.fillStyle = clear ? '#00ff0044' : '#0088ff44'
+    ctx.fillRect(myLeftX - topLeft.x, myTopY - topLeft.y, LONG, SHORT)
+    ctx.fillRect(myLeftX - topLeft.x, myTopY - topLeft.y + SHORT, SHORT, LONG - SHORT)
+
+    ctx.fillRect(myLeftX - topLeft.x + CELL_SIZE * BUNDLE_SIZE - LONG, myTopY - topLeft.y, LONG, SHORT)
+    ctx.fillRect(myLeftX - topLeft.x + CELL_SIZE * BUNDLE_SIZE - SHORT, myTopY - topLeft.y + SHORT, SHORT, LONG - SHORT)
+
+    ctx.fillRect(myLeftX - topLeft.x, myTopY - topLeft.y + CELL_SIZE * BUNDLE_SIZE - SHORT, LONG, SHORT)
+    ctx.fillRect(myLeftX - topLeft.x, myTopY - topLeft.y + CELL_SIZE * BUNDLE_SIZE - LONG, SHORT, LONG - SHORT)
+
+    ctx.fillRect(myLeftX - topLeft.x + CELL_SIZE * BUNDLE_SIZE - LONG, myTopY - topLeft.y + CELL_SIZE * BUNDLE_SIZE - SHORT, LONG, SHORT)
+    ctx.fillRect(myLeftX - topLeft.x + CELL_SIZE * BUNDLE_SIZE - SHORT, myTopY - topLeft.y + CELL_SIZE * BUNDLE_SIZE - LONG, 3, LONG - SHORT)
+}
 
 export class Bundle {
     x: number
@@ -92,7 +113,7 @@ export class Bundle {
                     const cell = this.cells[y][x]
 
                     if (cell === false) {
-                        this.ctx.fillStyle = 'white'
+                        this.ctx.fillStyle = FILL_COLOR
                         this.ctx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
                     } else if (cell instanceof Cell) {
                         cell.draw(this.ctx, new Vector(x * CELL_SIZE, y * CELL_SIZE))
@@ -109,7 +130,7 @@ export class Bundle {
         }
 
         if (this.full) {
-            ctx.fillStyle = 'white'
+            ctx.fillStyle = FILL_COLOR
             ctx.fillRect(myLeftX - topLeft.x, myTopY - topLeft.y, CELL_SIZE * BUNDLE_SIZE, CELL_SIZE * BUNDLE_SIZE)
 
             this.drawFrame(ctx, topLeft)
@@ -126,24 +147,7 @@ export class Bundle {
     }
 
     drawFrame(ctx: CanvasRenderingContext2D, topLeft: Vector): void {
-        const myLeftX = this.x * CELL_SIZE * BUNDLE_SIZE
-        const myTopY = this.y * CELL_SIZE * BUNDLE_SIZE
-
-        const SHORT = 2
-        const LONG = 8
-
-        ctx.fillStyle = this.remaining === 0 ? '#00ff0044' : '#0088ff44'
-        ctx.fillRect(myLeftX - topLeft.x, myTopY - topLeft.y, LONG, SHORT)
-        ctx.fillRect(myLeftX - topLeft.x, myTopY - topLeft.y + SHORT, SHORT, LONG - SHORT)
-
-        ctx.fillRect(myLeftX - topLeft.x + CELL_SIZE * BUNDLE_SIZE - LONG, myTopY - topLeft.y, LONG, SHORT)
-        ctx.fillRect(myLeftX - topLeft.x + CELL_SIZE * BUNDLE_SIZE - SHORT, myTopY - topLeft.y + SHORT, SHORT, LONG - SHORT)
-
-        ctx.fillRect(myLeftX - topLeft.x, myTopY - topLeft.y + CELL_SIZE * BUNDLE_SIZE - SHORT, LONG, SHORT)
-        ctx.fillRect(myLeftX - topLeft.x, myTopY - topLeft.y + CELL_SIZE * BUNDLE_SIZE - LONG, SHORT, LONG - SHORT)
-
-        ctx.fillRect(myLeftX - topLeft.x + CELL_SIZE * BUNDLE_SIZE - LONG, myTopY - topLeft.y + CELL_SIZE * BUNDLE_SIZE - SHORT, LONG, SHORT)
-        ctx.fillRect(myLeftX - topLeft.x + CELL_SIZE * BUNDLE_SIZE - SHORT, myTopY - topLeft.y + CELL_SIZE * BUNDLE_SIZE - LONG, 3, LONG - SHORT)
+        drawFrame(ctx, topLeft, this.x, this.y, this.remaining === 0)
     }
 
     /**

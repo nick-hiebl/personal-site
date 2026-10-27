@@ -7,3 +7,5 @@ export const CELL_SIZE = 40
 
 export const FULL_WORLD_WIDTH = WORLD_WIDTH * BUNDLE_SIZE * CELL_SIZE
 export const FULL_WORLD_HEIGHT = WORLD_HEIGHT * BUNDLE_SIZE * CELL_SIZE
+
+export const FILL_COLOR = '#444'
