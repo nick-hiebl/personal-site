@@ -32,6 +32,15 @@ export class Bundle {
         this.remaining = BUNDLE_SIZE * BUNDLE_SIZE * CELL_SIZE * CELL_SIZE
     }
 
+    static empty(x: number, y: number): Bundle {
+        const b = new Bundle(x, y)
+
+        b.remaining = 0
+        b.full = false
+
+        return b
+    }
+
     forEachCell(topLeft: Vector, bottomRight: Vector, callback: (cell: Cleared | Cell, x: number, y: number) => void): void {
         const myLeftX = this.x * CELL_SIZE * BUNDLE_SIZE
         const myRightX = myLeftX + CELL_SIZE * BUNDLE_SIZE

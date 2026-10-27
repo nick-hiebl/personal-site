@@ -6,14 +6,31 @@ import { BUNDLE_SIZE, CELL_SIZE, WORLD_HEIGHT, WORLD_WIDTH } from './constants'
 export class WorldGrid {
     bundles: Bundle[][]
 
-    constructor() {
+    constructor(startX: number, startY: number) {
+        const startCol = Math.floor(startX / CELL_SIZE / BUNDLE_SIZE)
+        const startRow = Math.floor(startY / CELL_SIZE / BUNDLE_SIZE)
+
+        let placedStart = false
+
         this.bundles = new Array(WORLD_HEIGHT)
             .fill(0)
             .map((_, rowIndex) => (
                 new Array(WORLD_WIDTH)
                     .fill(0)
-                    .map((_, colIndex) => new Bundle(colIndex, rowIndex))
+                    .map((_, colIndex) => {
+                        if (rowIndex === startRow && colIndex === startCol) {
+                            placedStart = true
+                            return Bundle.empty(colIndex, rowIndex)
+                        }
+
+                        return new Bundle(colIndex, rowIndex)
+                    })
             ))
+
+        if (!placedStart) {
+            console.warn('Looked for', startRow, startCol, startX, startY)
+            throw Error('Failed to place starting cell!')
+        }
     }
 
     private forEachBundle(topLeft: Vector, bottomRight: Vector, callback: (bundle: Bundle) => void): void {

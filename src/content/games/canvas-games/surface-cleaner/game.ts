@@ -2,7 +2,7 @@ import { GameInstance } from '../core/GameInstance'
 import { Vector } from '../core/Vector'
 
 import { Player } from './entities/Player'
-import { FULL_WORLD_HEIGHT, FULL_WORLD_WIDTH } from './world/constants'
+import { BUNDLE_SIZE, CELL_SIZE, FULL_WORLD_HEIGHT, FULL_WORLD_WIDTH } from './world/constants'
 import { WorldGrid } from './world/WorldGrid'
 
 const WIDTH = 1440
@@ -32,12 +32,12 @@ export class SurfaceCleanerGame extends GameInstance {
 
         this.ctx.imageSmoothingEnabled = false
 
-        this.camera = new Vector(-50, -100)
+        this.camera = new Vector(0, 0)
 
-        this.worldGrid = new WorldGrid()
+        this.worldGrid = new WorldGrid(FULL_WORLD_WIDTH / 2, FULL_WORLD_HEIGHT / 2)
         
         this.players = [
-            new Player(new Vector(FULL_WORLD_WIDTH / 2, FULL_WORLD_HEIGHT / 2)),
+            new Player(new Vector((FULL_WORLD_WIDTH + BUNDLE_SIZE * CELL_SIZE) / 2, (FULL_WORLD_HEIGHT + BUNDLE_SIZE * CELL_SIZE) / 2)),
         ]
 
         this.clearedCells = 0
