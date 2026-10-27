@@ -1,9 +1,9 @@
 import { createExternalStore, type ExternalStore } from '../core/external-store'
 
-import type { SurfaceCleanerGame } from './game'
-import { RobotSettings } from './settings/Robot'
+import { RobotSettings } from './settings/RobotSettings'
+import { SiloSettings } from './settings/SiloSettings'
 
-type BuildMenuOption = 'robot'
+type BuildMenuOption = 'robot' | 'silo'
 
 export type BuildMenuType = {
     open: boolean
@@ -11,7 +11,10 @@ export type BuildMenuType = {
     selected?: BuildMenuOption
 }
 
-const OPTIONS: [BuildMenuOption, number][] = [['robot', RobotSettings.cost]]
+const OPTIONS: [BuildMenuOption, number][] = [
+    ['robot', RobotSettings.cost],
+    ['silo', SiloSettings.cost],
+]
 
 export class BuildMenu {
     state: BuildMenuType

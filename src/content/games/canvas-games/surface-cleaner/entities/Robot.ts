@@ -1,5 +1,5 @@
 import { Vector } from '../../core/Vector'
-import { RobotSettings } from '../settings/Robot'
+import { RobotSettings } from '../settings/RobotSettings'
 import { BUNDLE_SCALE } from '../world/constants'
 import type { WorldGrid } from '../world/WorldGrid'
 
@@ -69,7 +69,7 @@ export class Robot {
     }
 
     update(elapsedTime: number, grid: WorldGrid) {
-        if (this.store > RobotSettings.storeCap) {
+        if (this.store >= RobotSettings.storeCap) {
             return
         }
 

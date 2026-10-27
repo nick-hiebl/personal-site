@@ -10,7 +10,7 @@ class RobotSettingsC extends Settings {
         super('Robot')
         this.cost = 1
         this.radius = 8
-        this.storeCap = 50_000
+        this.storeCap = 20_000
         this.speed = 150
     }
 }

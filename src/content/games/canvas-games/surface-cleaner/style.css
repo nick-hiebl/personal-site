@@ -102,7 +102,7 @@
     background-color: #aaa3;
 }
 
-.build-menu-list-item[data-selected=true]:not:disabled {
+.build-menu-list-item[data-selected="true"]:not(disabled) {
     background-color: #aaa;
 }
 

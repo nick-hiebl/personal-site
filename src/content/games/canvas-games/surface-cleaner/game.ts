@@ -6,7 +6,9 @@ import { BuildMenu } from './BuildMenu'
 import { Player } from './entities/Player'
 import { Robot } from './entities/Robot'
 import { Seller } from './entities/Seller'
-import { RobotSettings } from './settings/Robot'
+import { Silo } from './entities/Silo'
+import { RobotSettings } from './settings/RobotSettings'
+import { SiloSettings } from './settings/SiloSettings'
 import { SurfaceCleanerStore } from './Store'
 import { BUNDLE_SIZE, CELL_SIZE, FULL_WORLD_HEIGHT, FULL_WORLD_WIDTH } from './world/constants'
 import { WorldGrid } from './world/WorldGrid'
@@ -32,6 +34,7 @@ export class SurfaceCleanerGame extends GameInstance {
     players: Player[]
     stores: Seller[]
     robots: Robot[]
+    silos: Silo[]
 
     sellRate: number
     conversionRate: number
@@ -71,6 +74,7 @@ export class SurfaceCleanerGame extends GameInstance {
         ]
 
         this.robots = []
+        this.silos = []
 
         this.sellRate = SELL_RATE
         this.conversionRate = 1
@@ -105,11 +109,18 @@ export class SurfaceCleanerGame extends GameInstance {
 
         const worldPosition = this.camera.add(mousePos).add(CAMERA_OFFSET)
 
-        if (this.buildMenu.state.selected === 'robot') {
-            if (this.money >= RobotSettings.cost) {
-                this.money -= RobotSettings.cost
-                this.robots.push(new Robot(worldPosition))
-            }
+        switch (this.buildMenu.state.selected) {
+            case 'robot':
+                if (this.money >= RobotSettings.cost) {
+                    this.money -= RobotSettings.cost
+                    this.robots.push(new Robot(worldPosition))
+                }
+                break
+            case 'silo':
+                if (this.money >= SiloSettings.cost) {
+                    this.money -= SiloSettings.cost
+                    this.silos.push(new Silo(worldPosition))
+                }
         }
     }
 
@@ -153,6 +164,10 @@ export class SurfaceCleanerGame extends GameInstance {
             entity.update(elapsedTime, this)
         })
 
+        this.silos.forEach((entity) => {
+            entity.update(elapsedTime, this)
+        })
+
         const someShopActive = this.stores.some((entity) => entity instanceof Seller && entity.active)
 
         if (this.money !== this.lastMoney) {
@@ -181,6 +196,10 @@ export class SurfaceCleanerGame extends GameInstance {
 
             this.ctx.drawImage(this.innerCanvas, innerLeft - cameraTopLeft.x, innerTop - cameraTopLeft.y, WIDTH + 2 * EDGE_BUFFER, HEIGHT + 2 * EDGE_BUFFER)
         }
+
+        this.silos.forEach((silo) => {
+            silo.draw(this.ctx, cameraTopLeft)
+        })
 
         this.stores.forEach((entity) => {
             entity.draw(this.ctx, cameraTopLeft)
