@@ -1,10 +1,10 @@
+import { lerp } from '../../core/animation'
 import { randomChoice } from '../../core/random'
 import { Vector } from '../../core/Vector'
 import type { SurfaceCleanerGame } from '../game'
 import { RobotSettings } from '../settings/RobotSettings'
 import { SiloSettings } from '../settings/SiloSettings'
 import { BUNDLE_SCALE } from '../world/constants'
-import type { WorldGrid } from '../world/WorldGrid'
 
 import { nextEntityId } from './entity-id'
 
@@ -25,6 +25,9 @@ export class Robot {
     assignment: Vector | undefined
     path: Path | undefined
 
+    payloadTime: number | undefined
+    payloadStartStore: number | undefined
+
     constructor(position: Vector) {
         this.id = nextEntityId()
         this.position = position
@@ -42,7 +45,17 @@ export class Robot {
     }
 
     draw(ctx: CanvasRenderingContext2D, topLeft: Vector) {
-        ctx.fillStyle = 'green'
+        const color = this.payloadTime && this.payloadTime > 0
+            ? 'purple'
+            : this.store > RobotSettings.storeCap
+                ? '#0077ff'
+                : 'green'
+
+        const progressFraction = this.payloadTime && this.payloadTime > 0
+            ? lerp(this.payloadTime / RobotSettings.payloadTime, this.store, this.payloadStartStore ?? 0) / RobotSettings.storeCap
+            : this.store / RobotSettings.storeCap
+
+        ctx.fillStyle = color
         ctx.beginPath()
         ctx.ellipse(
             this.position.x - topLeft.x,
@@ -51,13 +64,13 @@ export class Robot {
             4,
             0,
             0,
-            2 * Math.PI * this.store / RobotSettings.storeCap,
+            2 * Math.PI * progressFraction,
         )
         ctx.lineTo(this.position.x - topLeft.x, this.position.y - topLeft.y)
         ctx.fill()
 
         ctx.beginPath()
-        ctx.strokeStyle = 'green'
+        ctx.strokeStyle = color
         ctx.lineWidth = 1
         ctx.ellipse(
             this.position.x - topLeft.x,
@@ -74,9 +87,14 @@ export class Robot {
     update(elapsedTime: number, game: SurfaceCleanerGame) {
         const grid = game.worldGrid
 
+        if (this.payloadTime && this.payloadTime > 0) {
+            this.payloadTime -= elapsedTime
+            return
+        }
+
         if (this.store >= RobotSettings.storeCap) {
             const targets = game.silos.filter((silo) => {
-                return SiloSettings.storeCap - silo.store > RobotSettings.minPayload
+                return silo.payloadTime <= 0 && SiloSettings.storeCap - silo.store > RobotSettings.minPayload
             })
 
             if (targets.length === 0) {
@@ -94,7 +112,10 @@ export class Robot {
                 this.store,
             )
 
-            target.store += transferrableAmount
+            this.payloadStartStore = this.store
+            this.payloadTime = RobotSettings.payloadTime
+
+            target.triggerAnimation(transferrableAmount)
             this.store -= transferrableAmount
 
             return

@@ -1,3 +1,4 @@
+import { lerp } from '../../core/animation'
 import type { Vector } from '../../core/Vector'
 import type { SurfaceCleanerGame } from '../game'
 import { SiloSettings } from '../settings/SiloSettings'
@@ -8,12 +9,23 @@ export class Silo {
     position: Vector
     store: number
 
+    payloadTime: number
+    storeBeforePayload: number
+
     constructor(position: Vector) {
         this.position = position
         this.store = 0
+
+        this.payloadTime = 0
+        this.storeBeforePayload = 0
     }
 
     update(elapsedTime: number, game: SurfaceCleanerGame) {
+        if (this.payloadTime > 0) {
+            this.payloadTime -= elapsedTime
+            return
+        }
+
         game.players.forEach((player) => {
             if (this.position.diff(player.position).magnitude() < ACTIVITY_RADIUS) {
                 if (player.store > 0) {
@@ -33,8 +45,20 @@ export class Silo {
         }
     }
 
+    triggerAnimation(adding: number) {
+        if (this.payloadTime > 0) {
+            throw Error('Triggered animation on Silo already mid-animation')
+        }
+
+        this.storeBeforePayload = this.store
+        this.store += adding
+        this.payloadTime = SiloSettings.payloadTime
+    }
+
     draw(ctx: CanvasRenderingContext2D, topLeft: Vector) {
-        ctx.fillStyle = 'purple'
+        ctx.fillStyle = this.payloadTime > 0
+            ? '#660066'
+            : 'purple'
         ctx.beginPath()
         ctx.arc(
             this.position.x - topLeft.x,
@@ -45,14 +69,22 @@ export class Silo {
         )
         ctx.fill()
 
-        ctx.fillStyle = '#440044'
+        const progressFraction = this.payloadTime > 0
+            ? lerp(
+                this.payloadTime / SiloSettings.payloadTime,
+                this.store,
+                this.storeBeforePayload
+            ) / SiloSettings.storeCap
+            : this.store / SiloSettings.storeCap
+
+        ctx.fillStyle = '#00000044'
         ctx.beginPath()
         ctx.arc(
             this.position.x - topLeft.x,
             this.position.y - topLeft.y,
-            ACTIVITY_RADIUS / 2,
+            ACTIVITY_RADIUS / 2.2,
             0,
-            2 * Math.PI * this.store / SiloSettings.storeCap,
+            2 * Math.PI * progressFraction,
         )
         ctx.lineTo(this.position.x - topLeft.x, this.position.y - topLeft.y)
         ctx.fill()

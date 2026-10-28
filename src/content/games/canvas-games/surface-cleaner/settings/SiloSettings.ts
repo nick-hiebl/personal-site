@@ -5,6 +5,7 @@ class SiloSettingsC extends Settings {
     storeCap: number
     transferRate: number
     sellFraction: number
+    payloadTime: number
     
     constructor() {
         super('Silo')
@@ -12,6 +13,7 @@ class SiloSettingsC extends Settings {
         this.storeCap = 100_000
         this.transferRate = 2
         this.sellFraction = 0.1
+        this.payloadTime = 3_000
     }
 }
 

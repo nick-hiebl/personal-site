@@ -62,6 +62,7 @@ export const clampToSurface = (surface: SurfaceI, position: Vector, size: Vector
 export const smoothStep = (t: number): number => 3 * t * t - 2 * t * t * t
 export const fastStep = (t: number): number => t * (2 - t)
 
+// TODO: Replace with core/animation
 export const lerp = (t: number, a: number, b: number): number => {
     return (1 - t) * a + t * b
 }

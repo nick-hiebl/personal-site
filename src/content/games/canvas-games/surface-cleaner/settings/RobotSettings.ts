@@ -6,6 +6,7 @@ class RobotSettingsC extends Settings {
     storeCap: number
     speed: number
     minPayload: number
+    payloadTime: number
 
     constructor() {
         super('Robot')
@@ -14,6 +15,7 @@ class RobotSettingsC extends Settings {
         this.storeCap = 20_000
         this.speed = 150
         this.minPayload = 5_000
+        this.payloadTime = 2_000
     }
 }
 
