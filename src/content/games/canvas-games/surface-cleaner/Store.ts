@@ -100,7 +100,7 @@ export class SurfaceCleanerStore {
         let upgradesDirty = false
 
         this.state.upgrades.forEach((upgrade) => {
-            const canAfford = upgrade.steps[upgrade.stage][0] <= money && upgrade.stage < upgrade.stages
+            const canAfford = upgrade.stage < upgrade.steps.length && upgrade.steps[upgrade.stage][0] <= money && upgrade.stage < upgrade.stages
 
             if (canAfford !== upgrade.available) {
                 upgradesDirty = true
@@ -111,7 +111,7 @@ export class SurfaceCleanerStore {
             this.state = {
                 ...this.state,
                 upgrades: this.state.upgrades.map((upgrade) => {
-                    const canAfford = upgrade.steps[upgrade.stage][0] <= money && upgrade.stage < upgrade.stages
+                    const canAfford = upgrade.stage < upgrade.steps.length && upgrade.steps[upgrade.stage][0] <= money && upgrade.stage < upgrade.stages
     
                     if (canAfford !== upgrade.available) {
                         return {

@@ -21,6 +21,13 @@ export class Silo {
     }
 
     update(elapsedTime: number, game: SurfaceCleanerGame) {
+        if (this.store > 0) {
+            const sellAmount = Math.min(elapsedTime * game.sellRate * SiloSettings.sellFraction, this.store)
+
+            this.store -= sellAmount
+            game.money += sellAmount * game.conversionRate / 1000
+        }
+
         if (this.payloadTime > 0) {
             this.payloadTime -= elapsedTime
             return
@@ -36,13 +43,6 @@ export class Silo {
                 }
             }
         })
-
-        if (this.store > 0) {
-            const sellAmount = Math.min(elapsedTime * game.sellRate * SiloSettings.sellFraction, this.store)
-
-            this.store -= sellAmount
-            game.money += sellAmount * game.conversionRate / 1000
-        }
     }
 
     triggerAnimation(adding: number) {
