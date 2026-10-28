@@ -22,7 +22,7 @@ export const drawFrame = (ctx: CanvasRenderingContext2D, topLeft: Vector, x: num
     ctx.fillRect(myLeftX - topLeft.x, myTopY - topLeft.y + CELL_SIZE * BUNDLE_SIZE - LONG, SHORT, LONG - SHORT)
 
     ctx.fillRect(myLeftX - topLeft.x + CELL_SIZE * BUNDLE_SIZE - LONG, myTopY - topLeft.y + CELL_SIZE * BUNDLE_SIZE - SHORT, LONG, SHORT)
-    ctx.fillRect(myLeftX - topLeft.x + CELL_SIZE * BUNDLE_SIZE - SHORT, myTopY - topLeft.y + CELL_SIZE * BUNDLE_SIZE - LONG, 3, LONG - SHORT)
+    ctx.fillRect(myLeftX - topLeft.x + CELL_SIZE * BUNDLE_SIZE - SHORT, myTopY - topLeft.y + CELL_SIZE * BUNDLE_SIZE - LONG, SHORT, LONG - SHORT)
 }
 
 export class Bundle {

@@ -1,5 +1,6 @@
 import { GameInstance } from '../core/GameInstance'
 import { inputBuffer, type InputBuffer } from '../core/input-buffer'
+import { randInt } from '../core/random'
 import { Vector } from '../core/Vector'
 
 import { BuildMenu } from './BuildMenu'
@@ -132,8 +133,11 @@ export class SurfaceCleanerGame extends GameInstance {
             this.camera = this.players[0].position
         }
 
-        this.robots.forEach((robot) => {
-            robot.update(elapsedTime, this.worldGrid)
+        // Randomising robot processing order so each robot has a chance at claiming the first free silo availability
+        const firstRobotIndex = randInt(0, this.robots.length)
+        const robotsList = this.robots.slice(firstRobotIndex).concat(this.robots.slice(0, firstRobotIndex))
+        robotsList.forEach((robot) => {
+            robot.update(elapsedTime, this)
 
             if (robot.store < RobotSettings.storeCap) {
                 const clearedCells = this.worldGrid.clearCells(...robot.getBoundingBox())

@@ -5,6 +5,7 @@ class RobotSettingsC extends Settings {
     radius: number
     storeCap: number
     speed: number
+    minPayload: number
 
     constructor() {
         super('Robot')
@@ -12,6 +13,7 @@ class RobotSettingsC extends Settings {
         this.radius = 8
         this.storeCap = 20_000
         this.speed = 150
+        this.minPayload = 5_000
     }
 }
 

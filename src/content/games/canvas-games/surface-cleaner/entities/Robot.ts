@@ -1,5 +1,8 @@
+import { randomChoice } from '../../core/random'
 import { Vector } from '../../core/Vector'
+import type { SurfaceCleanerGame } from '../game'
 import { RobotSettings } from '../settings/RobotSettings'
+import { SiloSettings } from '../settings/SiloSettings'
 import { BUNDLE_SCALE } from '../world/constants'
 import type { WorldGrid } from '../world/WorldGrid'
 
@@ -68,8 +71,32 @@ export class Robot {
         ctx.stroke()
     }
 
-    update(elapsedTime: number, grid: WorldGrid) {
+    update(elapsedTime: number, game: SurfaceCleanerGame) {
+        const grid = game.worldGrid
+
         if (this.store >= RobotSettings.storeCap) {
+            const targets = game.silos.filter((silo) => {
+                return SiloSettings.storeCap - silo.store > RobotSettings.minPayload
+            })
+
+            if (targets.length === 0) {
+                return
+            }
+
+            const target = randomChoice(targets)
+
+            if (!target) {
+                return
+            }
+
+            const transferrableAmount = Math.min(
+                SiloSettings.storeCap - target.store,
+                this.store,
+            )
+
+            target.store += transferrableAmount
+            this.store -= transferrableAmount
+
             return
         }
 
