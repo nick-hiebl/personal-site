@@ -109,7 +109,11 @@ const BuildMenu = ({ game }: { game: SurfaceCleanerGame }) => {
                             className="build-menu-list-item"
                             data-selected={selected === option.id}
                             onClick={() => {
-                                game.buildMenu.select(option.id)
+                                if (option.id === selected) {
+                                    game.buildMenu.select(undefined)
+                                } else {
+                                    game.buildMenu.select(option.id)
+                                }
                             }}
                             disabled={!option.canAfford}
                         >
