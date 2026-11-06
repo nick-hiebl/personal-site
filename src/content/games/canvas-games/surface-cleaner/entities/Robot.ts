@@ -136,7 +136,14 @@ export class Robot {
         if (this.path) {
             const mov = this.getPathDirection(this.assignment, this.path)
 
-            this.position = this.position.add(mov.scale(elapsedTime / 1000 * RobotSettings.speed))
+            const distanceToTravel = elapsedTime / 1000 * RobotSettings.speed
+
+            const realMove = new Vector(
+                Math.sign(mov.x) * Math.max(0, Math.min(distanceToTravel, Math.abs(mov.x))),
+                Math.sign(mov.y) * Math.max(0, Math.min(distanceToTravel, Math.abs(mov.y))),
+            )
+
+            this.position = this.position.add(realMove)
             return
         }
 
@@ -184,12 +191,7 @@ export class Robot {
         this.position = this.position.add(motion.scale(elapsedTime / 1000 * RobotSettings.speed))
     }
 
-    getPathDirection(assignment: Vector, path: Path): Vector {
-        const centerX = assignment.x + BUNDLE_SCALE / 2
-        const centerY = assignment.y + BUNDLE_SCALE / 2
-        const xProgress = this.position.x - centerX
-        const yProgress = this.position.y - centerY
-
+    determineMovement(path: Path, _primary: number, secondary: number, primaryProgress: number, secondaryProgress: number): [number, number] {
         if (path.acting === 'initial' || path.acting === 'initial-return') {
             const nextPath: Path = path.acting === 'initial'
                 ? {
@@ -201,99 +203,73 @@ export class Robot {
                     ...path,
                     primaryDirection: (-path.primaryDirection) as 1 | -1,
                     acting: 'secondary',
+                    currentSecondaryStep: secondary,
+                    initialSecondary: secondary,
                 }
 
-            if (path.primary === 'x') {
-                if (xProgress / path.primaryDirection >= BUNDLE_SCALE / 2 - RobotSettings.radius) {
-                    this.path = nextPath
-                    return new Vector(0, 0)
-                } else {
-                    return new Vector(path.primaryDirection, 0)
-                }
-            } else if (path.primary === 'y') {
-                if (yProgress / path.primaryDirection >= BUNDLE_SCALE / 2 - RobotSettings.radius) {
-                    this.path = nextPath
-                    return new Vector(0, 0)
-                } else {
-                    return new Vector(0, path.primaryDirection)
-                }
+            if (primaryProgress / path.primaryDirection >= BUNDLE_SCALE / 2 - RobotSettings.radius) {
+                this.path = nextPath
+                return [0, 0]
+            } else {
+                return [
+                    path.primaryDirection * (BUNDLE_SCALE / 2) - primaryProgress,
+                    0,
+                ]
             }
         } else if (path.acting === 'secondary') {
-            if (path.primary === 'x') {
-                if (
-                    (path.currentSecondaryStep - centerY) / path.secondaryDirection >= BUNDLE_SCALE / 2 - RobotSettings.radius ||
-                    yProgress / path.secondaryDirection >= BUNDLE_SCALE / 2 + RobotSettings.radius
-                ) {
-                    this.path = {
-                        ...path,
-                        currentSecondaryStep: path.initialSecondary + RobotSettings.radius * path.secondaryDirection,
-                        secondaryDirection: (-path.secondaryDirection) as 1 | -1,
-                    }
-                    return new Vector(0, 0)
+            const nextStepSecondary = path.currentSecondaryStep + (RobotSettings.radius * 2 - 2) / path.secondaryDirection
+            
+            if ((secondary - nextStepSecondary) / path.secondaryDirection >= 0) {
+                this.path = {
+                    ...path,
+                    acting: 'primary',
+                    currentSecondaryStep: secondary,
                 }
-                const yDist = (this.position.y - path.currentSecondaryStep) / path.secondaryDirection
-                if (yDist > RobotSettings.radius * 1.5) {
-                    this.path = {
-                        ...path,
-                        acting: 'primary',
-                        currentSecondaryStep: this.position.y,
-                    }
-                    return new Vector(0, 0)
-                } else {
-                    return new Vector(0, path.secondaryDirection)
+                return [0, 0]
+            } else if (secondaryProgress / path.secondaryDirection >= BUNDLE_SCALE / 2 + RobotSettings.radius) {
+                this.path = {
+                    ...path,
+                    currentSecondaryStep: path.initialSecondary + path.secondaryDirection * RobotSettings.radius,
+                    secondaryDirection: (-path.secondaryDirection) as 1 | -1,
                 }
+                return [0, 0]
             } else {
-                if (
-                    (path.currentSecondaryStep - centerX) / path.secondaryDirection >= BUNDLE_SCALE / 2 - RobotSettings.radius ||
-                    xProgress / path.secondaryDirection >= BUNDLE_SCALE / 2 + RobotSettings.radius
-                ) {
-                    this.path = {
-                        ...path,
-                        currentSecondaryStep: path.initialSecondary + RobotSettings.radius * path.secondaryDirection,
-                        secondaryDirection: (-path.secondaryDirection) as 1 | -1,
-                    }
-                    return new Vector(0, 0)
-                }
-                const xDist = (this.position.x - path.currentSecondaryStep) / path.secondaryDirection
-                if (Math.abs(xDist) > RobotSettings.radius * 1.5) {
-                    this.path = {
-                        ...path,
-                        acting: 'primary',
-                        currentSecondaryStep: this.position.x,
-                    }
-                    return new Vector(0, 0)
-                } else {
-                    return new Vector(path.secondaryDirection, 0)
-                }
+                return [0, nextStepSecondary - secondary]
             }
         } else if (path.acting === 'primary') {
-            if (path.primary === 'x') {
-                const centerX = assignment.x + BUNDLE_SCALE / 2
-                const distAlong = this.position.x - centerX
-                if (distAlong / path.primaryDirection > BUNDLE_SCALE / 2 - RobotSettings.radius) {
-                    this.path = {
-                        ...path,
-                        acting: 'secondary',
-                        primaryDirection: (-path.primaryDirection) as 1 | -1,
-                    }
-                    return new Vector(0, 0)
+            if (primaryProgress / path.primaryDirection >= BUNDLE_SCALE / 2 - RobotSettings.radius) {
+                this.path = {
+                    ...path,
+                    acting: 'secondary',
+                    currentSecondaryStep: secondary,
+                    primaryDirection: (-path.primaryDirection) as 1 | -1,
                 }
-                return new Vector(path.primaryDirection, 0)
-            } else {
-                const centerY = assignment.y + BUNDLE_SCALE / 2
-                const distAlong = this.position.y - centerY
-                if (distAlong / path.primaryDirection > BUNDLE_SCALE / 2 - RobotSettings.radius) {
-                    this.path = {
-                        ...path,
-                        acting: 'secondary',
-                        primaryDirection: (-path.primaryDirection) as 1 | -1,
-                    }
-                    return new Vector(0, 0)
-                }
-                return new Vector(0, path.primaryDirection)
+                return [0, 0]
             }
+            const target = path.primaryDirection * BUNDLE_SCALE / 2
+            return [
+                target - primaryProgress,
+                0,
+            ]
         }
 
-        return new Vector(0, 0)
+        return [0, 0]
+    }
+
+    getPathDirection(assignment: Vector, path: Path): Vector {
+        const centerX = assignment.x + BUNDLE_SCALE / 2
+        const centerY = assignment.y + BUNDLE_SCALE / 2
+        const xProgress = this.position.x - centerX
+        const yProgress = this.position.y - centerY
+
+        if (path.primary === 'x') {
+            const [primary, secondary] = this.determineMovement(path, this.position.x, this.position.y, xProgress, yProgress)
+
+            return new Vector(primary, secondary)
+        } else {
+            const [primary, secondary] = this.determineMovement(path, this.position.y, this.position.x, yProgress, xProgress)
+
+            return new Vector(secondary, primary)
+        }
     }
 }
