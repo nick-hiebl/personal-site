@@ -226,7 +226,7 @@ export class Robot {
                 ) {
                     this.path = {
                         ...path,
-                        currentSecondaryStep: path.initialSecondary,
+                        currentSecondaryStep: path.initialSecondary + RobotSettings.radius * path.secondaryDirection,
                         secondaryDirection: (-path.secondaryDirection) as 1 | -1,
                     }
                     return new Vector(0, 0)
@@ -249,7 +249,7 @@ export class Robot {
                 ) {
                     this.path = {
                         ...path,
-                        currentSecondaryStep: path.initialSecondary,
+                        currentSecondaryStep: path.initialSecondary + RobotSettings.radius * path.secondaryDirection,
                         secondaryDirection: (-path.secondaryDirection) as 1 | -1,
                     }
                     return new Vector(0, 0)

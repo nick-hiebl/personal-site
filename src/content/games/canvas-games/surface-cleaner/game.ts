@@ -125,7 +125,10 @@ export class SurfaceCleanerGame extends GameInstance {
         }
     }
 
-    update(elapsedTime: number) {
+    update(rawElapsedTime: number) {
+        // Capping elapsedTime to 10fps, to prevent crazy stutter behavior during lag spikes or browser inactivity
+        const elapsedTime = Math.min(rawElapsedTime, 100)
+
         this.buildMenuInput(this.keys.get('KeyB') ?? false)
         this.escapeInput(this.keys.get('Escape') ?? false)
 
