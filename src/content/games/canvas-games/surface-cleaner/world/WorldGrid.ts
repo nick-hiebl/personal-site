@@ -8,8 +8,62 @@ type BundleCallback = (bundle: Cleared | Bundle, x: number, y: number) => void
 
 const BUNDLE_SCALE = CELL_SIZE * BUNDLE_SIZE
 
+type LayerDescription = {
+    topLeft: Vector
+    bottomRight: Vector
+    excluded?: Vector
+    color: string
+}
+
+type LayerState = {
+    bundles: (Cleared | Bundle)[][]
+    remainingBundles: number
+}
+
+const createBundlesForLayer = (layer: LayerDescription): LayerState => {
+    let placedStart = false
+
+    let remainingBundles = 0
+
+    const bundles = new Array(WORLD_HEIGHT)
+        .fill(0)
+        .map((_, rowIndex) => (
+            new Array(WORLD_WIDTH)
+                .fill(0)
+                .map((_, colIndex) => {
+                    if (layer.excluded && !placedStart) {
+                        if (colIndex === layer.excluded.x && rowIndex === layer.excluded.y) {
+                            placedStart = true
+                            return Bundle.empty(colIndex, rowIndex)
+                        }
+                    }
+
+                    const insideBound = layer.topLeft.x <= colIndex && colIndex < layer.bottomRight.x &&
+                        layer.topLeft.y <= rowIndex && rowIndex < layer.bottomRight.y
+
+                    if (insideBound) {
+                        remainingBundles++
+                        return false
+                    }
+
+                    return true
+                })
+        ))
+
+    if (layer.excluded && !placedStart) {
+        console.warn('Looked for', layer.excluded)
+        throw Error('Failed to place starting cell!')
+    }
+
+    return {
+        bundles,
+        remainingBundles,
+    }
+}
+
 export class WorldGrid {
     bundles: (Cleared | Bundle)[][]
+    remainingBundles: number
 
     /**
      * Key is 2d-array index corresponding to the bundle. Value is the owner id
@@ -18,31 +72,17 @@ export class WorldGrid {
 
     noAssignmentsAvailable: boolean
 
-    constructor(startX: number, startY: number) {
-        const startCol = Math.floor(startX / BUNDLE_SCALE)
-        const startRow = Math.floor(startY / BUNDLE_SCALE)
+    currentLayerIndex: number
+    layers: LayerDescription[]
 
-        let placedStart = false
+    constructor(layers: LayerDescription[]) {
+        this.layers = layers
+        this.currentLayerIndex = 0
 
-        this.bundles = new Array(WORLD_HEIGHT)
-            .fill(0)
-            .map((_, rowIndex) => (
-                new Array(WORLD_WIDTH)
-                    .fill(0)
-                    .map((_, colIndex) => {
-                        if (rowIndex === startRow && colIndex === startCol) {
-                            placedStart = true
-                            return Bundle.empty(colIndex, rowIndex)
-                        }
+        const { bundles, remainingBundles } = createBundlesForLayer(layers[0])
 
-                        return false
-                    })
-            ))
-
-        if (!placedStart) {
-            console.warn('Looked for', startRow, startCol, startX, startY)
-            throw Error('Failed to place starting cell!')
-        }
+        this.bundles = bundles
+        this.remainingBundles = remainingBundles
 
         this.assignments = new Map()
 
@@ -105,9 +145,14 @@ export class WorldGrid {
                 throw new Error('Current bundle does not exist???')
             }
 
-            sumCleared += currentBundle.clear(topLeft, bottomRight)
+            const thisBundleCleared = currentBundle.clear(topLeft, bottomRight)
+            sumCleared += thisBundleCleared
 
             if (currentBundle.remaining === 0) {
+                if (thisBundleCleared > 0) {
+                    this.remainingBundles--
+                }
+
                 this.bundles[y][x] = true
             }
         })
@@ -116,7 +161,7 @@ export class WorldGrid {
     }
 
     findAssignment(position: Vector, ownerId: number): Vector | undefined {
-        if (this.noAssignmentsAvailable) {
+        if (this.noAssignmentsAvailable || this.remainingBundles === 0) {
             return
         }
 
@@ -210,5 +255,37 @@ export class WorldGrid {
 
     isCompleteXY(x: number, y: number): boolean {
         return this.bundles[y][x] === true
+    }
+
+    goToNextLayer(): boolean {
+        if (this.currentLayerIndex + 1 >= this.layers.length) {
+            return false
+        }
+
+        const newIndex = this.currentLayerIndex + 1
+        const currentLayer = this.layers[newIndex]
+        this.currentLayerIndex = newIndex
+
+        if (!currentLayer) {
+            throw Error(`Next layer should exist, but for some reason does not! '${newIndex}'`)
+        }
+
+        const { bundles, remainingBundles } = createBundlesForLayer(currentLayer)
+
+        this.bundles = bundles
+        this.remainingBundles = remainingBundles
+
+        this.noAssignmentsAvailable = this.remainingBundles === 0
+        this.assignments = new Map()
+
+        return true
+    }
+
+    currentLayerColor() {
+        return this.layers[this.currentLayerIndex]?.color ?? 'black'
+    }
+
+    nextLayerColor() {
+        return this.layers[this.currentLayerIndex + 1]?.color ?? 'black'
     }
 }

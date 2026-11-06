@@ -7,6 +7,7 @@ class RobotSettingsC extends Settings {
     speed: number
     minPayload: number
     payloadTime: number
+    deathTime: number
 
     constructor() {
         super('Robot')
@@ -16,6 +17,7 @@ class RobotSettingsC extends Settings {
         this.speed = 150
         this.minPayload = 5_000
         this.payloadTime = 2_000
+        this.deathTime = 3_000
     }
 }
 

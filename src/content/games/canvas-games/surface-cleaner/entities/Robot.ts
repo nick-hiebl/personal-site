@@ -28,6 +28,10 @@ export class Robot {
     payloadTime: number | undefined
     payloadStartStore: number | undefined
 
+    decaying: boolean
+    private deathTimer: number | undefined
+    dead: boolean
+
     constructor(position: Vector) {
         this.id = nextEntityId()
         this.position = position
@@ -35,6 +39,9 @@ export class Robot {
 
         this.assignment = undefined
         this.path = undefined
+
+        this.decaying = false
+        this.dead = false
     }
 
     getBoundingBox(): [Vector, Vector] {
@@ -44,12 +51,19 @@ export class Robot {
         ]
     }
 
+    resetState() {
+        this.assignment = undefined
+        this.path = undefined
+    }
+
     draw(ctx: CanvasRenderingContext2D, topLeft: Vector) {
-        const color = this.payloadTime && this.payloadTime > 0
-            ? 'purple'
-            : this.store > RobotSettings.storeCap
-                ? '#0077ff'
-                : 'green'
+        const color = this.decaying
+            ? 'yellow'
+            : this.payloadTime && this.payloadTime > 0
+                ? 'purple'
+                : this.store > RobotSettings.storeCap
+                    ? '#0077ff'
+                    : 'green'
 
         const progressFraction = this.payloadTime && this.payloadTime > 0
             ? lerp(this.payloadTime / RobotSettings.payloadTime, this.store, this.payloadStartStore ?? 0) / RobotSettings.storeCap
@@ -85,6 +99,17 @@ export class Robot {
     }
 
     update(elapsedTime: number, game: SurfaceCleanerGame) {
+        if (this.decaying && (this.deathTimer ?? 0) > 0) {
+            this.deathTimer = (this.deathTimer ?? 0) - elapsedTime
+
+            if (this.deathTimer <= 0) {
+                this.dead = true
+                game.money += RobotSettings.cost
+            }
+
+            return
+        }
+
         const grid = game.worldGrid
 
         if (this.payloadTime && this.payloadTime > 0) {
@@ -92,7 +117,22 @@ export class Robot {
             return
         }
 
-        if (this.store >= RobotSettings.storeCap) {
+        let shouldLaunch = this.store >= RobotSettings.storeCap
+
+        // Check if we need to launch before decaying
+        if (!shouldLaunch && !this.assignment && this.store > 0) {
+            const nextAssign = grid.findAssignment(this.position, this.id)
+
+            if (!nextAssign) {
+                shouldLaunch = true
+            } else {
+                this.assignment = nextAssign
+                this.path = undefined
+                return
+            }
+        }
+
+        if (shouldLaunch) {
             const targets = game.silos.filter((silo) => {
                 return silo.payloadTime <= 0 && SiloSettings.storeCap - silo.store > RobotSettings.minPayload
             })
@@ -122,7 +162,15 @@ export class Robot {
         }
 
         if (!this.assignment) {
-            this.assignment = grid.findAssignment(this.position, this.id)
+            const nextAssign = grid.findAssignment(this.position, this.id)
+
+            if (!nextAssign) {
+                this.decaying = true
+                this.deathTimer = RobotSettings.deathTime
+                return
+            }
+
+            this.assignment = nextAssign
             this.path = undefined
             return
         }

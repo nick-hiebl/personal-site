@@ -70,7 +70,25 @@ export class SurfaceCleanerGame extends GameInstance {
 
         this.camera = new Vector(0, 0)
 
-        this.worldGrid = new WorldGrid(FULL_WORLD_WIDTH / 2, FULL_WORLD_HEIGHT / 2)
+        this.worldGrid = new WorldGrid([
+            {
+                excluded: new Vector(400, 300),
+                topLeft: new Vector(401, 300),
+                bottomRight: new Vector(402, 301),
+                color: 'pink',
+            },
+            {
+                topLeft: new Vector(399, 299),
+                bottomRight: new Vector(402, 302),
+                color: 'brown',
+            },
+            {
+                topLeft: new Vector(398, 298),
+                bottomRight: new Vector(403, 303),
+                excluded: new Vector(398, 298),
+                color: '#449fd1',
+            },
+        ])
 
         const origin = new Vector((FULL_WORLD_WIDTH + BUNDLE_SIZE * CELL_SIZE) / 2, (FULL_WORLD_HEIGHT + BUNDLE_SIZE * CELL_SIZE) / 2)
 
@@ -140,6 +158,16 @@ export class SurfaceCleanerGame extends GameInstance {
         this.buildMenuInput(this.keys.get('KeyB') ?? false)
         this.escapeInput(this.keys.get('Escape') ?? false)
 
+        if (this.worldGrid.remainingBundles <= 0) {
+            const newLeveled = this.worldGrid.goToNextLayer()
+
+            if (newLeveled) {
+                this.robots.forEach((robot) => {
+                    robot.resetState()
+                })
+            }
+        }
+
         if (this.players[0]) {
             this.camera = this.players[0].position
         }
@@ -157,6 +185,8 @@ export class SurfaceCleanerGame extends GameInstance {
                 this.clearedCells += clearedCells
             }
         })
+
+        this.robots = this.robots.filter((robot) => !robot.dead)
 
         this.players.forEach((player, playerIndex) => {
             const directionalInput = playerIndex === 0
@@ -195,7 +225,7 @@ export class SurfaceCleanerGame extends GameInstance {
     }
 
     draw() {
-        this.ctx.fillStyle = 'black'
+        this.ctx.fillStyle = this.worldGrid.nextLayerColor()
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
 
         this.innerCtx.clearRect(0, 0, this.innerCanvas.width, this.innerCanvas.height)
@@ -212,7 +242,7 @@ export class SurfaceCleanerGame extends GameInstance {
             )
 
             this.innerCtx.globalCompositeOperation = 'source-in'
-            this.innerCtx.fillStyle = FILL_COLOR
+            this.innerCtx.fillStyle = this.worldGrid.currentLayerColor()
             this.innerCtx.fillRect(0, 0, this.innerCanvas.width, this.innerCanvas.height)
             this.innerCtx.globalCompositeOperation = 'source-over'
             this.ctx.drawImage(this.innerCanvas, innerLeft - cameraTopLeft.x, innerTop - cameraTopLeft.y, WIDTH + 2 * EDGE_BUFFER, HEIGHT + 2 * EDGE_BUFFER)
