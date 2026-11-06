@@ -11,7 +11,15 @@ import { Silo } from './entities/Silo'
 import { RobotSettings } from './settings/RobotSettings'
 import { SiloSettings } from './settings/SiloSettings'
 import { SurfaceCleanerStore } from './Store'
-import { BUNDLE_SIZE, CELL_SIZE, FULL_WORLD_HEIGHT, FULL_WORLD_WIDTH } from './world/constants'
+import { drawFrame } from './world/Bundle'
+import {
+    BUNDLE_SCALE,
+    BUNDLE_SIZE,
+    CELL_SIZE,
+    FILL_COLOR,
+    FULL_WORLD_HEIGHT,
+    FULL_WORLD_WIDTH,
+} from './world/constants'
 import { WorldGrid } from './world/WorldGrid'
 
 const WIDTH = 1440
@@ -187,8 +195,10 @@ export class SurfaceCleanerGame extends GameInstance {
     }
 
     draw() {
-        this.innerCtx.fillStyle = 'black'
-        this.innerCtx.fillRect(0, 0, this.innerCanvas.width, this.innerCanvas.height)
+        this.ctx.fillStyle = 'black'
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
+
+        this.innerCtx.clearRect(0, 0, this.innerCanvas.width, this.innerCanvas.height)
 
         const cameraTopLeft = this.camera.add(CAMERA_OFFSET)
 
@@ -201,7 +211,17 @@ export class SurfaceCleanerGame extends GameInstance {
                 new Vector(innerLeft + WIDTH + 2 * EDGE_BUFFER, innerTop + HEIGHT + 2 * EDGE_BUFFER),
             )
 
+            this.innerCtx.globalCompositeOperation = 'source-in'
+            this.innerCtx.fillStyle = FILL_COLOR
+            this.innerCtx.fillRect(0, 0, this.innerCanvas.width, this.innerCanvas.height)
+            this.innerCtx.globalCompositeOperation = 'source-over'
             this.ctx.drawImage(this.innerCanvas, innerLeft - cameraTopLeft.x, innerTop - cameraTopLeft.y, WIDTH + 2 * EDGE_BUFFER, HEIGHT + 2 * EDGE_BUFFER)
+        }
+
+        for (let x = Math.floor(cameraTopLeft.x / BUNDLE_SCALE); x <= Math.ceil((cameraTopLeft.x + this.canvas.width) / BUNDLE_SCALE); x++) {
+            for (let y = Math.floor(cameraTopLeft.y / BUNDLE_SCALE); y <= Math.ceil((cameraTopLeft.y + this.canvas.height) / BUNDLE_SCALE); y++) {
+                drawFrame(this.ctx, cameraTopLeft, x, y, this.worldGrid.isCompleteXY(x, y))
+            }
         }
 
         this.silos.forEach((silo) => {

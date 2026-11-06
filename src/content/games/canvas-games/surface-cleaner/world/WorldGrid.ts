@@ -1,6 +1,6 @@
 import { Vector } from '../../core/Vector'
 
-import { Bundle, drawFrame } from './Bundle'
+import { Bundle } from './Bundle'
 import { BUNDLE_SIZE, CELL_SIZE, FILL_COLOR, WORLD_HEIGHT, WORLD_WIDTH } from './constants'
 import type { Cleared } from './types'
 
@@ -80,11 +80,8 @@ export class WorldGrid {
                     BUNDLE_SCALE,
                     BUNDLE_SCALE,
                 )
-                drawFrame(ctx, topLeft, x, y, false)
             } else if (bundle instanceof Bundle) {
                 bundle.draw(ctx, topLeft, bottomRight)
-            } else {
-                drawFrame(ctx, topLeft, x, y, true)
             }
         })
     }
@@ -209,5 +206,9 @@ export class WorldGrid {
             return true
         }
         return false
+    }
+
+    isCompleteXY(x: number, y: number): boolean {
+        return this.bundles[y][x] === true
     }
 }

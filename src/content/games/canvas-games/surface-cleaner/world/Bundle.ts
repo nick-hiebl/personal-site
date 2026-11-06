@@ -125,7 +125,6 @@ export class Bundle {
         }
 
         if (this.remaining === 0) {
-            this.drawFrame(ctx, topLeft)
             return
         }
 
@@ -133,7 +132,6 @@ export class Bundle {
             ctx.fillStyle = FILL_COLOR
             ctx.fillRect(myLeftX - topLeft.x, myTopY - topLeft.y, CELL_SIZE * BUNDLE_SIZE, CELL_SIZE * BUNDLE_SIZE)
 
-            this.drawFrame(ctx, topLeft)
             return
         }
 
@@ -143,11 +141,6 @@ export class Bundle {
         }
 
         ctx.drawImage(this.canvas, myLeftX - topLeft.x, myTopY - topLeft.y, CELL_SIZE * BUNDLE_SIZE, CELL_SIZE * BUNDLE_SIZE)
-        this.drawFrame(ctx, topLeft)
-    }
-
-    drawFrame(ctx: CanvasRenderingContext2D, topLeft: Vector): void {
-        drawFrame(ctx, topLeft, this.x, this.y, this.remaining === 0)
     }
 
     /**
