@@ -19,6 +19,8 @@ import {
     FILL_COLOR,
     FULL_WORLD_HEIGHT,
     FULL_WORLD_WIDTH,
+    WORLD_HEIGHT,
+    WORLD_WIDTH,
 } from './world/constants'
 import { WorldGrid } from './world/WorldGrid'
 
@@ -274,6 +276,37 @@ export class SurfaceCleanerGame extends GameInstance {
         const mainPlayer = this.players[0]
 
         if (mainPlayer) {
+            const closestStore = this.stores.reduce((closest, store) => {
+                const closestDist = closest.position.diff(mainPlayer.position).magnitude()
+                const thisDist = store.position.diff(mainPlayer.position).magnitude()
+
+                return thisDist < closestDist ? store : closest
+            })
+
+            if (closestStore) {
+                const vectorTo = closestStore.position.diff(mainPlayer.position)
+
+                if (vectorTo.magnitude() > 1000) {
+                    const angleTo = Math.atan2(vectorTo.y, vectorTo.x)
+
+                    this.ctx.save()
+                    this.ctx.translate(mainPlayer.position.x - cameraTopLeft.x, mainPlayer.position.y - cameraTopLeft.y)
+                    this.ctx.rotate(angleTo)
+
+                    this.ctx.fillStyle = 'red'
+                    this.ctx.beginPath()
+                    this.ctx.moveTo(30, 0)
+                    this.ctx.lineTo(20, 10)
+                    this.ctx.lineTo(20, -10)
+                    this.ctx.lineTo(30, 0)
+                    this.ctx.fill()
+
+                    this.ctx.restore()
+                }
+            }
+        }
+
+        if (mainPlayer) {
             this.ctx.strokeStyle = 'green'
             this.ctx.lineWidth = 4
             this.ctx.strokeRect(16, HEIGHT - 16 - 100 - 12, 32, 100 + 12)
@@ -283,9 +316,25 @@ export class SurfaceCleanerGame extends GameInstance {
             this.ctx.fillRect(22, HEIGHT - 16 - 6, 20, -capacity)
         }
 
+        this.ctx.fillStyle = `#00000066`
+        this.ctx.fillRect(6, 6, 230, 40)
+
         this.ctx.fillStyle = 'green'
         this.ctx.font = '24px sans-serif'
         this.ctx.fillText(`$${this.money.toFixed(2)}`, 16, 34)
+
+        if (mainPlayer) {
+            const x = Math.floor(mainPlayer.position.x / BUNDLE_SCALE)
+            const y = Math.floor(mainPlayer.position.y / BUNDLE_SCALE)
+
+            const cX = WORLD_WIDTH / 2
+            const cY = WORLD_HEIGHT / 2
+
+            const latitude = y <= cY ? `N${cY - y}` : `S${y - cY}`
+            const longitude = x < cX ? `W${cX - x}` : `E${x - cX}`
+
+            this.ctx.fillText(`${latitude}, ${longitude}`, 120, 34)
+        }
 
         if (this.mousePos && this.buildMenu.state.open && this.buildMenu.state.selected) {
             this.ctx.fillStyle = this.money >= RobotSettings.cost ? 'blue' : 'red'
