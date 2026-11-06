@@ -192,7 +192,19 @@ export class Bundle {
 
         if (sumCleared > 0) {
             this.full = false
-            this.dirty = true
+
+            // If the canvas already exists, we only need to wipe the cleared section
+            if (this.canvas && this.ctx) {
+                this.ctx.clearRect(
+                    topLeft.x - myLeftX,
+                    topLeft.y - myTopY,
+                    bottomRight.x - topLeft.x,
+                    bottomRight.y - topLeft.y
+                )
+            } else {
+                // Otherwise mark the canvas as needing a full re-draw
+                this.dirty = true
+            }
 
             this.remaining -= sumCleared
 
