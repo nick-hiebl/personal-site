@@ -16,7 +16,6 @@ import {
     BUNDLE_SCALE,
     BUNDLE_SIZE,
     CELL_SIZE,
-    FILL_COLOR,
     FULL_WORLD_HEIGHT,
     FULL_WORLD_WIDTH,
     WORLD_HEIGHT,
@@ -46,6 +45,8 @@ export class SurfaceCleanerGame extends GameInstance {
     stores: Seller[]
     robots: Robot[]
     silos: Silo[]
+
+    entityMap: Map<number, Silo | Robot>
 
     sellRate: number
     conversionRate: number
@@ -105,6 +106,8 @@ export class SurfaceCleanerGame extends GameInstance {
         this.robots = []
         this.silos = []
 
+        this.entityMap = new Map()
+
         this.sellRate = SELL_RATE
         this.conversionRate = 1
 
@@ -127,8 +130,18 @@ export class SurfaceCleanerGame extends GameInstance {
         this.buildMenu.setOpen(false)
     }
 
+    getMouseTargetPos(mousePos = this.mousePos): Vector | undefined {
+        if (!mousePos || isNaN(mousePos.x) || isNaN(mousePos.y)) {
+            return
+        }
+
+        return this.camera.add(mousePos).add(CAMERA_OFFSET)
+    }
+
     onClick(mousePos: Vector) {
-        if (!this.mousePos || isNaN(mousePos.x) || isNaN(mousePos.y)) {
+        const targetPos = this.getMouseTargetPos(mousePos)
+
+        if (!targetPos) {
             return
         }
 
@@ -136,19 +149,34 @@ export class SurfaceCleanerGame extends GameInstance {
             return
         }
 
-        const worldPosition = this.camera.add(mousePos).add(CAMERA_OFFSET)
+        const { worldPos } = this.worldGrid.getBundleAndCell(targetPos)
+
+        switch (this.buildMenu.state.selected) {
+            // Robot can be placed even in conflicting space
+            case 'robot':
+                break;
+            default:
+                if (!this.worldGrid.canPlaceAt(targetPos)) {
+                    return
+                }
+        }
 
         switch (this.buildMenu.state.selected) {
             case 'robot':
                 if (this.money >= RobotSettings.cost) {
                     this.money -= RobotSettings.cost
-                    this.robots.push(new Robot(worldPosition))
+                    const robot = new Robot(worldPos)
+                    this.entityMap.set(robot.id, robot)
+                    this.robots.push(robot)
                 }
                 break
             case 'silo':
                 if (this.money >= SiloSettings.cost) {
                     this.money -= SiloSettings.cost
-                    this.silos.push(new Silo(worldPosition))
+                    const silo = new Silo(worldPos)
+                    this.entityMap.set(silo.id, silo)
+                    this.worldGrid.placeStructureAt(targetPos, silo.id)
+                    this.silos.push(new Silo(worldPos))
                 }
         }
     }
@@ -336,12 +364,25 @@ export class SurfaceCleanerGame extends GameInstance {
             this.ctx.fillText(`${latitude}, ${longitude}`, 120, 34)
         }
 
-        if (this.mousePos && this.buildMenu.state.open && this.buildMenu.state.selected) {
-            this.ctx.fillStyle = this.money >= RobotSettings.cost ? 'blue' : 'red'
+        const targetPos = this.getMouseTargetPos(this.mousePos)
+        if (targetPos && this.buildMenu.state.open && this.buildMenu.state.selected) {
+            const COSTS = {
+                robot: RobotSettings.cost,
+                silo: SiloSettings.cost,
+            }
+            const cost = COSTS[this.buildMenu.state.selected]
+            const canAfford = this.money >= cost
+
+            const { worldPos } = this.worldGrid.getBundleAndCell(targetPos)
+            const drawPos = worldPos.diff(cameraTopLeft)
+
+            const hasRoom = this.worldGrid.canPlaceAt(targetPos)
+
+            this.ctx.fillStyle = canAfford && hasRoom ? 'blue' : 'red'
             this.ctx.beginPath()
             this.ctx.ellipse(
-                this.mousePos.x,
-                this.mousePos.y,
+                drawPos.x,
+                drawPos.y,
                 3,
                 3,
                 0,

@@ -3,18 +3,23 @@ import type { Vector } from '../../core/Vector'
 import type { SurfaceCleanerGame } from '../game'
 import { SiloSettings } from '../settings/SiloSettings'
 
+import { nextEntityId } from './entity-id'
+
 const ACTIVITY_RADIUS = 40
 
 export class Silo {
     position: Vector
     store: number
 
+    id: number
     payloadTime: number
     storeBeforePayload: number
 
     constructor(position: Vector) {
         this.position = position
         this.store = 0
+
+        this.id = nextEntityId()
 
         this.payloadTime = 0
         this.storeBeforePayload = 0

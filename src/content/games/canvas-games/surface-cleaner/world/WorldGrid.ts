@@ -153,7 +153,9 @@ export class WorldGrid {
                     this.remainingBundles--
                 }
 
-                this.bundles[y][x] = true
+                if (!currentBundle.structures) {
+                    this.bundles[y][x] = true
+                }
             }
         })
 
@@ -287,5 +289,57 @@ export class WorldGrid {
 
     nextLayerColor() {
         return this.layers[this.currentLayerIndex + 1]?.color ?? 'black'
+    }
+
+    getBundleAndCell(position: Vector): {
+        bundle: Vector;
+        cell: Vector;
+        worldPos: Vector;
+    } {
+        const bundleX = Math.floor(position.x / BUNDLE_SCALE)
+        const bundleY = Math.floor(position.y / BUNDLE_SCALE)
+
+        const bundle = new Vector(bundleX, bundleY)
+        const cell = new Vector(
+            Math.floor((position.x - bundleX * BUNDLE_SCALE) / CELL_SIZE),
+            Math.floor((position.y - bundleY * BUNDLE_SCALE) / CELL_SIZE),
+        )
+
+        return {
+            bundle,
+            cell,
+            worldPos: bundle.scale(BUNDLE_SCALE)
+                .add(cell.add(new Vector(0.5, 0.5)).scale(CELL_SIZE)),
+        }
+    }
+
+    canPlaceAt(position: Vector): boolean {
+        const { bundle: bundlePos, cell } = this.getBundleAndCell(position)
+
+        const bundle = this.bundles[bundlePos.y][bundlePos.x]
+
+        if (bundle instanceof Bundle) {
+            const foundEntityId = bundle.getStructureAt(cell.x, cell.y)
+            return foundEntityId === undefined
+        }
+
+        return bundle === true
+    }
+
+    placeStructureAt(position: Vector, id: number): void {
+        const { bundle: bundlePos, cell } = this.getBundleAndCell(position)
+
+        let bundle = this.bundles[bundlePos.y][bundlePos.x]
+
+        if (bundle === true) {
+            bundle = Bundle.empty(bundlePos.x, bundlePos.y)
+            this.bundles[bundlePos.y][bundlePos.x] = bundle
+        }
+
+        if (bundle instanceof Bundle) {
+            bundle.placeStructureAt(cell.x, cell.y, id)
+        }
+
+        return undefined
     }
 }

@@ -30,6 +30,7 @@ export class Bundle {
     y: number
 
     cells: (Cleared | Cell)[][]
+    structures: null | ((number | null)[][])
 
     /**
      * Indicates that the private canvas needs updating
@@ -49,6 +50,8 @@ export class Bundle {
         this.cells = new Array(BUNDLE_SIZE)
             .fill(0)
             .map(() => new Array(BUNDLE_SIZE).fill(false))
+
+        this.structures = null
 
         this.remaining = BUNDLE_SIZE * BUNDLE_SIZE * CELL_SIZE * CELL_SIZE
     }
@@ -219,5 +222,23 @@ export class Bundle {
         }
 
         return sumCleared
+    }
+
+    getStructureAt(x: number, y: number): number | undefined {
+        if (!this.structures) {
+            return undefined
+        }
+
+        return this.structures[y][x] ?? undefined
+    }
+
+    placeStructureAt(x: number, y: number, id: number): void {
+        if (!this.structures) {
+            this.structures = new Array(BUNDLE_SIZE)
+                .fill(0)
+                .map(() => new Array(BUNDLE_SIZE).fill(undefined))
+        }
+
+        this.structures[y][x] = id
     }
 }
