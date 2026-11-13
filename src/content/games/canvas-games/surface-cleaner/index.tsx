@@ -102,6 +102,9 @@ const BuildMenu = ({ game }: { game: SurfaceCleanerGame }) => {
                 bottom: open ? '8px' : '-200px',
             }}
         >
+            <div className="row-center gap-8px">
+                Build menu <KeyboardControl button="B" />
+            </div>
             <ul className="build-menu-list">
                 {options.map((option) => (
                     <li key={option.id}>
@@ -125,4 +128,8 @@ const BuildMenu = ({ game }: { game: SurfaceCleanerGame }) => {
             </ul>
         </div>
     )
+}
+
+const KeyboardControl = ({ button }: { button: string }) => {
+    return <span className="keyboard-control">{button}</span>
 }
