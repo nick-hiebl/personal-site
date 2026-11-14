@@ -248,7 +248,9 @@ export class WorldGrid {
         const tX = Math.floor(vector.x / BUNDLE_SCALE)
         const tY = Math.floor(vector.y / BUNDLE_SCALE)
 
-        if (this.bundles[tY][tX] === true) {
+        const bundle = this.bundles[tY][tX]
+
+        if (bundle === true || (bundle instanceof Bundle && bundle.remaining === 0)) {
             this.assignments.delete(tX + tY * WORLD_WIDTH)
             return true
         }
