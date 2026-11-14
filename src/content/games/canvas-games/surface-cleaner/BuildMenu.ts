@@ -2,8 +2,9 @@ import { createExternalStore, type ExternalStore } from '../core/external-store'
 
 import { RobotSettings } from './settings/RobotSettings'
 import { SiloSettings } from './settings/SiloSettings'
+import { StoreSettings } from './settings/StoreSettings'
 
-type BuildMenuOption = 'robot' | 'silo'
+type BuildMenuOption = 'robot' | 'silo' | 'store'
 
 export type BuildMenuType = {
     open: boolean
@@ -14,6 +15,7 @@ export type BuildMenuType = {
 const OPTIONS: [BuildMenuOption, number][] = [
     ['robot', RobotSettings.cost],
     ['silo', SiloSettings.cost],
+    ['store', StoreSettings.cost],
 ]
 
 export class BuildMenu {

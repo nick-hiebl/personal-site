@@ -10,6 +10,7 @@ import { Seller } from './entities/Seller'
 import { Silo } from './entities/Silo'
 import { RobotSettings } from './settings/RobotSettings'
 import { SiloSettings } from './settings/SiloSettings'
+import { StoreSettings } from './settings/StoreSettings'
 import { SurfaceCleanerStore } from './Store'
 import { drawFrame } from './world/Bundle'
 import {
@@ -46,7 +47,7 @@ export class SurfaceCleanerGame extends GameInstance {
     robots: Robot[]
     silos: Silo[]
 
-    entityMap: Map<number, Silo | Robot>
+    entityMap: Map<number, Silo | Robot | Seller>
 
     sellRate: number
     conversionRate: number
@@ -194,8 +195,18 @@ export class SurfaceCleanerGame extends GameInstance {
                     const silo = new Silo(worldPos)
                     this.entityMap.set(silo.id, silo)
                     this.worldGrid.placeStructureAt(targetPos, silo.id)
-                    this.silos.push(new Silo(worldPos))
+                    this.silos.push(silo)
                 }
+                break
+            case 'store':
+                if (this.money >= StoreSettings.cost) {
+                    this.money -= StoreSettings.cost
+                    const store = new Seller(worldPos)
+                    this.entityMap.set(store.id, store)
+                    this.worldGrid.placeStructureAt(targetPos, store.id)
+                    this.stores.push(store)
+                }
+                break
         }
     }
 
@@ -387,6 +398,7 @@ export class SurfaceCleanerGame extends GameInstance {
             const COSTS = {
                 robot: RobotSettings.cost,
                 silo: SiloSettings.cost,
+                store: StoreSettings.cost,
             }
             const cost = COSTS[this.buildMenu.state.selected]
             const canAfford = this.money >= cost

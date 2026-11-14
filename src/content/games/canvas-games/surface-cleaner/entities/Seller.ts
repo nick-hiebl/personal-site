@@ -1,16 +1,21 @@
 import { Vector } from '../../core/Vector'
 import type { SurfaceCleanerGame } from '../game'
 
+import { nextEntityId } from './entity-id';
+
 const SELL_DISTANCE = 32
 
 let TEXT_SIZE: { width: number; height: number } | null = null
 
 export class Seller {
     position: Vector
+    id: number
+
     active: boolean
 
     constructor(position: Vector) {
         this.position = position
+        this.id = nextEntityId()
         this.active = false
     }
 
