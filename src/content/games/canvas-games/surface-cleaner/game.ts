@@ -88,8 +88,26 @@ export class SurfaceCleanerGame extends GameInstance {
             {
                 topLeft: new Vector(398, 298),
                 bottomRight: new Vector(403, 303),
-                excluded: new Vector(398, 298),
+                excluded: new Vector(400, 300),
                 color: '#449fd1',
+            },
+            {
+                topLeft: new Vector(360, 260),
+                bottomRight: new Vector(440, 340),
+                excluded: new Vector(400, 300),
+                color: '#044984',
+            },
+            {
+                topLeft: new Vector(300, 200),
+                bottomRight: new Vector(500, 400),
+                excluded: new Vector(400, 300),
+                color: '#b4d2dc',
+            },
+            {
+                topLeft: new Vector(0, 0),
+                bottomRight: new Vector(800, 600),
+                excluded: new Vector(400, 300),
+                color: '#ecc685',
             },
         ])
 

@@ -24,6 +24,18 @@
     gap: 16px;
 }
 
+.shop-list-tab {
+    color: var(--color-text);
+    background-color: var(--N600);
+    border: none;
+    border-radius: 2px;
+    padding: 4px 8px;
+}
+
+.shop-list-tab[aria-selected=true] {
+    background-color: var(--B800);
+}
+
 .shop-list {
     margin: 0px;
     padding: 0px;
@@ -31,6 +43,10 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+}
+
+.shop-list[hidden] {
+    display: none;
 }
 
 .upgrade-list-item {

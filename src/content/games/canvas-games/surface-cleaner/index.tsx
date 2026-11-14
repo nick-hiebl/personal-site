@@ -1,4 +1,4 @@
-import { useRef, useState, useSyncExternalStore } from 'react'
+import { useRef, useState } from 'react'
 
 import { useStore } from '../core/external-store'
 
@@ -41,10 +41,16 @@ export const Game = () => {
     )
 }
 
+const TABS = ['player', 'robot', 'silo']
+const TAB_NAMES: Record<string, string> = {
+    player: 'Player',
+    robot: 'Robot',
+    silo: 'Silo',
+}
+
 const ShopPanel = ({ game }: { game: SurfaceCleanerGame }) => {
     const { open, upgrades } = useStore(game.store.store)
-
-    console.log('Store updated')
+    const [tab, setTab] = useState(TABS[0])
 
     return (
         <div
@@ -55,24 +61,41 @@ const ShopPanel = ({ game }: { game: SurfaceCleanerGame }) => {
             }}
         >
             <h2>Shop</h2>
-            <ul className="shop-list">
-                {upgrades.map((upgrade) => (
-                    <li key={upgrade.id} className="upgrade-list-item">
-                        <button
-                            className="shop-button"
-                            disabled={!upgrade.available}
-                            onClick={() => {
-                                game.store.buyUpgrade(upgrade.id, game)
-                            }}
-                        >
-                            <span>
-                                {upgrade.name}: ${(upgrade.steps[upgrade.stage] ?? upgrade.steps[upgrade.steps.length - 1])[0]}
-                            </span>
-                            <UpgradeProgress stage={upgrade.stage} numStages={upgrade.stages} />
-                        </button>
-                    </li>
+            <div role="tablist" className="row gap-8px">
+                {TABS.map((tabName) => (
+                    <button
+                        key={tabName}
+                        className="shop-list-tab"
+                        role="tab"
+                        aria-selected={tab === tabName}
+                        onClick={() => {
+                            setTab(tabName)
+                        }}
+                    >
+                        {TAB_NAMES[tabName] ?? 'unknown'}
+                    </button>
                 ))}
-            </ul>
+            </div>
+            {TABS.map((tabName) => (
+                <ul key={tabName} className="shop-list" hidden={tabName !== tab}>
+                    {upgrades.filter((upgrade) => upgrade.tag === tab).map((upgrade) => (
+                        <li key={upgrade.id} className="upgrade-list-item">
+                            <button
+                                className="shop-button"
+                                disabled={!upgrade.available}
+                                onClick={() => {
+                                    game.store.buyUpgrade(upgrade.id, game)
+                                }}
+                            >
+                                <span>
+                                    {upgrade.name}: ${(upgrade.steps[upgrade.stage] ?? upgrade.steps[upgrade.steps.length - 1])[0]}
+                                </span>
+                                <UpgradeProgress stage={upgrade.stage} numStages={upgrade.stages} />
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            ))}
         </div>
     )
 }
