@@ -178,6 +178,10 @@ export class SurfaceCleanerGame extends GameInstance {
     }
 
     onBuildPressed() {
+        if (this.isMapOpen) {
+            return
+        }
+
         this.buildMenu.setOpen((c) => !c)
     }
 
@@ -188,6 +192,10 @@ export class SurfaceCleanerGame extends GameInstance {
 
     onMapPressed() {
         this.isMapOpen = !this.isMapOpen
+
+        if (this.isMapOpen) {
+            this.buildMenu.setOpen(false)
+        }
     }
 
     getMouseTargetPos(mousePos = this.mousePos): Vector | undefined {

@@ -20,7 +20,7 @@ type LayerState = {
     remainingBundles: number
 }
 
-const createBundlesForLayer = (layer: LayerDescription): LayerState => {
+const createBundlesForLayer = (layer: LayerDescription, currentBundles: (Cleared | Bundle)[][] | undefined): LayerState => {
     let placedStart = false
 
     let remainingBundles = 0
@@ -31,10 +31,13 @@ const createBundlesForLayer = (layer: LayerDescription): LayerState => {
             new Array(WORLD_WIDTH)
                 .fill(0)
                 .map((_, colIndex) => {
+                    const existingBundle = currentBundles?.[rowIndex][colIndex]
+                    const structures = existingBundle instanceof Bundle ? existingBundle.structures : undefined
+
                     if (layer.excluded && !placedStart) {
                         if (colIndex === layer.excluded.x && rowIndex === layer.excluded.y) {
                             placedStart = true
-                            return Bundle.empty(colIndex, rowIndex)
+                            return Bundle.empty(colIndex, rowIndex).addStructures(structures)
                         }
                     }
 
@@ -43,7 +46,16 @@ const createBundlesForLayer = (layer: LayerDescription): LayerState => {
 
                     if (insideBound) {
                         remainingBundles++
+
+                        if (structures) {
+                            return new Bundle(colIndex, rowIndex).addStructures(structures)
+                        }
+
                         return false
+                    }
+
+                    if (structures) {
+                        return Bundle.empty(colIndex, rowIndex).addStructures(structures)
                     }
 
                     return true
@@ -81,7 +93,7 @@ export class WorldGrid {
         this.layers = layers
         this.currentLayerIndex = 0
 
-        const { bundles, remainingBundles } = createBundlesForLayer(layers[0])
+        const { bundles, remainingBundles } = createBundlesForLayer(layers[0], undefined)
 
         this.bundles = bundles
         this.remainingBundles = remainingBundles
@@ -325,7 +337,7 @@ export class WorldGrid {
             throw Error(`Next layer should exist, but for some reason does not! '${newIndex}'`)
         }
 
-        const { bundles, remainingBundles } = createBundlesForLayer(currentLayer)
+        const { bundles, remainingBundles } = createBundlesForLayer(currentLayer, this.bundles)
 
         this.bundles = bundles
         this.remainingBundles = remainingBundles

@@ -224,6 +224,27 @@ export class Bundle {
         return sumCleared
     }
 
+    addStructures(structures: (number | null)[][] | null | undefined): this {
+        if (!structures) {
+            return this
+        }
+
+        if (!this.structures) {
+            this.structures = structures
+            return this
+        }
+
+        for (let y = 0; y < structures.length; y++) {
+            const row = structures[y]
+
+            for (let x = 0; x < row.length; x++) {
+                this.structures[y][x] = this.structures[y][x] ?? row[x]
+            }
+        }
+
+        return this
+    }
+
     getStructureAt(x: number, y: number): number | undefined {
         if (!this.structures) {
             return undefined
