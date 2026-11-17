@@ -66,7 +66,7 @@ const UPGRADES: { tag: Tag; upgrades: UpgradeCore[] }[] = [
             {
                 id: 'conversation-rate',
                 name: 'Efficient refinement',
-                steps: [[100, 1.1], [2000, 1.2], [25_000, 1.3]],
+                steps: [[100, 1.1], [2000, 1.2], [25_000, 1.3], [250_000, 1.4]],
                 buy: (game, value) => {
                     game.conversionRate = value
                 },
@@ -116,7 +116,7 @@ const UPGRADES: { tag: Tag; upgrades: UpgradeCore[] }[] = [
             {
                 id: 'robot-radius',
                 name: 'Size',
-                steps: [[50, 9], [200, 10], [500, 11], [1_000, 12], [5_000, 13], [25_000, 14]],
+                steps: [[50, 9], [200, 10], [500, 11], [1_000, 12], [5_000, 13], [25_000, 14], [120_000, 15], [625_000, 16]],
                 buy: (_, value) => {
                     RobotSettings.radius = value
                 },
@@ -124,7 +124,7 @@ const UPGRADES: { tag: Tag; upgrades: UpgradeCore[] }[] = [
             {
                 id: 'robot-storage',
                 name: 'Inventory size',
-                steps: [[600, 22_500], [1_000, 25_000], [2_500, 30_000], [5_000, 50_000]],
+                steps: [[600, 22_500], [1_000, 25_000], [2_500, 30_000], [5_000, 50_000], [20_000, 65_000], [125_000, 80_000]],
                 buy: (_, value) => {
                     RobotSettings.storeCap = value
                 },
@@ -132,7 +132,7 @@ const UPGRADES: { tag: Tag; upgrades: UpgradeCore[] }[] = [
             {
                 id: 'robot-speed',
                 name: 'Speed',
-                steps: [[150, 175], [500, 200], [1_500, 250], [5_000, 300], [12_000, 400]],
+                steps: [[150, 175], [500, 200], [1_500, 250], [5_000, 300], [12_000, 400], [100_000, 500], [500_000, 600]],
                 buy: (_, value) => {
                     RobotSettings.speed = value
                 },
@@ -140,7 +140,7 @@ const UPGRADES: { tag: Tag; upgrades: UpgradeCore[] }[] = [
             {
                 id: 'robot-payload-time',
                 name: 'Payload time',
-                steps: [[300, 1_800], [800, 1_633], [1_800, 1_500], [3_000, 1_250], [6_500, 1_100], [10_000, 1_000]],
+                steps: [[300, 1_800], [800, 1_633], [1_800, 1_500], [3_000, 1_250], [6_500, 1_100], [10_000, 1_000], [80_000, 900], [240_000, 833], [1_000_000, 750]],
                 buy: (_, value) => {
                     RobotSettings.payloadTime = value
                 },
