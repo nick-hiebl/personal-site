@@ -41,11 +41,12 @@ export const Game = () => {
     )
 }
 
-const TABS = ['player', 'robot', 'silo']
+const TABS = ['player', 'robot', 'silo', 'economy']
 const TAB_NAMES: Record<string, string> = {
     player: 'Player',
     robot: 'Robot',
     silo: 'Silo',
+    economy: 'Economy',
 }
 
 const ShopPanel = ({ game }: { game: SurfaceCleanerGame }) => {
@@ -81,6 +82,7 @@ const ShopPanel = ({ game }: { game: SurfaceCleanerGame }) => {
                     {upgrades.filter((upgrade) => upgrade.tag === tab).map((upgrade) => (
                         <li key={upgrade.id} className="upgrade-list-item">
                             <button
+                                title={game.store.preview(upgrade.id)}
                                 className="shop-button"
                                 disabled={!upgrade.available}
                                 onClick={() => {
@@ -127,6 +129,8 @@ const BuildMenu = ({ game }: { game: SurfaceCleanerGame }) => {
         >
             <div className="row-center gap-8px">
                 Build menu <KeyboardControl button="B" />
+                —
+                <KeyboardControl button="Esc" /> to close
             </div>
             <ul className="build-menu-list">
                 {options.map((option) => (

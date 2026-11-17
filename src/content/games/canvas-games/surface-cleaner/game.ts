@@ -83,6 +83,7 @@ export class SurfaceCleanerGame extends GameInstance {
     store: SurfaceCleanerStore
     buildMenu: BuildMenu
 
+    isMapEnabled: boolean = false
     isMapOpen: boolean = false
     zoomLevel: number = 0.9
 
@@ -191,7 +192,7 @@ export class SurfaceCleanerGame extends GameInstance {
     }
 
     onMapPressed() {
-        this.isMapOpen = !this.isMapOpen
+        this.isMapOpen = !this.isMapOpen && this.isMapEnabled
 
         if (this.isMapOpen) {
             this.buildMenu.setOpen(false)
@@ -264,6 +265,10 @@ export class SurfaceCleanerGame extends GameInstance {
         const elapsedTime = Math.min(rawElapsedTime, 100)
 
         this.gameTime += elapsedTime
+
+        if (this.keys.get('KeyN') && location.host === 'localhost:4321') {
+            this.money += 1000
+        }
 
         this.buildMenuInput(this.keys.get('KeyB') ?? false)
         this.escapeInput(this.keys.get('Escape') ?? false)

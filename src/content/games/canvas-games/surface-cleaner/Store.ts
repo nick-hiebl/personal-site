@@ -11,11 +11,12 @@ export type StoreType = {
 
 type Cost = number
 
-type Tag = 'player' | 'silo' | 'robot'
+type Tag = 'player' | 'silo' | 'robot' | 'economy'
 
 type UpgradeCore = {
     id: string
     name: string
+    baseline: number
     steps: [Cost, number][]
     buy: (game: SurfaceCleanerGame, value: number) => void
 }
@@ -34,6 +35,7 @@ const UPGRADES: { tag: Tag; upgrades: UpgradeCore[] }[] = [
             {
                 id: 'big-radius',
                 name: 'Big radius',
+                baseline: 8,
                 steps: [[10, 14], [50, 16], [100, 18], [150, 20], [250, 22], [400, 24], [400, 26], [1000, 28], [3000, 30]],
                 buy: (game, value) => {
                     game.players.forEach((player) => { player.radius = value })
@@ -42,33 +44,28 @@ const UPGRADES: { tag: Tag; upgrades: UpgradeCore[] }[] = [
             {
                 id: 'more-space',
                 name: 'More storage',
+                baseline: 10_000,
                 steps: [[20, 25_000], [50, 50_000], [100, 100_000], [250, 150_000], [500, 200_000], [1000, 300_000]],
                 buy: (game, value) => {
                     game.players.forEach((player) => { player.storeCap = value })
                 },
             },
             {
-                id: 'sell-speed',
-                name: 'Sell speed',
-                steps: [[40, 5], [100, 15], [300, 30], [500, 70], [2000, 120], [5000, 250], [20_000, 1000]],
-                buy: (game, value) => {
-                    game.sellRate = value
-                },
-            },
-            {
                 id: 'move-speed',
                 name: 'Move speed',
+                baseline: 0.12,
                 steps: [[50, 0.15], [100, 0.2], [250, 0.25], [1000, 0.32]],
                 buy: (game, value) => {
                     game.players.forEach((player) => { player.speed = value })
                 },
             },
             {
-                id: 'conversation-rate',
-                name: 'Efficient refinement',
-                steps: [[100, 1.1], [2000, 1.2], [25_000, 1.3], [250_000, 1.4]],
-                buy: (game, value) => {
-                    game.conversionRate = value
+                id: 'map-enabled',
+                name: 'Map (press M to open)',
+                baseline: 0,
+                steps: [[100, 1]],
+                buy: (game) => {
+                    game.isMapEnabled = true
                 },
             },
         ],
@@ -79,6 +76,7 @@ const UPGRADES: { tag: Tag; upgrades: UpgradeCore[] }[] = [
             {
                 id: 'silo-store-size',
                 name: 'Capacity',
+                baseline: SiloSettings.storeCap,
                 steps: [[50, 125_000], [250, 150_000], [1_000, 200_000], [5_000, 300_000]],
                 buy: (_, value) => {
                     SiloSettings.storeCap = value
@@ -87,6 +85,7 @@ const UPGRADES: { tag: Tag; upgrades: UpgradeCore[] }[] = [
             {
                 id: 'silo-transfer-rate',
                 name: 'Silo transfer from player',
+                baseline: SiloSettings.transferRate,
                 steps: [[100, 2.5], [500, 4], [3_000, 7.5]],
                 buy: (_, value) => {
                     SiloSettings.transferRate = value
@@ -95,6 +94,7 @@ const UPGRADES: { tag: Tag; upgrades: UpgradeCore[] }[] = [
             {
                 id: 'silo-sell-rate',
                 name: 'Sell rate',
+                baseline: SiloSettings.sellFraction,
                 steps: [[50, 0.12], [250, 0.15], [1_000, 0.2], [5_000, 0.33], [20_000, 0.5]],
                 buy: (_, value) => {
                     SiloSettings.sellFraction = value
@@ -103,6 +103,7 @@ const UPGRADES: { tag: Tag; upgrades: UpgradeCore[] }[] = [
             {
                 id: 'silo-payload-time',
                 name: 'Payload time',
+                baseline: SiloSettings.payloadTime,
                 steps: [[100, 2_500], [400, 2_000], [2_000, 1_750], [5_000, 1_500], [20_000, 1_200]],
                 buy: (_, value) => {
                     SiloSettings.payloadTime = value
@@ -116,6 +117,7 @@ const UPGRADES: { tag: Tag; upgrades: UpgradeCore[] }[] = [
             {
                 id: 'robot-radius',
                 name: 'Size',
+                baseline: RobotSettings.radius,
                 steps: [[50, 9], [200, 10], [500, 11], [1_000, 12], [5_000, 13], [25_000, 14], [120_000, 15], [625_000, 16]],
                 buy: (_, value) => {
                     RobotSettings.radius = value
@@ -124,6 +126,7 @@ const UPGRADES: { tag: Tag; upgrades: UpgradeCore[] }[] = [
             {
                 id: 'robot-storage',
                 name: 'Inventory size',
+                baseline: RobotSettings.storeCap,
                 steps: [[600, 22_500], [1_000, 25_000], [2_500, 30_000], [5_000, 50_000], [20_000, 65_000], [125_000, 80_000]],
                 buy: (_, value) => {
                     RobotSettings.storeCap = value
@@ -132,6 +135,7 @@ const UPGRADES: { tag: Tag; upgrades: UpgradeCore[] }[] = [
             {
                 id: 'robot-speed',
                 name: 'Speed',
+                baseline: RobotSettings.speed,
                 steps: [[150, 175], [500, 200], [1_500, 250], [5_000, 300], [12_000, 400], [100_000, 500], [500_000, 600]],
                 buy: (_, value) => {
                     RobotSettings.speed = value
@@ -140,9 +144,33 @@ const UPGRADES: { tag: Tag; upgrades: UpgradeCore[] }[] = [
             {
                 id: 'robot-payload-time',
                 name: 'Payload time',
+                baseline: RobotSettings.payloadTime,
                 steps: [[300, 1_800], [800, 1_633], [1_800, 1_500], [3_000, 1_250], [6_500, 1_100], [10_000, 1_000], [80_000, 900], [240_000, 833], [1_000_000, 750]],
                 buy: (_, value) => {
                     RobotSettings.payloadTime = value
+                },
+            },
+        ],
+    },
+    {
+        tag: 'economy',
+        upgrades: [
+            {
+                id: 'sell-speed',
+                name: 'Global sell rate',
+                baseline: 3,
+                steps: [[40, 5], [100, 15], [300, 30], [500, 70], [2000, 120], [5000, 250], [20_000, 1000]],
+                buy: (game, value) => {
+                    game.sellRate = value
+                },
+            },
+            {
+                id: 'conversation-rate',
+                name: 'Efficient refinement',
+                baseline: 1,
+                steps: [[100, 1.1], [2000, 1.2], [25_000, 1.3], [250_000, 1.4]],
+                buy: (game, value) => {
+                    game.conversionRate = value
                 },
             },
         ],
@@ -236,5 +264,24 @@ export class SurfaceCleanerStore {
 
             this.store.triggerUpdate()
         }
+    }
+
+    preview(id: string): string | undefined {
+        const upgrade = this.state.upgrades.find((upgrade) => upgrade.id === id)
+
+        if (!upgrade || upgrade.stage >= upgrade.stages || !upgrade.steps) {
+            return
+        }
+
+        const cV = upgrade.stage === 0 ? upgrade.baseline : upgrade.steps[upgrade.stage - 1][1]
+        const nV = upgrade.steps[upgrade.stage][1]
+
+        if (!cV || !nV) {
+            return
+        }
+
+        const increase = Math.round(100 * (nV / cV - 1))
+
+        return `${cV} -> ${nV} (${increase >= 0 ? '+' : ''}${increase}%)`
     }
 }
