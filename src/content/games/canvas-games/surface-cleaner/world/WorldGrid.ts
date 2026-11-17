@@ -1,7 +1,7 @@
 import { Vector } from '../../core/Vector'
 
 import { Bundle } from './Bundle'
-import { BUNDLE_SIZE, CELL_SIZE, FILL_COLOR, WORLD_HEIGHT, WORLD_WIDTH } from './constants'
+import { BUNDLE_SIZE, CELL_SIZE, FILL_COLOR, FULL_WORLD_HEIGHT, FULL_WORLD_WIDTH, WORLD_HEIGHT, WORLD_WIDTH } from './constants'
 import type { Cleared } from './types'
 
 type BundleCallback = (bundle: Cleared | Bundle, x: number, y: number) => void
@@ -75,6 +75,8 @@ export class WorldGrid {
     currentLayerIndex: number
     layers: LayerDescription[]
 
+    mapDirty: boolean = true
+
     constructor(layers: LayerDescription[]) {
         this.layers = layers
         this.currentLayerIndex = 0
@@ -134,6 +136,10 @@ export class WorldGrid {
                 return
             }
 
+            if (bundle === false || (bundle instanceof Bundle && bundle.remaining === BUNDLE_SCALE * BUNDLE_SCALE)) {
+                this.mapDirty = true
+            }
+
             if (bundle === false) {
                 const b = new Bundle(x, y)
                 this.bundles[y][x] = b
@@ -150,6 +156,7 @@ export class WorldGrid {
 
             if (currentBundle.remaining === 0) {
                 if (thisBundleCleared > 0) {
+                    this.mapDirty = true
                     this.remainingBundles--
                 }
 
@@ -160,6 +167,50 @@ export class WorldGrid {
         })
 
         return sumCleared
+    }
+
+    drawMap(mapCtx: CanvasRenderingContext2D, hotCtx: CanvasRenderingContext2D) {
+        mapCtx.fillStyle = 'black'
+        mapCtx.fillRect(0, 0, FULL_WORLD_WIDTH, FULL_WORLD_HEIGHT)
+        hotCtx.fillStyle = 'white'
+        hotCtx.clearRect(0, 0, FULL_WORLD_WIDTH, FULL_WORLD_HEIGHT)
+
+        for (let l = this.layers.length - 1; l > this.currentLayerIndex; l--) {
+            const layer = this.layers[l]
+            mapCtx.fillStyle = layer.color
+            mapCtx.fillRect(layer.topLeft.x, layer.topLeft.y, layer.bottomRight.x - layer.topLeft.x, layer.bottomRight.y - layer.topLeft.y)
+        }
+
+        const currentLayer = this.layers[this.currentLayerIndex]
+
+        mapCtx.fillStyle = currentLayer.color
+        for (let y = 0; y < WORLD_HEIGHT; y++) {
+            let lastDrawn = 0
+            let activeState: 'empty' | 'full' | 'in-progress' = 'empty'
+
+            for (let x = 0; x < WORLD_WIDTH; x++) {
+                const thisBundle = this.bundles[y][x]
+
+                const currentState = (thisBundle === false || (thisBundle instanceof Bundle && thisBundle.remaining === BUNDLE_SCALE * BUNDLE_SCALE))
+                    ? 'full'
+                    : thisBundle === true || (thisBundle.remaining === 0)
+                        ? 'empty'
+                        : 'in-progress'
+
+                if (currentState !== activeState) {
+                    if (activeState === 'full') {
+                        mapCtx.fillRect(lastDrawn, y, x - lastDrawn, 1)
+                    } else if (activeState === 'in-progress') {
+                        hotCtx.fillRect(lastDrawn, y, x - lastDrawn, 1)
+                    }
+
+                    activeState = currentState
+                    lastDrawn = x
+                }
+            }
+        }
+
+        this.mapDirty = false
     }
 
     findAssignment(position: Vector, ownerId: number): Vector | undefined {

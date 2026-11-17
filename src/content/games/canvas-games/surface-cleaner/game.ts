@@ -34,9 +34,33 @@ const SELL_RATE = 3
 
 const CAMERA_OFFSET = new Vector(-WIDTH / 2, -HEIGHT / 2)
 
+const createTempCtx = (width: number, height: number): {
+    canvas: HTMLCanvasElement;
+    ctx: CanvasRenderingContext2D;
+} => {
+    const canvas: HTMLCanvasElement = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+
+    const ctx = canvas.getContext('2d')!
+
+    return { canvas, ctx }
+}
+
 export class SurfaceCleanerGame extends GameInstance {
     innerCanvas: HTMLCanvasElement
     innerCtx: CanvasRenderingContext2D
+
+    mapCanvas: HTMLCanvasElement
+    mapCtx: CanvasRenderingContext2D
+
+    mapHotCanvas: HTMLCanvasElement
+    mapHotCtx: CanvasRenderingContext2D
+
+    tempCanvas: HTMLCanvasElement
+    tempCtx: CanvasRenderingContext2D
+
+    gameTime: number = 0
 
     worldGrid: WorldGrid
 
@@ -59,16 +83,27 @@ export class SurfaceCleanerGame extends GameInstance {
     store: SurfaceCleanerStore
     buildMenu: BuildMenu
 
+    isMapOpen: boolean = false
+    zoomLevel: number = 0.9
+
     buildMenuInput: InputBuffer
     escapeInput: InputBuffer
+    mapInput: InputBuffer
 
     constructor(canvas: HTMLCanvasElement) {
         super(canvas)
 
-        this.innerCanvas = document.createElement('canvas')
-        this.innerCanvas.width = WIDTH + 2 * EDGE_BUFFER
-        this.innerCanvas.height = HEIGHT + 2 * EDGE_BUFFER
-        this.innerCtx = this.innerCanvas.getContext('2d')!
+        const { canvas: innerCanvas, ctx: innerCtx } = createTempCtx(WIDTH + 2 * EDGE_BUFFER, HEIGHT + 2 * EDGE_BUFFER)
+        this.innerCanvas = innerCanvas, this.innerCtx = innerCtx
+
+        const { canvas: mapCanvas, ctx: mapCtx } = createTempCtx(WORLD_WIDTH, WORLD_HEIGHT)
+        this.mapCanvas = mapCanvas, this.mapCtx = mapCtx
+
+        const { canvas: mapHotCanvas, ctx: mapHotCtx } = createTempCtx(WORLD_WIDTH, WORLD_HEIGHT)
+        this.mapHotCanvas = mapHotCanvas, this.mapHotCtx = mapHotCtx
+
+        const { canvas: tempCanvas, ctx: tempCtx } = createTempCtx(WORLD_WIDTH, WORLD_HEIGHT)
+        this.tempCanvas = tempCanvas, this.tempCtx = tempCtx
 
         this.ctx.imageSmoothingEnabled = false
 
@@ -139,6 +174,7 @@ export class SurfaceCleanerGame extends GameInstance {
 
         this.buildMenuInput = inputBuffer(() => this.onBuildPressed())
         this.escapeInput = inputBuffer(() => this.onEscPressed())
+        this.mapInput = inputBuffer(() => this.onMapPressed())
     }
 
     onBuildPressed() {
@@ -146,7 +182,12 @@ export class SurfaceCleanerGame extends GameInstance {
     }
 
     onEscPressed() {
+        this.isMapOpen = false
         this.buildMenu.setOpen(false)
+    }
+
+    onMapPressed() {
+        this.isMapOpen = !this.isMapOpen
     }
 
     getMouseTargetPos(mousePos = this.mousePos): Vector | undefined {
@@ -214,8 +255,17 @@ export class SurfaceCleanerGame extends GameInstance {
         // Capping elapsedTime to 10fps, to prevent crazy stutter behavior during lag spikes or browser inactivity
         const elapsedTime = Math.min(rawElapsedTime, 100)
 
+        this.gameTime += elapsedTime
+
         this.buildMenuInput(this.keys.get('KeyB') ?? false)
         this.escapeInput(this.keys.get('Escape') ?? false)
+        this.mapInput(this.keys.get('KeyM') ?? false)
+
+        if (this.isMapOpen) {
+            const zoomStep = +(this.keys.get('BracketRight') ?? false) - +(this.keys.get('BracketLeft') ?? false)
+
+            this.zoomLevel = Math.max(0, Math.min(this.zoomLevel + zoomStep * elapsedTime / 1000, 1))
+        }
 
         if (this.worldGrid.remainingBundles <= 0) {
             const newLeveled = this.worldGrid.goToNextLayer()
@@ -283,7 +333,81 @@ export class SurfaceCleanerGame extends GameInstance {
         this.store.setOpen(someShopActive)
     }
 
+    drawMap() {
+        this.ctx.fillStyle = 'black'
+        this.ctx.fillRect(0, 0, WIDTH, HEIGHT)
+
+        if (this.worldGrid.mapDirty) {
+            this.worldGrid.drawMap(this.mapCtx, this.mapHotCtx)
+        }
+
+        const zoom = Math.exp(this.zoomLevel * 3)
+
+        const mapOffset = this.players[0].position
+            .scale(-zoom / BUNDLE_SCALE)
+
+        const mapShift = mapOffset.diff(CAMERA_OFFSET)
+
+        this.ctx.drawImage(
+            this.mapCanvas,
+            0,
+            0,
+            WORLD_WIDTH,
+            WORLD_HEIGHT,
+            mapShift.x,
+            mapShift.y,
+            WORLD_WIDTH * zoom,
+            WORLD_HEIGHT * zoom,
+        )
+        this.tempCtx.globalCompositeOperation = 'destination-over'
+        this.tempCtx.globalAlpha = 1
+        this.tempCtx.clearRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT)
+        this.tempCtx.drawImage(this.mapHotCanvas, 0, 0)
+        this.tempCtx.globalCompositeOperation = 'source-in'
+        this.tempCtx.globalAlpha = Math.sin(this.gameTime / 300) / 8 + 2 / 3
+        this.tempCtx.fillStyle = 'white'
+        this.tempCtx.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT)
+        this.ctx.drawImage(
+            this.tempCanvas,
+            0,
+            0,
+            WORLD_WIDTH,
+            WORLD_HEIGHT,
+            mapShift.x,
+            mapShift.y,
+            WORLD_WIDTH * zoom,
+            WORLD_HEIGHT * zoom,
+        )
+
+        const drawAtPositions = (positions: { position: Vector }[], radius: number) => {
+            this.ctx.beginPath()
+            positions.forEach(({ position }) => {
+                const mapPos = position.scale(zoom / BUNDLE_SCALE).add(mapShift)
+                this.ctx.moveTo(mapPos.x, mapPos.y)
+                this.ctx.ellipse(mapPos.x, mapPos.y, radius, radius, 0, 0, 2 * Math.PI)
+            })
+            this.ctx.fill()
+        }
+
+        this.ctx.fillStyle = 'purple'
+        drawAtPositions(this.silos, 4)
+
+        this.ctx.fillStyle = 'green'
+        drawAtPositions(this.robots, 4)
+
+        this.ctx.fillStyle = 'red'
+        drawAtPositions(this.stores, 5)
+
+        this.ctx.fillStyle = '#0088ff'
+        drawAtPositions(this.players, 5)
+    }
+
     draw() {
+        if (this.isMapOpen) {
+            this.drawMap()
+            return
+        }
+
         this.ctx.fillStyle = this.worldGrid.nextLayerColor()
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
 
